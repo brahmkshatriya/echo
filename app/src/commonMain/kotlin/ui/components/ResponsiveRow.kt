@@ -24,6 +24,8 @@ interface ResponsiveRowScope {
         priority: Int,
         key: Any? = null,
         weight: Float = 0f,
+        whenItemHidden: Any? = null,
+        whenItemVisible: Any? = null,
         content: @Composable () -> Unit,
     )
 
@@ -39,6 +41,7 @@ private data class ResponsiveRowItem(
     val key: Any,
     val weight: Float,
     val whenItemHidden: Any? = null,
+    val whenItemVisible: Any? = null,
     val content: @Composable () -> Unit,
 )
 
@@ -49,13 +52,20 @@ private class ResponsiveRowScopeImpl : ResponsiveRowScope {
         priority: Int,
         key: Any?,
         weight: Float,
+        whenItemHidden: Any?,
+        whenItemVisible: Any?,
         content: @Composable () -> Unit,
     ) {
         require(weight >= 0f) { "weight must be >= 0" }
+        require(whenItemHidden == null || whenItemVisible == null) {
+            "ResponsiveRow item cannot depend on both hidden and visible state"
+        }
         items += ResponsiveRowItem(
             priority = priority,
             key = key ?: items.size,
             weight = weight,
+            whenItemHidden = whenItemHidden,
+            whenItemVisible = whenItemVisible,
             content = content,
         )
     }
@@ -88,8 +98,8 @@ private class ResponsiveRowItemState {
  * Items are considered in descending [ResponsiveRowScope.item] priority, but are always placed in
  * declaration order. Non-weighted items use their preferred intrinsic width; weighted items use
  * their minimum intrinsic width and split whatever width remains after the fitting pass.
- * Conditional [ResponsiveRowScope.spacer] entries can consume leftover width only while another
- * keyed item is hidden.
+ * Conditional items and [ResponsiveRowScope.spacer] entries are shown only while another keyed
+ * item is hidden.
  */
 @Composable
 fun ResponsiveRow(
@@ -138,31 +148,67 @@ fun ResponsiveRow(
             }
             width.coerceAtLeast(0).coerceAtMost(availableWidth)
         }
-        val targetVisible = BooleanArray(items.size)
-        var usedWidth = 0
-        var visibleWithWidth = 0
-        val priorityOrder = items.indices
-            .filter { items[it].whenItemHidden == null }
-            .sortedWith(compareByDescending<Int> { items[it].priority }.thenBy { it })
-
-        priorityOrder.forEach { index ->
-            val itemWidth = intrinsicWidths[index]
-            val addsSpacing = itemWidth > 0 && visibleWithWidth > 0
-            val requiredWidth = itemWidth + if (addsSpacing) spacingPx else 0
-            if (!boundedWidth || usedWidth + requiredWidth <= availableWidth) {
-                targetVisible[index] = true
-                usedWidth += requiredWidth
-                if (itemWidth > 0) visibleWithWidth++
-            }
-        }
-
         val indexByKey = items.indices.associateBy { items[it].key }
-        items.indices.forEach { index ->
-            val hiddenKey = items[index].whenItemHidden ?: return@forEach
-            val dependencyIndex = indexByKey[hiddenKey]
-                ?: error("ResponsiveRow spacer references unknown item key: $hiddenKey")
-            targetVisible[index] = !targetVisible[dependencyIndex]
+        val baseVisible = BooleanArray(items.size)
+
+        fun select(
+            indices: List<Int>,
+            visible: BooleanArray,
+            required: Set<Int> = emptySet(),
+        ) {
+            var usedWidth = 0
+            var visibleWithWidth = 0
+
+            fun add(index: Int, force: Boolean) {
+                if (visible[index]) return
+                val itemWidth = intrinsicWidths[index]
+                val addsSpacing = itemWidth > 0 && visibleWithWidth > 0
+                val requiredWidth = itemWidth + if (addsSpacing) spacingPx else 0
+                if (force || !boundedWidth || usedWidth + requiredWidth <= availableWidth) {
+                    visible[index] = true
+                    usedWidth += requiredWidth
+                    if (itemWidth > 0) visibleWithWidth++
+                }
+            }
+
+            required.sorted().forEach { add(it, force = true) }
+            indices
+                .sortedWith(compareByDescending<Int> { items[it].priority }.thenBy { it })
+                .forEach { add(it, force = false) }
         }
+
+        val unconditionalIndices = items.indices.filter {
+            items[it].whenItemHidden == null && items[it].whenItemVisible == null
+        }
+        select(unconditionalIndices, baseVisible)
+
+        val eligibleConditionalIndices = items.indices.filter { index ->
+            val hiddenKey = items[index].whenItemHidden
+            if (hiddenKey != null) {
+                val dependencyIndex = indexByKey[hiddenKey]
+                    ?: error("ResponsiveRow item references unknown item key: $hiddenKey")
+                return@filter !baseVisible[dependencyIndex]
+            }
+
+            val visibleKey = items[index].whenItemVisible ?: return@filter false
+            val dependencyIndex = indexByKey[visibleKey]
+                ?: error("ResponsiveRow item references unknown item key: $visibleKey")
+            baseVisible[dependencyIndex]
+        }
+        val forcedHiddenDependencies = eligibleConditionalIndices.mapNotNullTo(mutableSetOf()) { index ->
+            items[index].whenItemHidden?.let(indexByKey::getValue)
+        }
+        val forcedVisibleDependencies = eligibleConditionalIndices.mapNotNullTo(mutableSetOf()) { index ->
+            items[index].whenItemVisible?.let(indexByKey::getValue)
+        }
+
+        val targetVisible = BooleanArray(items.size)
+        select(
+            indices = unconditionalIndices.filterNot { it in forcedHiddenDependencies } +
+                    eligibleConditionalIndices,
+            visible = targetVisible,
+            required = forcedVisibleDependencies,
+        )
 
         val selectedWeight = items.indices.sumOf { index ->
             if (targetVisible[index]) items[index].weight.toDouble() else 0.0

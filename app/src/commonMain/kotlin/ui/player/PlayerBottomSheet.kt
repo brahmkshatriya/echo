@@ -38,6 +38,7 @@ import dev.brahmkshatriya.echo.app.ui.components.BetterSheet
 import dev.brahmkshatriya.echo.app.ui.components.BetterSheetScaffold
 import dev.brahmkshatriya.echo.app.ui.components.blurFadePagerTransition
 import dev.brahmkshatriya.echo.app.ui.components.paddingMask
+import dev.brahmkshatriya.echo.app.ui.player.song.maxSongCoverSize
 import com.skydoves.landscapist.core.ImageRequest
 import com.skydoves.landscapist.core.scheduler.DecodePriority
 import com.skydoves.landscapist.image.getLandscapist
@@ -59,6 +60,8 @@ class PlayerControlsState {
 val LocalPlayerPagerState = staticCompositionLocalOf<PagerState?> { null }
 val LocalPlayerControls = staticCompositionLocalOf<PlayerControlsState?> { null }
 val LocalPlayerLyricsVisible = staticCompositionLocalOf<androidx.compose.runtime.MutableState<Boolean>?> { null }
+val LocalPlayerLyricsChromeCollapsed =
+    staticCompositionLocalOf<androidx.compose.runtime.MutableState<Boolean>?> { null }
 
 @Composable
 fun ProvidePlayerControls(
@@ -67,11 +70,13 @@ fun ProvidePlayerControls(
 ) {
     val controls = remember { PlayerControlsState() }
     val lyricsVisible = remember { mutableStateOf(false) }
+    val lyricsChromeCollapsed = remember { mutableStateOf(false) }
     PreloadAdjacentPlayerArtwork(pagerState)
     CompositionLocalProvider(
         LocalPlayerPagerState provides pagerState,
         LocalPlayerControls provides controls,
         LocalPlayerLyricsVisible provides lyricsVisible,
+        LocalPlayerLyricsChromeCollapsed provides lyricsChromeCollapsed,
         content = content,
     )
 }
@@ -150,15 +155,15 @@ fun PlayerBottomSheet(
         val artWorks = LocalPlayerItems.current
         val pagerState = rememberPagerState(2, pageCount = { artWorks.size })
         val pageScrolledToTop = remember { mutableStateMapOf<Int, Boolean>() }
-        val pageLyricsSelectorOpen = remember { mutableStateMapOf<Int, Boolean>() }
-        val lyricsSelectorOpen by remember {
+        val pageInteractionLocked = remember { mutableStateMapOf<Int, Boolean>() }
+        val interactionLocked by remember {
             derivedStateOf {
-                pageLyricsSelectorOpen[pagerState.currentPage] == true
+                pageInteractionLocked[pagerState.currentPage] == true
             }
         }
         val pagerUserScrollEnabled by remember {
             derivedStateOf {
-                !lyricsSelectorOpen && pageScrolledToTop[pagerState.currentPage] != false
+                !interactionLocked && pageScrolledToTop[pagerState.currentPage] != false
             }
         }
 
@@ -189,8 +194,8 @@ fun PlayerBottomSheet(
                                     onScrolledToTopChanged = { scrolledToTop ->
                                         pageScrolledToTop[page] = scrolledToTop
                                     },
-                                    onLyricsSelectorOpenChanged = { open ->
-                                        pageLyricsSelectorOpen[page] = open
+                                    onInteractionLockChanged = { locked ->
+                                        pageInteractionLocked[page] = locked
                                     },
                                 )
                             }
@@ -205,7 +210,7 @@ fun PlayerBottomSheet(
             sheetShadowElevation = 0.dp,
             sheetContainerColor = Color.Unspecified,
             sheetMaxWidth = Dp.Unspecified,
-            sheetSwipeEnabled = !lyricsSelectorOpen,
+            sheetSwipeEnabled = !interactionLocked,
             containerColor = Color.Unspecified,
             content = {
                 Box(Modifier.paddingMask().then(modifier).applyPlayerTranslation()) {

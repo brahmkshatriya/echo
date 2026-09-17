@@ -19,15 +19,22 @@ import echo.app.generated.resources.GoogleSansFlex
 import echo.app.generated.resources.Res
 import org.jetbrains.compose.resources.getFontResourceBytes
 import org.jetbrains.compose.resources.rememberResourceEnvironment
+import org.jetbrains.skia.Color4f
 import org.jetbrains.skia.Data
+import org.jetbrains.skia.FilterTileMode
 import org.jetbrains.skia.Font
 import org.jetbrains.skia.FontEdging
 import org.jetbrains.skia.FontHinting
 import org.jetbrains.skia.FontMgr
 import org.jetbrains.skia.FontVariation
+import org.jetbrains.skia.Gradient
 import org.jetbrains.skia.Paint
+import org.jetbrains.skia.Shader
 import org.jetbrains.skia.Typeface
+import kotlin.math.PI
+import kotlin.math.cos
 import kotlin.math.roundToInt
+import kotlin.math.sin
 
 private var variableLyricsBaseTypeface by mutableStateOf<Typeface?>(null)
 private var variableLyricsTypefaceLoading by mutableStateOf(false)
@@ -65,6 +72,11 @@ internal actual fun VariableText(
     peakPosition: () -> Float?,
     glyphXPositions: FloatArray,
     glyphBaselines: FloatArray,
+    glyphPeakPositions: FloatArray?,
+    glyphRightPositions: FloatArray?,
+    horizontalRevealPosition: (() -> Float?)?,
+    bloom: (() -> LyricsBloom?)?,
+    horizontalRevealFeather: Float,
     offsetX: Float,
     offsetY: Float,
     color: Color,
@@ -135,6 +147,132 @@ internal actual fun VariableText(
         }
 
         val peakPosition = peakPosition()
+        val revealPosition = horizontalRevealPosition?.invoke()
+        if (peakPosition != null && revealPosition != null) {
+            fun peakPositionFor(index: Int) =
+                glyphPeakPositions?.getOrNull(index) ?: index.toFloat()
+
+            fun fontFor(index: Int) = cache.fontFor(
+                position = peakPositionFor(index),
+                peakPosition = peakPosition,
+                lastPosition = lastPosition,
+            )
+
+            fun drawGlyph(index: Int, alpha: Float) {
+                cache.paint.shader = null
+                cache.paint.setAlphaf(alpha)
+                drawContext.canvas.skiaCanvas.drawString(
+                    glyphTexts[index],
+                    offsetX + glyphXPositions.getOrElse(index) { 0f },
+                    offsetY + glyphBaselines.getOrElse(index) { 0f },
+                    fontFor(index).font,
+                    cache.paint,
+                )
+            }
+
+            fun drawBloom() {
+                val state = bloom?.invoke() ?: return
+                val strength = state.strength.coerceIn(0f, 1f)
+                if (strength <= 0.001f) return
+
+                val start = state.startPosition.coerceIn(0, glyphTexts.size)
+                val end = state.endPositionExclusive.coerceIn(start, glyphTexts.size)
+                if (start >= end) return
+
+                cache.paint.shader = null
+                cache.paint.color = Color.White.toArgb()
+
+                fun drawRing(radius: Float, alpha: Float) {
+                    cache.paint.setAlphaf(alpha * strength)
+                    repeat(8) { step ->
+                        val angle = step * (2f * PI.toFloat() / 8f)
+                        val dx = cos(angle) * radius
+                        val dy = sin(angle) * radius
+                        for (index in start until end) {
+                            drawContext.canvas.skiaCanvas.drawString(
+                                glyphTexts[index],
+                                offsetX + glyphXPositions.getOrElse(index) { 0f } + dx,
+                                offsetY + glyphBaselines.getOrElse(index) { 0f } + dy,
+                                fontFor(index).font,
+                                cache.paint,
+                            )
+                        }
+                    }
+                }
+
+                drawRing(fontSizePx * 0.11f, 0.025f)
+                drawRing(fontSizePx * 0.055f, 0.045f)
+                cache.paint.setAlphaf(0.08f * strength)
+                for (index in start until end) {
+                    drawContext.canvas.skiaCanvas.drawString(
+                        glyphTexts[index],
+                        offsetX + glyphXPositions.getOrElse(index) { 0f },
+                        offsetY + glyphBaselines.getOrElse(index) { 0f },
+                        fontFor(index).font,
+                        cache.paint,
+                    )
+                }
+                cache.paint.color = color.toArgb()
+            }
+
+            drawBloom()
+            glyphTexts.indices.forEach { index ->
+                drawGlyph(index, LyricsMinAlpha)
+            }
+
+            val clampedReveal = revealPosition.coerceIn(0f, glyphTexts.size.toFloat())
+            if (clampedReveal >= glyphTexts.size.toFloat()) {
+                glyphTexts.indices.forEach { index -> drawGlyph(index, 1f) }
+                return@Canvas
+            }
+
+            val currentIndex = clampedReveal.toInt().coerceIn(0, glyphTexts.lastIndex)
+            val fraction = (clampedReveal - currentIndex).coerceIn(0f, 1f)
+            val currentBaseline = glyphBaselines.getOrElse(currentIndex) { 0f }
+
+            glyphTexts.indices.forEach { index ->
+                if (index < currentIndex && glyphBaselines.getOrElse(index) { 0f } != currentBaseline) {
+                    drawGlyph(index, 1f)
+                }
+            }
+
+            val left = offsetX + glyphXPositions.getOrElse(currentIndex) { 0f }
+            val right = offsetX + (glyphRightPositions?.getOrNull(currentIndex)
+                ?: glyphXPositions.getOrNull(currentIndex + 1)
+                ?: (glyphXPositions.getOrElse(currentIndex) { 0f } + fontSizePx * 0.55f))
+            val revealX = left + (right - left).coerceAtLeast(0f) * fraction
+            val feather = fontSizePx * horizontalRevealFeather.coerceAtLeast(0f)
+            val baseColor = Color4f(color.toArgb())
+            val shader = Shader.makeLinearGradient(
+                revealX - feather * 0.5f,
+                0f,
+                revealX + feather * 0.5f,
+                0f,
+                Gradient(
+                    Gradient.Colors(
+                        colors = arrayOf(baseColor, baseColor.withA(0f)),
+                        tileMode = FilterTileMode.CLAMP,
+                    )
+                ),
+            )
+            cache.paint.shader = shader
+            cache.paint.setAlphaf(1f)
+            glyphTexts.indices.forEach { index ->
+                if (glyphBaselines.getOrElse(index) { 0f } == currentBaseline) {
+                    drawContext.canvas.skiaCanvas.drawString(
+                        glyphTexts[index],
+                        offsetX + glyphXPositions.getOrElse(index) { 0f },
+                        offsetY + glyphBaselines.getOrElse(index) { 0f },
+                        fontFor(index).font,
+                        cache.paint,
+                    )
+                }
+            }
+            cache.paint.shader = null
+            shader.close()
+            return@Canvas
+        }
+
         if (peakPosition == null) {
             val font = cache.staticFont.font
             cache.paint.setAlphaf(1f)
@@ -151,7 +289,7 @@ internal actual fun VariableText(
         }
 
         glyphTexts.forEachIndexed { index, glyph ->
-            val position = index.toFloat()
+            val position = glyphPeakPositions?.getOrNull(index) ?: index.toFloat()
             val font = cache.fontFor(
                 position = position,
                 peakPosition = peakPosition,

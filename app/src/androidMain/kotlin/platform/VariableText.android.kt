@@ -1,6 +1,8 @@
 package dev.brahmkshatriya.echo.app.platform
 
+import android.graphics.LinearGradient
 import android.graphics.Paint
+import android.graphics.Shader
 import android.graphics.Typeface
 import android.graphics.fonts.FontVariationAxis
 import android.os.Build
@@ -15,7 +17,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
+import kotlin.math.PI
+import kotlin.math.cos
 import kotlin.math.roundToInt
+import kotlin.math.sin
 import android.graphics.fonts.Font as AndroidFont
 import android.graphics.fonts.FontFamily as AndroidFontFamily
 
@@ -39,6 +44,11 @@ internal actual fun VariableText(
     peakPosition: () -> Float?,
     glyphXPositions: FloatArray,
     glyphBaselines: FloatArray,
+    glyphPeakPositions: FloatArray?,
+    glyphRightPositions: FloatArray?,
+    horizontalRevealPosition: (() -> Float?)?,
+    bloom: (() -> LyricsBloom?)?,
+    horizontalRevealFeather: Float,
     offsetX: Float,
     offsetY: Float,
     color: Color,
@@ -103,6 +113,130 @@ internal actual fun VariableText(
         }
 
         val peakPosition = peakPosition()
+        val revealPosition = horizontalRevealPosition?.invoke()
+        if (peakPosition != null && revealPosition != null) {
+            fun peakPositionFor(index: Int) =
+                glyphPeakPositions?.getOrNull(index) ?: index.toFloat()
+
+            fun fontFor(index: Int) = cache.fontFor(
+                position = peakPositionFor(index),
+                peakPosition = peakPosition,
+                lastPosition = lastPosition,
+            )
+
+            fun drawGlyph(index: Int, alpha: Float) {
+                cache.drawPaint.typeface = fontFor(index).typeface
+                cache.drawPaint.alpha = (alpha * 255f).roundToInt().coerceIn(0, 255)
+                drawContext.canvas.nativeCanvas.drawText(
+                    glyphTexts[index],
+                    offsetX + glyphXPositions.getOrElse(index) { 0f },
+                    offsetY + glyphBaselines.getOrElse(index) { 0f },
+                    cache.drawPaint,
+                )
+            }
+
+            fun drawBloom() {
+                val state = bloom?.invoke() ?: return
+                val strength = state.strength.coerceIn(0f, 1f)
+                if (strength <= 0.001f) return
+
+                val start = state.startPosition.coerceIn(0, glyphTexts.size)
+                val end = state.endPositionExclusive.coerceIn(start, glyphTexts.size)
+                if (start >= end) return
+
+                cache.drawPaint.shader = null
+                cache.drawPaint.color = Color.White.toArgb()
+
+                fun drawRing(radius: Float, alpha: Float) {
+                    cache.drawPaint.alpha = (alpha * strength * 255f)
+                        .roundToInt()
+                        .coerceIn(0, 255)
+                    repeat(8) { step ->
+                        val angle = step * (2f * PI.toFloat() / 8f)
+                        val dx = cos(angle) * radius
+                        val dy = sin(angle) * radius
+                        for (index in start until end) {
+                            cache.drawPaint.typeface = fontFor(index).typeface
+                            drawContext.canvas.nativeCanvas.drawText(
+                                glyphTexts[index],
+                                offsetX + glyphXPositions.getOrElse(index) { 0f } + dx,
+                                offsetY + glyphBaselines.getOrElse(index) { 0f } + dy,
+                                cache.drawPaint,
+                            )
+                        }
+                    }
+                }
+
+                drawRing(fontSizePx * 0.11f, 0.025f)
+                drawRing(fontSizePx * 0.055f, 0.045f)
+                cache.drawPaint.alpha = (0.08f * strength * 255f)
+                    .roundToInt()
+                    .coerceIn(0, 255)
+                for (index in start until end) {
+                    cache.drawPaint.typeface = fontFor(index).typeface
+                    drawContext.canvas.nativeCanvas.drawText(
+                        glyphTexts[index],
+                        offsetX + glyphXPositions.getOrElse(index) { 0f },
+                        offsetY + glyphBaselines.getOrElse(index) { 0f },
+                        cache.drawPaint,
+                    )
+                }
+                cache.drawPaint.color = color.toArgb()
+            }
+
+            drawBloom()
+            cache.drawPaint.shader = null
+            glyphTexts.indices.forEach { index ->
+                drawGlyph(index, LyricsMinAlpha)
+            }
+
+            val clampedReveal = revealPosition.coerceIn(0f, glyphTexts.size.toFloat())
+            if (clampedReveal >= glyphTexts.size.toFloat()) {
+                glyphTexts.indices.forEach { index -> drawGlyph(index, 1f) }
+                return@Canvas
+            }
+
+            val currentIndex = clampedReveal.toInt().coerceIn(0, glyphTexts.lastIndex)
+            val fraction = (clampedReveal - currentIndex).coerceIn(0f, 1f)
+            val currentBaseline = glyphBaselines.getOrElse(currentIndex) { 0f }
+
+            glyphTexts.indices.forEach { index ->
+                if (index < currentIndex && glyphBaselines.getOrElse(index) { 0f } != currentBaseline) {
+                    drawGlyph(index, 1f)
+                }
+            }
+
+            val left = offsetX + glyphXPositions.getOrElse(currentIndex) { 0f }
+            val right = offsetX + (glyphRightPositions?.getOrNull(currentIndex)
+                ?: glyphXPositions.getOrNull(currentIndex + 1)
+                ?: (glyphXPositions.getOrElse(currentIndex) { 0f } + fontSizePx * 0.55f))
+            val revealX = left + (right - left).coerceAtLeast(0f) * fraction
+            val feather = fontSizePx * horizontalRevealFeather.coerceAtLeast(0f)
+            cache.drawPaint.shader = LinearGradient(
+                revealX - feather * 0.5f,
+                0f,
+                revealX + feather * 0.5f,
+                0f,
+                color.toArgb(),
+                color.copy(alpha = 0f).toArgb(),
+                Shader.TileMode.CLAMP,
+            )
+            cache.drawPaint.alpha = 255
+            glyphTexts.indices.forEach { index ->
+                if (glyphBaselines.getOrElse(index) { 0f } == currentBaseline) {
+                    cache.drawPaint.typeface = fontFor(index).typeface
+                    drawContext.canvas.nativeCanvas.drawText(
+                        glyphTexts[index],
+                        offsetX + glyphXPositions.getOrElse(index) { 0f },
+                        offsetY + glyphBaselines.getOrElse(index) { 0f },
+                        cache.drawPaint,
+                    )
+                }
+            }
+            cache.drawPaint.shader = null
+            return@Canvas
+        }
+
         if (peakPosition == null) {
             cache.drawPaint.typeface = cache.staticFont.typeface
             cache.drawPaint.alpha = 255
@@ -118,7 +252,7 @@ internal actual fun VariableText(
         }
 
         glyphTexts.forEachIndexed { index, glyph ->
-            val position = index.toFloat()
+            val position = glyphPeakPositions?.getOrNull(index) ?: index.toFloat()
             val font = cache.fontFor(
                 position = position,
                 peakPosition = peakPosition,

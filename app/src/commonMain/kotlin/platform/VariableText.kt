@@ -14,6 +14,12 @@ internal const val LyricsWeightStep = 16
 internal const val LyricsMinAlpha = 0.66f
 internal const val LyricsMaxRoundness = 100f
 
+internal data class LyricsBloom(
+    val startPosition: Int,
+    val endPositionExclusive: Int,
+    val strength: Float,
+)
+
 internal fun lyricsWeightAt(
     position: Float,
     peakPosition: Float,
@@ -65,6 +71,11 @@ internal expect fun VariableText(
     peakPosition: () -> Float?,
     glyphXPositions: FloatArray,
     glyphBaselines: FloatArray,
+    glyphPeakPositions: FloatArray? = null,
+    glyphRightPositions: FloatArray? = null,
+    horizontalRevealPosition: (() -> Float?)? = null,
+    bloom: (() -> LyricsBloom?)? = null,
+    horizontalRevealFeather: Float = 0.45f,
     offsetX: Float = 0f,
     offsetY: Float = 0f,
     color: Color,
