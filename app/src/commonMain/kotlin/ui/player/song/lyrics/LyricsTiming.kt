@@ -175,7 +175,8 @@ private class LyricsPeakTimeline private constructor(
                 repeat(characterCount) { characterIndex ->
                     val textIndex = tokenOffset + characterIndex
                     if (textIndex in run.lineTiming.globalGlyphPositions.indices) {
-                        run.lineTiming.globalGlyphPositions[textIndex] = cursorPosition + characterIndex
+                        run.lineTiming.globalGlyphPositions[textIndex] =
+                            cursorPosition + characterIndex
                     }
                 }
 

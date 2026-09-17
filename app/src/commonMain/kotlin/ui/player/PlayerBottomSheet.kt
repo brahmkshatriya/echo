@@ -34,14 +34,14 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.skydoves.landscapist.core.ImageRequest
+import com.skydoves.landscapist.core.scheduler.DecodePriority
+import com.skydoves.landscapist.image.getLandscapist
 import dev.brahmkshatriya.echo.app.ui.components.BetterSheet
 import dev.brahmkshatriya.echo.app.ui.components.BetterSheetScaffold
 import dev.brahmkshatriya.echo.app.ui.components.blurFadePagerTransition
 import dev.brahmkshatriya.echo.app.ui.components.paddingMask
 import dev.brahmkshatriya.echo.app.ui.player.song.maxSongCoverSize
-import com.skydoves.landscapist.core.ImageRequest
-import com.skydoves.landscapist.core.scheduler.DecodePriority
-import com.skydoves.landscapist.image.getLandscapist
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -59,7 +59,8 @@ class PlayerControlsState {
 
 val LocalPlayerPagerState = staticCompositionLocalOf<PagerState?> { null }
 val LocalPlayerControls = staticCompositionLocalOf<PlayerControlsState?> { null }
-val LocalPlayerLyricsVisible = staticCompositionLocalOf<androidx.compose.runtime.MutableState<Boolean>?> { null }
+val LocalPlayerLyricsVisible =
+    staticCompositionLocalOf<androidx.compose.runtime.MutableState<Boolean>?> { null }
 val LocalPlayerLyricsChromeCollapsed =
     staticCompositionLocalOf<androidx.compose.runtime.MutableState<Boolean>?> { null }
 

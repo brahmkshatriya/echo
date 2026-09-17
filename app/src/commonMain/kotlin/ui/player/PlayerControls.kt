@@ -402,13 +402,13 @@ fun ExpandedTimeline(
             constraints.minHeight,
             constraints.maxHeight,
         )
-        val contentHeight = (
-            expandedContentHeight +
-                    (collapsedContentHeight - expandedContentHeight) * collapseProgress
-            ).roundToInt().coerceIn(constraints.minHeight, constraints.maxHeight)
-        val secondaryRowsOffset = (
+        val floatContentHeight =
+            expandedContentHeight + (collapsedContentHeight - expandedContentHeight) * collapseProgress
+        val contentHeight =
+            floatContentHeight.roundToInt().coerceIn(constraints.minHeight, constraints.maxHeight)
+        val floatSecondaryRowsOffset =
             (expandedContentHeight - collapsedContentHeight) * collapseProgress
-            ).roundToInt()
+        val secondaryRowsOffset = floatSecondaryRowsOffset.roundToInt()
 
         layout(constraints.maxWidth, contentHeight) {
             slider.placeRelative(sliderHorizontalPadding, sliderTop + secondaryRowsOffset)

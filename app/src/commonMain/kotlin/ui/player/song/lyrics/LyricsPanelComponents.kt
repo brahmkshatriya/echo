@@ -114,8 +114,10 @@ internal fun Modifier.lyricsEdgeFade(
     graphicsLayer {
         compositingStrategy = CompositingStrategy.Offscreen
     }.drawWithCache {
-        val topFraction = if (size.height > 0f) (topFadeHeight.toPx() / size.height).coerceIn(0f, 0.5f) else 0f
-        val bottomFraction = if (size.height > 0f) (bottomFadeHeight.toPx() / size.height).coerceIn(0f, 0.5f) else 0f
+        val topFraction =
+            if (size.height > 0f) (topFadeHeight.toPx() / size.height).coerceIn(0f, 0.5f) else 0f
+        val bottomFraction =
+            if (size.height > 0f) (bottomFadeHeight.toPx() / size.height).coerceIn(0f, 0.5f) else 0f
         val mask = Brush.verticalGradient(
             colorStops = arrayOf(
                 0f to Color.Transparent,
@@ -241,9 +243,11 @@ internal fun FullTimedLyricsLine(
                         isActive && !isPast -> {
                             { lineTiming.revealPositionAt(timelineState.positionMs.toLong()) }
                         }
+
                         isPast && isLatestCompleted -> {
                             { lineText.length.toFloat() }
                         }
+
                         else -> null
                     }
                 }

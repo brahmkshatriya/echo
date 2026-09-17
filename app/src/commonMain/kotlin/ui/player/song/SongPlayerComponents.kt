@@ -151,24 +151,16 @@ internal fun PlayerHero(
                     pass = PointerEventPass.Final,
                 )
                 consumedByDescendant = down.isConsumed
-
                 var anyPressed = true
                 while (anyPressed) {
                     val event = awaitPointerEvent(PointerEventPass.Final)
-                    if (event.changes.any { it.isConsumed }) {
-                        consumedByDescendant = true
-                    }
+                    if (event.changes.any { it.isConsumed }) consumedByDescendant = true
                     anyPressed = event.changes.any { it.pressed }
                 }
-
-                if (!consumedByDescendant) {
-                    currentOnLyricsChromeInteraction()
-                }
+                if (!consumedByDescendant) currentOnLyricsChromeInteraction()
             }
         }
-    } else {
-        Modifier
-    }
+    } else Modifier
 
     SubcomposeLayout(
         modifier.then(if (showLyrics) Modifier.clipToBounds() else Modifier)
@@ -198,9 +190,8 @@ internal fun PlayerHero(
                 Controller()
             }
         }.single().measure(childConstraints)
-        val controllerVisibleHeight = (
-            controller.height * (1f - chromeCollapseProgress)
-            ).roundToInt().coerceAtLeast(0)
+        val controllerVisibleHeight = (controller.height * (1f - chromeCollapseProgress))
+            .roundToInt().coerceAtLeast(0)
 
         val coverHeight = (
                 constraints.maxHeight - topBar.height - timeline.height - controllerVisibleHeight

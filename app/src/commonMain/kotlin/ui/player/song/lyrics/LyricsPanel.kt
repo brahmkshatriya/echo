@@ -190,7 +190,8 @@ internal fun LyricsPanel(
         }
 
         is Lyrics.Line -> FullTimedLyrics(
-            timingIndex = timingIndex ?: remember(lyrics.lines) { LyricsTimingIndex.line(lyrics.lines) },
+            timingIndex = timingIndex
+                ?: remember(lyrics.lines) { LyricsTimingIndex.line(lyrics.lines) },
             timelineState = timelineState,
             isPlaying = isPlaying,
             userScrollEnabled = userScrollEnabled,
@@ -201,7 +202,8 @@ internal fun LyricsPanel(
         )
 
         is Lyrics.Word -> FullTimedLyrics(
-            timingIndex = timingIndex ?: remember(lyrics.lines) { LyricsTimingIndex.word(lyrics.lines) },
+            timingIndex = timingIndex
+                ?: remember(lyrics.lines) { LyricsTimingIndex.word(lyrics.lines) },
             timelineState = timelineState,
             isPlaying = isPlaying,
             userScrollEnabled = userScrollEnabled,
@@ -302,19 +304,17 @@ private fun FullTimedLyrics(
 
     LaunchedEffect(transitionGeneration) {
         if (transitionGeneration == 0 || transitionStartOffsets.isEmpty()) return@LaunchedEffect
-        val totalDurationMs = if (transitionSeeking) {
-            140
-        } else {
-            FullLyricsMotionDurationMs + FullLyricsMaxStaggerMs
-        }
+        val generation = transitionGeneration
+        val totalDurationMs =
+            if (transitionSeeking) 140 else FullLyricsMotionDurationMs + FullLyricsMaxStaggerMs
         val animation = Animatable(0f)
         animation.animateTo(
             targetValue = totalDurationMs.toFloat(),
             animationSpec = tween(totalDurationMs, easing = LinearEasing),
         ) {
-            transitionElapsedMs = value
+            if (transitionGeneration == generation) transitionElapsedMs = value
         }
-        transitionElapsedMs = totalDurationMs.toFloat()
+        if (transitionGeneration == generation) transitionElapsedMs = totalDurationMs.toFloat()
     }
 
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
@@ -621,9 +621,9 @@ private fun FullTimedLyrics(
                                         IntOffset(
                                             x = 0,
                                             y = (
-                                                absolutePositions[displayIndex] +
-                                                        transitionOffset
-                                                ).roundToInt(),
+                                                    absolutePositions[displayIndex] +
+                                                            transitionOffset
+                                                    ).roundToInt(),
                                         )
                                     },
                             ) {
@@ -651,9 +651,10 @@ private fun FullTimedLyrics(
                                                     onChromeInteraction()
                                                 } else {
                                                     onChromeInteraction()
-                                                    timelineState.positionMs = lineTiming.line.startMs
-                                                        .toFloat()
-                                                        .coerceIn(0f, timelineState.durationMs)
+                                                    timelineState.positionMs =
+                                                        lineTiming.line.startMs
+                                                            .toFloat()
+                                                            .coerceIn(0f, timelineState.durationMs)
                                                     if (autoScrollSuppressed) {
                                                         manualResyncNonce++
                                                     }
