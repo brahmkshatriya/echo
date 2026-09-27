@@ -1,0 +1,204 @@
+name: Echo nightly
+
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+  push:
+    branches: [compose]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: echo-nightly-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v4
+      - run: sdkmanager 'platforms;android-37.0' 'build-tools;36.0.0'
+      - uses: gradle/actions/setup-gradle@v6
+      - run: ./gradlew :apps:android:assembleRelease
+      - uses: actions/upload-artifact@v4
+        with:
+          name: echo-android-apk
+          path: apps/android/build/outputs/apk/release/*.apk
+          if-no-files-found: error
+          retention-days: 14
+
+  web:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v6
+      - run: ./gradlew :apps:web:wasmJsBrowserDistribution
+      - name: Package web distribution
+        run: |
+          cd apps/web/build/dist/wasmJs/productionExecutable
+          zip -r "$GITHUB_WORKSPACE/echo-web.zip" .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: echo-web
+          path: echo-web.zip
+          if-no-files-found: error
+          retention-days: 14
+
+  linux:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            arch: x64
+            appimage_arch: x86_64
+            task: packageLinuxX64ReleaseAppImage
+          - runner: ubuntu-24.04-arm
+            arch: arm64
+            appimage_arch: aarch64
+            task: packageLinuxArm64ReleaseAppImage
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v6
+      - name: Install native build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes build-essential cmake ninja-build pkg-config libdbus-1-dev \
+            libfontconfig1-dev libfreetype6-dev libgl1-mesa-dev libegl1-mesa-dev \
+            libwayland-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev \
+            libxi-dev libxinerama-dev libxss-dev libxkbcommon-dev libpng-dev \
+            zlib1g-dev patchelf
+      - name: Install SDL 3
+        run: |
+          curl --fail --location --retry 3 \
+            https://github.com/libsdl-org/SDL/releases/download/release-3.4.10/SDL3-3.4.10.tar.gz \
+            --output "$RUNNER_TEMP/SDL3-3.4.10.tar.gz"
+          echo '12b34280415ec8418c864408b93d008a20a6530687ee613d60bfbd20411f2785  '"$RUNNER_TEMP/SDL3-3.4.10.tar.gz" | sha256sum --check
+          tar -xzf "$RUNNER_TEMP/SDL3-3.4.10.tar.gz" -C "$RUNNER_TEMP"
+          dbus_arch_include="$(pkg-config --variable=libdir dbus-1)/dbus-1.0/include"
+          sudo mkdir -p /usr/lib/dbus-1.0
+          if [[ ! -e /usr/lib/dbus-1.0/include ]]; then
+            sudo ln -s "$dbus_arch_include" /usr/lib/dbus-1.0/include
+          fi
+          cmake -S "$RUNNER_TEMP/SDL3-3.4.10" -B "$RUNNER_TEMP/sdl3-build" \
+            -G Ninja -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib \
+            -DSDL_SHARED=ON -DSDL_STATIC=OFF -DSDL_TESTS=OFF
+          cmake --build "$RUNNER_TEMP/sdl3-build" --parallel 3
+          sudo cmake --install "$RUNNER_TEMP/sdl3-build"
+          sudo ldconfig
+          echo 'SDL3_LIBRARY_DIR=/usr/lib' >> "$GITHUB_ENV"
+      - name: Install appimagetool
+        env:
+          ARCH: ${{ matrix.appimage_arch }}
+        run: |
+          curl --fail --location --retry 3 \
+            "https://github.com/AppImage/appimagetool/releases/download/1.9.1/appimagetool-${ARCH}.AppImage" \
+            --output "$RUNNER_TEMP/appimagetool"
+          chmod +x "$RUNNER_TEMP/appimagetool"
+          echo "APPIMAGETOOL=$RUNNER_TEMP/appimagetool" >> "$GITHUB_ENV"
+          echo 'APPIMAGE_EXTRACT_AND_RUN=1' >> "$GITHUB_ENV"
+      - run: ./gradlew :apps:desktop:${{ matrix.task }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: echo-linux-${{ matrix.arch }}
+          path: apps/desktop/build/distributions/*.AppImage
+          if-no-files-found: error
+          retention-days: 14
+
+  windows:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v6
+      - run: .\gradlew.bat :apps:desktop:packageWindowsX64ReleaseZip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: echo-windows-x64
+          path: apps/desktop/build/distributions/*-windows-x86_64.zip
+          if-no-files-found: error
+          retention-days: 14
+
+  macos:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15-intel
+            artifact_arch: x64
+            task: packageMacosX64ReleaseDmg
+          - runner: macos-15
+            artifact_arch: arm64
+            task: packageMacosArm64ReleaseDmg
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v6
+      - run: brew install sdl3
+      - name: Configure SDL linker path
+        run: |
+          echo "SDL3_LIBRARY_DIR=$(brew --prefix sdl3)/lib" >> "$GITHUB_ENV"
+          echo "DYLD_LIBRARY_PATH=$(brew --prefix sdl3)/lib" >> "$GITHUB_ENV"
+      - run: ./gradlew :apps:desktop:${{ matrix.task }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: echo-macos-${{ matrix.artifact_arch }}
+          path: apps/desktop/build/distributions/*.dmg
+          if-no-files-found: error
+          retention-days: 14
+
+  ios:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v6
+      - name: Build unsigned iOS device app
+        run: |
+          xcodebuild -project apps/ios/iosApp.xcodeproj -scheme iosApp \
+            -configuration Release -sdk iphoneos -destination 'generic/platform=iOS' \
+            -derivedDataPath "$RUNNER_TEMP/echo-ios-build" \
+            CODE_SIGNING_ALLOWED=NO build
+      - name: Package iOS app
+        run: |
+          mkdir -p "$RUNNER_TEMP/echo-ios-package/Payload"
+          ditto "$RUNNER_TEMP/echo-ios-build/Build/Products/Release-iphoneos/Echo.app" \
+            "$RUNNER_TEMP/echo-ios-package/Payload/Echo.app"
+          ditto -c -k --sequesterRsrc --keepParent \
+            "$RUNNER_TEMP/echo-ios-package/Payload" \
+            "$GITHUB_WORKSPACE/echo-ios-arm64-unsigned.ipa"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: echo-ios-arm64-unsigned
+          path: echo-ios-arm64-unsigned.ipa
+          if-no-files-found: error
+          retention-days: 14

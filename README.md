@@ -1,13 +1,17 @@
-# you have stumbled upon the compose version of echo
-still a wip
+# WIP
+you have stumbled upon the compose version of echo
 
-## Linux AppImage
+## Project structure
+- `client`: shared Echo logic, Compose UI, resources, and platform-specific implementations.
 
-Build the optimized, stripped x86_64 AppImage with:
+The app itself is multiple Gradle application modules that depend on the `client` module.
+- `apps/android`
+- `apps/desktop` (Linux, Windows, Mac) (we don't allow JVM here)
+- `apps/web`
+- `apps/ios`
 
-```shell
-./gradlew :desktop:packageReleaseAppImage
-```
-
-The output is written to `desktop/build/distributions/Echo-<version>-x86_64.AppImage`.
-The build requires `appimagetool` and `strip` on the host.
+To run:
+- Android: `./gradlew :apps:android:runDebug`
+- Desktop: `./gradlew :apps:desktop:runDebugExecutableDesktop` (Windows: `gradlew.bat :apps:desktop:runDebugExecutableDesktop`)
+- Web: `./gradlew :apps:web:wasmJsBrowserDevelopmentRun`
+- iOS: Open `apps/ios/iosApp.xcodeproj` in Xcode

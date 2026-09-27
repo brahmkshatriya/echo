@@ -1,6 +1,5 @@
 pluginManagement {
     repositories {
-        mavenLocal()
         google()
         mavenCentral()
         gradlePluginPortal()
@@ -10,9 +9,9 @@ pluginManagement {
 dependencyResolutionManagement {
     @Suppress("UnstableApiUsage")
     repositories {
-        mavenLocal()
         google()
         mavenCentral()
+        maven("https://redirector.kotlinlang.org/maven/compose-dev")
     }
 }
 
@@ -21,8 +20,10 @@ plugins {
 }
 
 rootProject.name = "Echo"
-include(":app")
-include(":android")
-include(":desktop")
+include(":client")
+include(":apps:android")
+include(":apps:desktop")
+include(":apps:ios")
+include(":apps:web")
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")

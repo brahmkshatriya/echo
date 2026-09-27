@@ -1,11 +1,11 @@
 [versions]
-kotlin = "2.4.10"
-agp = "9.3.2"
-compose = "1.12.0-rc01"
-composeNative = "1.12.10-alpha14"
-ktor = "3.5.2"
+kotlin = "2.4.20"
+agp = "9.3.3"
+compose = "1.13.0-alpha01"
+composeNative = "1.13.0-alpha08"
+ktor = "3.6.0"
 androidxLifecycle = "2.11.0"
-landscapist = "2.11.1-alpha01"
+landscapist = "2.13.2-alpha02"
 
 #noinspection UnusedVersionCatalogEntry
 compileSdk = "37"
@@ -19,7 +19,7 @@ ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose" }
 ui-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "compose" }
 ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose" }
 
-androidx-navigation = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version = "1.1.1" }
+androidx-navigation = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version = "1.1.2" }
 androidx-lifecycle-viewmodelCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "androidxLifecycle" }
 androidx-lifecycle-runtimeCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidxLifecycle" }
 
@@ -28,13 +28,12 @@ landscapist-image = { module = "dev.brahmkshatriya.landscapist:landscapist-image
 landscapist-placeholder = { module = "dev.brahmkshatriya.landscapist:landscapist-placeholder", version.ref = "landscapist" }
 landscapist-palette = { module = "dev.brahmkshatriya.landscapist:landscapist-palette", version.ref = "landscapist" }
 
-materialKolor = { module = "dev.brahmkshatriya.material-kolor:material-kolor", version = "5.0.1" }
-hypnoticcanvas = { module = "dev.brahmkshatriya.hypnoticcanvas:lib", version = "1.0.3" }
+materialKolor = { module = "dev.brahmkshatriya.material-kolor:material-kolor", version = "5.0.2" }
+hypnoticcanvas = { module = "dev.brahmkshatriya.hypnoticcanvas:lib", version = "1.0.7" }
+kmpalette = { module = "dev.brahmkshatriya.palette:core", version = "4.0.0-beta05" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.11.0" }
 
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
-ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
-
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version = "1.13.0" }
 compose-native-desktop = { module = "dev.brahmkshatriya.compose.desktop:desktop-native", version.ref = "composeNative" }
 
