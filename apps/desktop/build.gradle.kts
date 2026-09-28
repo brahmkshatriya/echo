@@ -20,7 +20,13 @@ kotlin {
                 }
 
                 System.getProperty("os.name").startsWith("Linux", ignoreCase = true) -> {
-                    linkerOpts("-L/usr/lib")
+                    val libraryDirs =
+                        providers.environmentVariable("LINUX_NATIVE_LIBRARY_DIRS").orNull
+                            ?.split(':')
+                            ?.filter(String::isNotBlank)
+                            .orEmpty()
+                            .ifEmpty { listOf("/usr/lib") }
+                    libraryDirs.forEach { linkerOpts("-L$it") }
                 }
             }
         }
@@ -48,4 +54,11 @@ composeNativeApplication {
     categories.set(listOf("AudioVideo", "Audio", "Player"))
     startupWmClass.set("Echo")
     iconFile.set(rootProject.layout.projectDirectory.file("apps/android/src/main/ic_launcher-playstore.png"))
+
+    providers.environmentVariable("LINUX_ARM64_RUNTIME_DIR").orNull?.let {
+        linuxArm64RuntimeFiles.from(file(it))
+    }
+    if (providers.environmentVariable("LINUX_ARM64_CROSS_COMPILE").orNull == "1") {
+        stripLinuxExecutable.set(false)
+    }
 }

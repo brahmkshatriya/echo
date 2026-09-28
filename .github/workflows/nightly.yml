@@ -64,7 +64,7 @@ jobs:
             arch: x64
             appimage_arch: x86_64
             task: packageLinuxX64ReleaseAppImage
-          - runner: ubuntu-24.04-arm
+          - runner: ubuntu-24.04
             arch: arm64
             appimage_arch: aarch64
             task: packageLinuxArm64ReleaseAppImage
@@ -77,39 +77,85 @@ jobs:
           java-version: '21'
       - uses: gradle/actions/setup-gradle@v6
       - name: Install native build dependencies
+        env:
+          TARGET_ARCH: ${{ matrix.arch }}
         run: |
-          sudo apt-get update
-          sudo apt-get install --yes build-essential cmake ninja-build pkg-config libdbus-1-dev \
-            libfontconfig1-dev libfreetype6-dev libgl1-mesa-dev libegl1-mesa-dev \
-            libwayland-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev \
-            libxi-dev libxinerama-dev libxss-dev libxkbcommon-dev libpng-dev libxtst-dev \
-            zlib1g-dev patchelf
+          if [[ "$TARGET_ARCH" == "arm64" ]]; then
+            sudo dpkg --add-architecture arm64
+            sudo sed -i '/^Architectures:/d' /etc/apt/sources.list.d/ubuntu.sources
+            sudo sed -i '/^Types: deb$/a Architectures: amd64' /etc/apt/sources.list.d/ubuntu.sources
+            sudo tee /etc/apt/sources.list.d/ubuntu-arm64.sources >/dev/null <<'EOF'
+          Types: deb
+          URIs: http://ports.ubuntu.com/ubuntu-ports/
+          Suites: noble noble-updates noble-backports noble-security
+          Components: main restricted universe multiverse
+          Architectures: arm64
+          Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
+          EOF
+            sudo apt-get update
+            sudo apt-get install --yes build-essential cmake ninja-build pkg-config patchelf \
+              gcc-aarch64-linux-gnu g++-aarch64-linux-gnu \
+              libdbus-1-dev:arm64 libfontconfig1-dev:arm64 libfreetype6-dev:arm64 \
+              libgl1-mesa-dev:arm64 libegl1-mesa-dev:arm64 libwayland-dev:arm64 \
+              libx11-dev:arm64 libxext-dev:arm64 libxrandr-dev:arm64 libxcursor-dev:arm64 \
+              libxi-dev:arm64 libxinerama-dev:arm64 libxss-dev:arm64 libxkbcommon-dev:arm64 \
+              libpng-dev:arm64 libxtst-dev:arm64 zlib1g-dev:arm64
+          else
+            sudo apt-get update
+            sudo apt-get install --yes build-essential cmake ninja-build pkg-config libdbus-1-dev \
+              libfontconfig1-dev libfreetype6-dev libgl1-mesa-dev libegl1-mesa-dev \
+              libwayland-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev \
+              libxi-dev libxinerama-dev libxss-dev libxkbcommon-dev libpng-dev libxtst-dev \
+              zlib1g-dev patchelf
+          fi
       - name: Install SDL 3
+        env:
+          TARGET_ARCH: ${{ matrix.arch }}
         run: |
           curl --fail --location --retry 3 \
             https://github.com/libsdl-org/SDL/releases/download/release-3.4.10/SDL3-3.4.10.tar.gz \
             --output "$RUNNER_TEMP/SDL3-3.4.10.tar.gz"
           echo '12b34280415ec8418c864408b93d008a20a6530687ee613d60bfbd20411f2785  '"$RUNNER_TEMP/SDL3-3.4.10.tar.gz" | sha256sum --check
           tar -xzf "$RUNNER_TEMP/SDL3-3.4.10.tar.gz" -C "$RUNNER_TEMP"
-          dbus_arch_include="$(pkg-config --variable=libdir dbus-1)/dbus-1.0/include"
-          sudo mkdir -p /usr/lib/dbus-1.0
-          if [[ ! -e /usr/lib/dbus-1.0/include ]]; then
-            sudo ln -s "$dbus_arch_include" /usr/lib/dbus-1.0/include
+
+          if [[ "$TARGET_ARCH" == "arm64" ]]; then
+            export PKG_CONFIG_LIBDIR=/usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig
+            cmake -S "$RUNNER_TEMP/SDL3-3.4.10" -B "$RUNNER_TEMP/sdl3-build" \
+              -G Ninja -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
+              -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc \
+              -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ \
+              -DCMAKE_LIBRARY_PATH=/usr/lib/aarch64-linux-gnu \
+              -DCMAKE_INSTALL_PREFIX="$RUNNER_TEMP/sdl3-arm64" -DCMAKE_INSTALL_LIBDIR=lib \
+              -DSDL_SHARED=ON -DSDL_STATIC=OFF -DSDL_TESTS=OFF
+            cmake --build "$RUNNER_TEMP/sdl3-build" --parallel 3
+            cmake --install "$RUNNER_TEMP/sdl3-build"
+            echo "SDL3_LIBRARY_DIR=$RUNNER_TEMP/sdl3-arm64/lib" >> "$GITHUB_ENV"
+            echo "LINUX_ARM64_RUNTIME_DIR=$RUNNER_TEMP/sdl3-arm64/lib" >> "$GITHUB_ENV"
+            echo 'LINUX_ARM64_CROSS_COMPILE=1' >> "$GITHUB_ENV"
+            echo "LINUX_NATIVE_LIBRARY_DIRS=$RUNNER_TEMP/sdl3-arm64/lib:/usr/lib/aarch64-linux-gnu" >> "$GITHUB_ENV"
+          else
+            dbus_arch_include="$(pkg-config --variable=libdir dbus-1)/dbus-1.0/include"
+            sudo mkdir -p /usr/lib/dbus-1.0
+            if [[ ! -e /usr/lib/dbus-1.0/include ]]; then
+              sudo ln -s "$dbus_arch_include" /usr/lib/dbus-1.0/include
+            fi
+            cmake -S "$RUNNER_TEMP/SDL3-3.4.10" -B "$RUNNER_TEMP/sdl3-build" \
+              -G Ninja -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib \
+              -DSDL_SHARED=ON -DSDL_STATIC=OFF -DSDL_TESTS=OFF
+            cmake --build "$RUNNER_TEMP/sdl3-build" --parallel 3
+            sudo cmake --install "$RUNNER_TEMP/sdl3-build"
+            sudo ldconfig
+            echo 'SDL3_LIBRARY_DIR=/usr/lib' >> "$GITHUB_ENV"
+            echo 'LINUX_NATIVE_LIBRARY_DIRS=/usr/lib:/usr/lib/x86_64-linux-gnu' >> "$GITHUB_ENV"
           fi
-          cmake -S "$RUNNER_TEMP/SDL3-3.4.10" -B "$RUNNER_TEMP/sdl3-build" \
-            -G Ninja -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib \
-            -DSDL_SHARED=ON -DSDL_STATIC=OFF -DSDL_TESTS=OFF
-          cmake --build "$RUNNER_TEMP/sdl3-build" --parallel 3
-          sudo cmake --install "$RUNNER_TEMP/sdl3-build"
-          sudo ldconfig
-          echo 'SDL3_LIBRARY_DIR=/usr/lib' >> "$GITHUB_ENV"
       - name: Install appimagetool
         env:
           ARCH: ${{ matrix.appimage_arch }}
         run: |
           curl --fail --location --retry 3 \
-            "https://github.com/AppImage/appimagetool/releases/download/1.9.1/appimagetool-${ARCH}.AppImage" \
+            "https://github.com/AppImage/appimagetool/releases/download/1.9.1/appimagetool-x86_64.AppImage" \
             --output "$RUNNER_TEMP/appimagetool"
           chmod +x "$RUNNER_TEMP/appimagetool"
           echo "APPIMAGETOOL=$RUNNER_TEMP/appimagetool" >> "$GITHUB_ENV"
