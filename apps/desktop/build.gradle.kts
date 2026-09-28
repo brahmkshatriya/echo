@@ -27,6 +27,7 @@ kotlin {
                             .orEmpty()
                             .ifEmpty { listOf("/usr/lib") }
                     libraryDirs.forEach { linkerOpts("-L$it") }
+                    linkerOpts("-lEGL")
                 }
             }
         }
