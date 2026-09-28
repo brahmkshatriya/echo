@@ -1,8 +1,6 @@
 name: Echo nightly
 
 on:
-  schedule:
-    - cron: '0 2 * * *'
   workflow_dispatch:
   push:
     branches: [compose]
@@ -84,7 +82,7 @@ jobs:
           sudo apt-get install --yes build-essential cmake ninja-build pkg-config libdbus-1-dev \
             libfontconfig1-dev libfreetype6-dev libgl1-mesa-dev libegl1-mesa-dev \
             libwayland-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev \
-            libxi-dev libxinerama-dev libxss-dev libxkbcommon-dev libpng-dev \
+            libxi-dev libxinerama-dev libxss-dev libxkbcommon-dev libpng-dev libxtst-dev \
             zlib1g-dev patchelf
       - name: Install SDL 3
         run: |
