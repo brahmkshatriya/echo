@@ -3,7 +3,6 @@ package dev.brahmkshatriya.echo.app.ui.player
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.hoverable
@@ -21,11 +20,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilledTonalIconToggleButton
 import androidx.compose.material3.Icon
@@ -50,11 +50,8 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
@@ -172,38 +169,22 @@ internal fun CompactPlayPauseButton(modifier: Modifier = Modifier) {
     val backgroundColor = colorScheme.primary.copy(alpha = 0.33f)
 
     Box(
-        modifier = modifier.requiredSize(40.dp),
+        modifier = modifier
+            .size(46.dp)
+            .background(backgroundColor, CircleShape),
         contentAlignment = Alignment.Center,
     ) {
-        Canvas(Modifier.fillMaxSize()) {
-            val outerRadius = 23.dp.toPx()
-            drawCircle(
-                color = backgroundColor,
-                radius = outerRadius,
-            )
+        CircularProgressIndicator(
+            progress = { progress },
+            modifier = Modifier.size(44.5.dp),
+            color = progressColor,
+            strokeWidth = 1.5.dp,
+            trackColor = Color.Transparent,
+            strokeCap = StrokeCap.Round,
+            gapSize = 0.dp,
+        )
 
-            if (progress > 0f) {
-                val strokeWidth = 1.5.dp.toPx()
-                val progressRadius = 21.5.dp.toPx()
-                drawArc(
-                    color = progressColor,
-                    startAngle = -90f,
-                    sweepAngle = progress * 360f,
-                    useCenter = false,
-                    topLeft = Offset(
-                        center.x - progressRadius,
-                        center.y - progressRadius,
-                    ),
-                    size = Size(
-                        progressRadius * 2f,
-                        progressRadius * 2f,
-                    ),
-                    style = Stroke(width = strokeWidth, cap = StrokeCap.Round),
-                )
-            }
-        }
-
-        PlayPauseButton(Modifier.fillMaxSize())
+        PlayPauseButton(Modifier.size(40.dp))
     }
 }
 
@@ -612,8 +593,7 @@ private fun PlayerSlider(
         trackCornerSize = Dp.Unspecified,
         trackInsideCornerSize = 2.dp,
         stopIndicatorSize = 3.dp,
-        thumbSize = DpSize(4.dp, 32.dp),
-        thumbTrackGap = 3.dp,
+        thumbSize = DpSize(4.dp, 24.dp),
         activeColor = colorScheme.primary,
         inactiveColor = colorScheme.primary.copy(alpha = 0.25f),
     )
@@ -671,7 +651,7 @@ fun VolumeAdjuster() {
                 squiggleAmplitude = 0f,
                 trackStrokeWidth = 4.dp,
                 draggedTrackStrokeWidth = 8.dp,
-                thumbSize = DpSize(4.dp, 28.dp),
+                thumbSize = DpSize(4.dp, 20.dp),
                 activeColor = colorScheme.primary,
                 inactiveColor = colorScheme.primary.copy(0.25f),
             )

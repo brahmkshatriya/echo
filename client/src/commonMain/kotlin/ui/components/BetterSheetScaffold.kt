@@ -44,6 +44,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastMap
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.NavigationEventTransitionState
@@ -106,6 +107,59 @@ fun BetterSheetScaffold(
     val animatedBottomPadding by animateDpAsState(bottomPadding, tween())
     val newPeekHeight = betterSheet.peekHeight + animatedBottomPadding
 
+    BetterSheetBackHandler(betterSheet)
+
+    Layout(contents = listOf({
+        BottomSheetScaffold(
+            sheetContent = { Box(Modifier.fillMaxSize()) { sheetContent() } },
+            modifier = modifier,
+            scaffoldState = betterSheet.scaffoldState,
+            sheetPeekHeight = newPeekHeight,
+            sheetShape = sheetShape,
+            sheetContainerColor = sheetContainerColor,
+            sheetContentColor = sheetContentColor,
+            sheetDragHandle = sheetDragHandle,
+            sheetMaxWidth = sheetMaxWidth,
+            sheetShadowElevation = sheetShadowElevation,
+            sheetTonalElevation = sheetTonalElevation,
+            sheetSwipeEnabled = sheetSwipeEnabled,
+            topBar = topBar,
+            snackbarHost = snackBarHost,
+            containerColor = containerColor,
+            contentColor = contentColor,
+            content = content
+        )
+    })) { (measurables), constraints ->
+        val layoutHeight = constraints.maxHeight
+        val placeables = measurables.fastMap { it.measure(constraints) }
+
+        val midPoint = layoutHeight - newPeekHeight.roundToPx()
+        betterSheet.midPointState.intValue = midPoint
+
+        layout(constraints.maxWidth, constraints.maxHeight) {
+            val offset = runCatching { sheetState.requireOffset() }.getOrElse {
+                when (sheetState.currentValue) {
+                    Expanded -> 0f
+                    PartiallyExpanded -> midPoint.toFloat()
+                    Hidden -> layoutHeight.toFloat()
+                }
+            }
+            betterSheet.offsetState.floatValue = offset
+
+            val progress = if (offset < midPoint) 1f - offset / midPoint
+            else (midPoint - offset) / (layoutHeight - midPoint)
+
+            betterSheet.progressState.floatValue = progress
+            betterSheet.isExpandedState.value = progress > 0.1f
+
+            placeables.fastForEach { it.placeRelative(0, 0) }
+        }
+    }
+}
+
+@Composable
+private fun BetterSheetBackHandler(betterSheet: BetterSheet) {
+    val sheetState = betterSheet.sheetState
     val isExpanded by betterSheet.isExpandedState
     val navigationEventState = rememberNavigationEventState(
         currentInfo = if (isExpanded) BottomSheet else Content,
@@ -138,53 +192,6 @@ fun BetterSheetScaffold(
             maxOf(progress, completeAnimatable.value)
         }.collectLatest {
             betterSheet.backProgressState.floatValue = it
-        }
-    }
-
-    Layout(contents = listOf({
-        BottomSheetScaffold(
-            sheetContent = { Box(Modifier.fillMaxSize()) { sheetContent() } },
-            modifier = modifier,
-            scaffoldState = betterSheet.scaffoldState,
-            sheetPeekHeight = newPeekHeight,
-            sheetShape = sheetShape,
-            sheetContainerColor = sheetContainerColor,
-            sheetContentColor = sheetContentColor,
-            sheetDragHandle = sheetDragHandle,
-            sheetMaxWidth = sheetMaxWidth,
-            sheetShadowElevation = sheetShadowElevation,
-            sheetTonalElevation = sheetTonalElevation,
-            sheetSwipeEnabled = sheetSwipeEnabled,
-            topBar = topBar,
-            snackbarHost = snackBarHost,
-            containerColor = containerColor,
-            contentColor = contentColor,
-            content = content
-        )
-    })) { (measurables), constraints ->
-        val layoutHeight = constraints.maxHeight
-        val placeables = measurables.fastMap { it.measure(constraints) }
-
-        val midPoint = layoutHeight - newPeekHeight.roundToPx()
-        betterSheet.midPointState.intValue = midPoint
-
-        val offset = runCatching { sheetState.requireOffset() }.getOrElse {
-            when (sheetState.currentValue) {
-                Expanded -> 0f
-                PartiallyExpanded -> midPoint.toFloat()
-                Hidden -> layoutHeight.toFloat()
-            }
-        }
-        betterSheet.offsetState.floatValue = offset
-
-        val progress = if (offset < midPoint) 1f - offset / midPoint
-        else (midPoint - offset) / (layoutHeight - midPoint)
-
-        betterSheet.progressState.floatValue = progress
-        betterSheet.isExpandedState.value = progress > 0.1f
-
-        layout(constraints.maxWidth, constraints.maxHeight) {
-            placeables.fastMap { it.placeRelative(0, 0) }
         }
     }
 }

@@ -8,9 +8,11 @@ import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.systemGestures
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.material3.SheetValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -30,6 +32,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
@@ -44,7 +49,10 @@ import dev.brahmkshatriya.echo.app.ui.components.paddingMask
 import dev.brahmkshatriya.echo.app.ui.player.song.maxSongCoverSize
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
+import kotlin.math.abs
 
 val LocalPlayerPadding = compositionLocalOf { PaddingValues.Zero }
 val LocalPlayerSheet = staticCompositionLocalOf<BetterSheet?> { null }
@@ -132,6 +140,49 @@ fun Modifier.applyPlayerTranslation() = run {
     }
 }
 
+private fun Modifier.reserveSystemGestureEdges(
+    leftInsetPx: Int,
+    rightInsetPx: Int,
+): Modifier = pointerInput(leftInsetPx, rightInsetPx) {
+    awaitEachGesture {
+        val down = awaitFirstDown(
+            requireUnconsumed = false,
+            pass = PointerEventPass.Initial,
+        )
+        val fromLeftEdge = leftInsetPx > 0 && down.position.x <= leftInsetPx
+        val fromRightEdge = rightInsetPx > 0 && down.position.x >= size.width - rightInsetPx
+        if (!fromLeftEdge && !fromRightEdge) return@awaitEachGesture
+
+        val start = down.position
+        var claimedForSystemBack = false
+
+        while (true) {
+            val event = awaitPointerEvent(PointerEventPass.Initial)
+            val change = event.changes.firstOrNull { it.id == down.id } ?: break
+            if (!change.pressed) break
+
+            if (!claimedForSystemBack) {
+                val delta = change.position - start
+                val horizontalDrag = abs(delta.x) > viewConfiguration.touchSlop &&
+                        abs(delta.x) > abs(delta.y)
+                val movingInward =
+                    (fromLeftEdge && delta.x > 0f) || (fromRightEdge && delta.x < 0f)
+
+                if (horizontalDrag && movingInward) {
+                    claimedForSystemBack = true
+                } else if (
+                    abs(delta.y) > viewConfiguration.touchSlop ||
+                    (abs(delta.x) > viewConfiguration.touchSlop && !movingInward)
+                ) break
+            }
+
+            if (claimedForSystemBack) {
+                event.changes.forEach { it.consume() }
+            }
+        }
+    }
+}
+
 @Composable
 fun PlayerBottomSheet(
     betterSheet: BetterSheet,
@@ -144,8 +195,12 @@ fun PlayerBottomSheet(
     val actualBottomPadding = safePadding.calculateBottomPadding() + bottomPadding
 
     val layoutDirection = LocalLayoutDirection.current
+    val density = LocalDensity.current
     val startPadding = startPadding + safePadding.calculateStartPadding(layoutDirection)
     val endPadding = safePadding.calculateEndPadding(layoutDirection)
+    val systemGestureInsets = WindowInsets.systemGestures
+    val leftSystemGestureInset = systemGestureInsets.getLeft(density, layoutDirection)
+    val rightSystemGestureInset = systemGestureInsets.getRight(density, layoutDirection)
 
     CompositionLocalProvider(
         LocalPlayerSheet provides betterSheet,
@@ -162,10 +217,26 @@ fun PlayerBottomSheet(
                 pageInteractionLocked[pagerState.currentPage] == true
             }
         }
+        val backGestureActive by remember {
+            derivedStateOf { betterSheet.backProgressState.floatValue > 0f }
+        }
         val pagerUserScrollEnabled by remember {
             derivedStateOf {
-                !interactionLocked && pageScrolledToTop[pagerState.currentPage] != false
+                !interactionLocked &&
+                        !backGestureActive &&
+                        pageScrolledToTop[pagerState.currentPage] != false
             }
+        }
+
+        LaunchedEffect(pagerState, betterSheet) {
+            snapshotFlow { betterSheet.backProgressState.floatValue > 0f }
+                .distinctUntilChanged()
+                .filter { it }
+                .collectLatest {
+                    if (pagerState.isScrollInProgress || pagerState.currentPageOffsetFraction != 0f) {
+                        pagerState.scrollToPage(pagerState.settledPage)
+                    }
+                }
         }
 
         val modifier = Modifier.graphicsLayer {
@@ -184,11 +255,17 @@ fun PlayerBottomSheet(
                     ProvidePlayerControls(pagerState) {
                         HorizontalPager(
                             pagerState,
-                            Modifier.fillMaxSize(),
+                            Modifier
+                                .fillMaxSize()
+                                .reserveSystemGestureEdges(
+                                    leftInsetPx = leftSystemGestureInset,
+                                    rightInsetPx = rightSystemGestureInset,
+                                ),
                             userScrollEnabled = pagerUserScrollEnabled,
                         ) { page ->
                             Box(Modifier.fillMaxSize().blurFadePagerTransition(pagerState, page) {
-                                betterSheet.progressState.floatValue.coerceIn(0f, 1f)
+                                if (betterSheet.backProgressState.floatValue > 0f) 0f
+                                else betterSheet.progressState.floatValue.coerceIn(0f, 1f)
                             }) {
                                 PlayerItem(
                                     i = page,

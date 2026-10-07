@@ -26,6 +26,7 @@ import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -117,8 +118,10 @@ fun App() = EchoTheme {
                 bottom = (animatedBottomPadding + animatedSheetPadding)
                     .coerceAtLeast(0.dp),
             )
-        val isExpanded = LocalPlayerSheet.current?.isExpandedState?.value ?: false
-        BetterNavDisplay(backStack, !isExpanded, modifier) {
+        val navBackEnabled = remember(betterSheet) {
+            derivedStateOf { !betterSheet.isExpandedState.value }
+        }
+        BetterNavDisplay(backStack, navBackEnabled, modifier) {
             entry<Main> { it.route.content() }
             entry<Media> { Test(it.toString()) }
         }

@@ -92,8 +92,20 @@ fun FastScrollbar(
     scrollInProgress: Boolean,
     orientation: Orientation,
     onThumbMoved: (Float) -> Unit,
+    onThumbDragFinished: (() -> Unit)? = null,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
+    val dragged by interactionSource.collectIsDraggedAsState()
+    var wasDragged by remember { mutableStateOf(false) }
+    val currentOnThumbDragFinished by rememberUpdatedState(onThumbDragFinished)
+    LaunchedEffect(dragged) {
+        if (dragged) {
+            wasDragged = true
+        } else if (wasDragged) {
+            wasDragged = false
+            currentOnThumbDragFinished?.invoke()
+        }
+    }
     val hitTargetModifier = when (orientation) {
         Vertical -> Modifier.width(ScrollbarHitTargetThickness)
         Horizontal -> Modifier.height(ScrollbarHitTargetThickness)

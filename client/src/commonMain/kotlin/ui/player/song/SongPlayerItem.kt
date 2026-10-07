@@ -35,6 +35,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,9 +56,12 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.navigationevent.NavigationEventTransitionState
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
@@ -109,6 +113,7 @@ fun SongPlayerItem(
 ) {
     val controls = LocalPlayerControls.current
     val pagerState = LocalPlayerPagerState.current
+    val scope = rememberCoroutineScope()
     val isCurrentItem = pagerState == null || pagerState.currentPage == i
     val lyricsSelections = rememberLyricsSelections()
     val timelineState = rememberPlayerTimelineState(
@@ -117,7 +122,9 @@ fun SongPlayerItem(
         running = isCurrentItem && controls?.isPlaying != false,
         onFinished = {
             if (controls?.repeatEnabled != true && pagerState != null) {
-                pagerState.playNext(controls?.shuffleEnabled == true)
+                scope.launch {
+                    pagerState.playNext(controls?.shuffleEnabled == true)
+                }
                 true
             } else false
         },
@@ -128,13 +135,21 @@ fun SongPlayerItem(
             Modifier.onGloballyPositioned { playerBoundsInRoot = it.boundsInRoot() }
         ) {
             val playerSheet = LocalPlayerSheet.current
-            val scope = rememberCoroutineScope()
             val backStack = LocalMainBackStack.current
             val cardColors = CardDefaults.cardColors(
                 containerColor = colorScheme.surface,
                 contentColor = colorScheme.onSurface
             )
             val listState = rememberLazyListState()
+            val bottomBarKey = remember(i) { "player-bottom-bar-$i" }
+            val isBottomBarSticky by remember(bottomBarKey) {
+                derivedStateOf {
+                    val layoutInfo = listState.layoutInfo
+                    val item =
+                        layoutInfo.visibleItemsInfo.firstOrNull { it.key == bottomBarKey }
+                    item != null && item.offset <= 0 && listState.firstVisibleItemIndex >= item.index
+                }
+            }
             var fallbackShowLyrics by remember { mutableStateOf(false) }
             val sharedLyricsVisible = LocalPlayerLyricsVisible.current
             val showLyrics = sharedLyricsVisible?.value ?: fallbackShowLyrics
@@ -144,10 +159,11 @@ fun SongPlayerItem(
                 sharedLyricsChromeCollapsed?.value ?: fallbackLyricsChromeCollapsed
             val setLyricsChromeCollapsed: (Boolean) -> Unit = { collapsed ->
                 if (isCurrentItem) {
+                    val effectiveCollapsed = collapsed && !isBottomBarSticky
                     if (sharedLyricsChromeCollapsed != null) {
-                        sharedLyricsChromeCollapsed.value = collapsed
+                        sharedLyricsChromeCollapsed.value = effectiveCollapsed
                     } else {
-                        fallbackLyricsChromeCollapsed = collapsed
+                        fallbackLyricsChromeCollapsed = effectiveCollapsed
                     }
                 }
             }
@@ -166,16 +182,23 @@ fun SongPlayerItem(
                     onLyricsChromeInteraction()
                 }
             }
+            LaunchedEffect(isBottomBarSticky) {
+                if (isBottomBarSticky && lyricsChromeCollapsed) {
+                    setLyricsChromeCollapsed(false)
+                }
+            }
             LaunchedEffect(
                 showLyrics,
                 lyricsChromeInteractionNonce,
                 timelineState.isSeeking,
                 isCurrentItem,
+                isBottomBarSticky,
             ) {
                 if (
                     !isCurrentItem ||
                     !showLyrics ||
-                    timelineState.isSeeking
+                    timelineState.isSeeking ||
+                    isBottomBarSticky
                 ) return@LaunchedEffect
 
                 delay(3_000.milliseconds)
@@ -375,8 +398,8 @@ fun SongPlayerItem(
             }
             playerSheet?.let { sheet ->
                 LaunchedEffect(sheet, listState) {
-                    snapshotFlow { sheet.progressState.floatValue }.collect { progress ->
-                        if (progress < 0.75f && listState.canScrollBackward) {
+                    snapshotFlow { sheet.progressState.floatValue < 0.75f }.collect { shouldReset ->
+                        if (shouldReset && listState.canScrollBackward) {
                             withFrameNanos { }
                             listState.scrollToItem(0)
                         }
@@ -386,15 +409,6 @@ fun SongPlayerItem(
 
             val selectorProgress = selectorRevealProgress.value
             run {
-                val bottomBarKey = remember(i) { "player-bottom-bar-$i" }
-                val isBottomBarSticky by remember(bottomBarKey) {
-                    derivedStateOf {
-                        val layoutInfo = listState.layoutInfo
-                        val item =
-                            layoutInfo.visibleItemsInfo.firstOrNull { it.key == bottomBarKey }
-                        item != null && item.offset <= 0 && listState.firstVisibleItemIndex >= item.index
-                    }
-                }
                 val playerViewportHeightPx = constraints.maxHeight
                 val transformModifier = Modifier.expandedListItemTransform(playerSheet) {
                     playerViewportHeightPx
@@ -402,10 +416,51 @@ fun SongPlayerItem(
                 val heroHeight = (maxHeight - topPadding - bottomPadding - playerBottomBarHeight)
                     .coerceAtLeast(0.dp)
                 val coverViewportWidth = maxWidth
+                fun heroSnapTarget(directionY: Float): Int? {
+                    val hero = listState.layoutInfo.visibleItemsInfo.firstOrNull {
+                        it.key == "player-hero-$i"
+                    } ?: return null
+                    val offset = listState.firstVisibleItemScrollOffset
+                    if (listState.firstVisibleItemIndex != hero.index ||
+                        offset <= 0 || hero.size <= 0
+                    ) return null
+
+                    return when {
+                        directionY < 0f -> 1
+                        directionY > 0f -> 0
+                        offset >= hero.size / 8 -> 1
+                        else -> 0
+                    }
+                }
+                val heroSnapConnection = remember(listState, i) {
+                    object : NestedScrollConnection {
+                        override suspend fun onPreFling(available: Velocity): Velocity {
+                            val target = heroSnapTarget(available.y) ?: return Velocity.Zero
+                            listState.animateScrollToItem(target)
+                            return available
+                        }
+
+                        override suspend fun onPostFling(
+                            consumed: Velocity,
+                            available: Velocity,
+                        ): Velocity {
+                            val directionY = when {
+                                consumed.y != 0f -> consumed.y
+                                else -> available.y
+                            }
+                            heroSnapTarget(directionY)?.let { target ->
+                                listState.animateScrollToItem(target)
+                            }
+                            return Velocity.Zero
+                        }
+                    }
+                }
                 LazyColumn(
-                    Modifier.paddingMask(safeDrawing) {
-                        playerSheet?.progressState?.floatValue ?: 0f
-                    },
+                    Modifier
+                        .nestedScroll(heroSnapConnection)
+                        .paddingMask(safeDrawing) {
+                            playerSheet?.progressState?.floatValue ?: 0f
+                        },
                     state = listState,
                     contentPadding = PaddingValues(
                         top = topPadding,
@@ -537,6 +592,10 @@ fun SongPlayerItem(
                 CollapsedPlayer(i = i, showCover = showLyrics)
                 val scrollbarItemSizes = remember { PlayerScrollbarItemSizes() }
                 val scrollbarState = rememberPlayerScrollbarState(listState, scrollbarItemSizes)
+                val scrollbarThumbMover =
+                    rememberPlayerScrollbarThumbMover(listState, scrollbarItemSizes)
+                var previousScrollbarTravel by remember(i) { mutableStateOf<Float?>(null) }
+                var scrollbarDirectionY by remember(i) { mutableFloatStateOf(0f) }
                 FastScrollbar(
                     modifier = transformModifier
                         .fillMaxHeight()
@@ -551,7 +610,24 @@ fun SongPlayerItem(
                     state = scrollbarState,
                     scrollInProgress = listState.isScrollInProgress,
                     orientation = Orientation.Vertical,
-                    onThumbMoved = rememberPlayerScrollbarThumbMover(listState, scrollbarItemSizes)
+                    onThumbMoved = { travel ->
+                        previousScrollbarTravel?.let { previous ->
+                            val delta = travel - previous
+                            if (delta != 0f) {
+                                scrollbarDirectionY = if (delta < 0f) 1f else -1f
+                            }
+                        }
+                        previousScrollbarTravel = travel
+                        scrollbarThumbMover(travel)
+                    },
+                    onThumbDragFinished = {
+                        val directionY = scrollbarDirectionY
+                        previousScrollbarTravel = null
+                        scrollbarDirectionY = 0f
+                        heroSnapTarget(directionY)?.let { target ->
+                            scope.launch { listState.animateScrollToItem(target) }
+                        }
+                    },
                 )
             }
             if (selectorMounted) {

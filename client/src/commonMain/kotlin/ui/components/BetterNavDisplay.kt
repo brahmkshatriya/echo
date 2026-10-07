@@ -9,6 +9,7 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.State
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.EntryProviderScope
@@ -51,7 +52,7 @@ val transitionSpec = run {
 @Composable
 fun BetterNavDisplay(
     backStack: NavBackStack<NavKey>,
-    isBackEnabled: Boolean,
+    isBackEnabled: State<Boolean>,
     modifier: Modifier = Modifier,
     entryProviderBuilder: EntryProviderScope<NavKey>.() -> Unit,
 ) {
@@ -70,13 +71,19 @@ fun BetterNavDisplay(
         sceneState.previousScenes.map { SceneInfo(it) }
     )
 
-    if (LocalNavigationEventDispatcherOwner.current != null) NavigationBackHandler(
-        state = navigationEventState,
-        isBackEnabled = isBackEnabled && scene.previousEntries.isNotEmpty(),
-        onBackCompleted = {
-            repeat(entries.size - scene.previousEntries.size) { backStack.removeLastOrNull() }
-        },
-    )
+    if (LocalNavigationEventDispatcherOwner.current != null) {
+        BackEnabledGate(isBackEnabled) { enabled ->
+            NavigationBackHandler(
+                state = navigationEventState,
+                isBackEnabled = enabled && scene.previousEntries.isNotEmpty(),
+                onBackCompleted = {
+                    repeat(entries.size - scene.previousEntries.size) {
+                        backStack.removeLastOrNull()
+                    }
+                },
+            )
+        }
+    }
     CompositionLocalProvider(LocalMainBackStack provides backStack) {
         NavDisplay(
             sceneState,
@@ -87,4 +94,11 @@ fun BetterNavDisplay(
             predictivePopTransitionSpec = { transitionSpec }
         )
     }
+}
+@Composable
+private fun BackEnabledGate(
+    isBackEnabled: State<Boolean>,
+    content: @Composable (Boolean) -> Unit,
+) {
+    content(isBackEnabled.value)
 }

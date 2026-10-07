@@ -6,9 +6,9 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.DragInteraction
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
@@ -76,7 +76,7 @@ fun SquigglySlider(
     trackInsideCornerSize: Dp = 2.dp,
     stopIndicatorSize: Dp = 4.dp,
     thumbSize: DpSize = DpSize(4.dp, 32.dp),
-    thumbTrackGap: Dp = 4.dp,
+    thumbTrackGap: Dp = 3.dp,
     activeColor: Color = MaterialTheme.colorScheme.primary,
     inactiveColor: Color = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f),
     stopIndicatorColor: Color = activeColor,

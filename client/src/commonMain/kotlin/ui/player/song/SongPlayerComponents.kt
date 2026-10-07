@@ -11,6 +11,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -64,6 +66,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import dev.brahmkshatriya.echo.app.platform.hasTouchInput
 import dev.brahmkshatriya.echo.app.ui.components.BetterImage
@@ -111,6 +114,35 @@ private enum class PlayerHeroSlot {
     CoverOrLyrics,
     Timeline,
     Controller,
+}
+
+private class PlayerHeroContentState(
+    val showLyrics: Boolean,
+    val lyrics: Lyrics?,
+    val timingIndex: LyricsTimingIndex?,
+) {
+    override fun equals(other: Any?): Boolean {
+        if (other !is PlayerHeroContentState || showLyrics != other.showLyrics) return false
+        if (!showLyrics) return true
+        return lyrics === other.lyrics && timingIndex === other.timingIndex
+    }
+
+    override fun hashCode(): Int = if (!showLyrics) 0 else {
+        31 + if (lyrics == null) 0 else 1
+    }
+}
+
+private class LyricsBarContentState(
+    val lyricsVisible: Boolean,
+    val selectedLyrics: LyricsSelectionItem?,
+) {
+    override fun equals(other: Any?): Boolean =
+        other is LyricsBarContentState &&
+                lyricsVisible == other.lyricsVisible &&
+                selectedLyrics === other.selectedLyrics
+
+    override fun hashCode(): Int =
+        31 * lyricsVisible.hashCode() + (selectedLyrics?.title?.hashCode() ?: 0)
 }
 
 @Composable
@@ -205,26 +237,43 @@ internal fun PlayerHero(
         val coverVerticalPadding = ((coverHeightDp - coverMaxSize) / 2)
             .coerceAtLeast(songCoverVerticalPadding.dp)
         val cover = subcompose(PlayerHeroSlot.CoverOrLyrics) {
+            val heroContentState = PlayerHeroContentState(
+                showLyrics = showLyrics,
+                lyrics = lyrics,
+                timingIndex = lyricsTimingIndex,
+            )
             AnimatedContent(
-                targetState = showLyrics,
+                targetState = heroContentState,
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center,
                 transitionSpec = {
-                    val animation = tween<Float>(
-                        LyricsModeTransitionDurationMs,
-                        easing = FastOutSlowInEasing,
-                    )
-                    val enter = fadeIn(animation) + scaleIn(animation, 0.96f)
-                    val exit = fadeOut(tween(LyricsModeTransitionDurationMs / 2)) +
-                            scaleOut(animation, 1.04f)
-                    enter togetherWith exit
+                    if (initialState.showLyrics && targetState.showLyrics) {
+                        val sourceAnimation = tween<IntOffset>(
+                            LyricsTransitionDurationMs,
+                            easing = FastOutSlowInEasing,
+                        )
+                        val enter = fadeIn(tween(LyricsTransitionDurationMs)) +
+                                slideInVertically(sourceAnimation) { height -> height / 20 }
+                        val exit = fadeOut(tween(LyricsTransitionDurationMs / 2)) +
+                                slideOutVertically(sourceAnimation) { height -> -height / 32 }
+                        enter togetherWith exit
+                    } else {
+                        val animation = tween<Float>(
+                            LyricsModeTransitionDurationMs,
+                            easing = FastOutSlowInEasing,
+                        )
+                        val enter = fadeIn(animation) + scaleIn(animation, 0.96f)
+                        val exit = fadeOut(tween(LyricsModeTransitionDurationMs / 2)) +
+                                scaleOut(animation, 1.04f)
+                        enter togetherWith exit
+                    }
                 },
-            ) { lyricsVisible ->
-                if (lyricsVisible) {
-                    if (lyrics != null) {
+            ) { state ->
+                if (state.showLyrics) {
+                    if (state.lyrics != null) {
                         LyricsPanel(
-                            lyrics = lyrics,
-                            timingIndex = lyricsTimingIndex,
+                            lyrics = state.lyrics,
+                            timingIndex = state.timingIndex,
                             userScrollEnabled = userScrollEnabled,
                             chromeCollapsed = collapseTimelineRowsForLyrics,
                             onChromeInteraction = currentOnLyricsChromeInteraction,
@@ -480,15 +529,19 @@ private fun LyricsBottomBar(
                 )
         ) {
             Crossfade(
-                targetState = lyricsVisible,
+                targetState = LyricsBarContentState(lyricsVisible, selectedLyrics),
                 animationSpec = tween(LyricsTransitionDurationMs)
-            ) { modeVisible ->
-                if (modeVisible) {
-                    LyricsSelectionPillContent(selectedLyrics)
-                } else if (selectedLyrics != null) LyricsTicker(
-                    lyrics = selectedLyrics.lyrics,
-                    timelineState = timelineState,
-                ) else NoLyricsTicker()
+            ) { state ->
+                if (state.lyricsVisible) {
+                    LyricsSelectionPillContent(state.selectedLyrics)
+                } else if (state.selectedLyrics != null) {
+                    LyricsTicker(
+                        lyrics = state.selectedLyrics.lyrics,
+                        timelineState = timelineState,
+                    )
+                } else {
+                    NoLyricsTicker()
+                }
             }
         }
 

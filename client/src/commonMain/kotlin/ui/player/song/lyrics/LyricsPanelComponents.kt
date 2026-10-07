@@ -29,11 +29,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.withSaveLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -110,31 +115,115 @@ internal fun FullLyricsTimelineGapIndicator(
 internal fun Modifier.lyricsEdgeFade(
     topFadeHeight: Dp = 64.dp,
     bottomFadeHeight: Dp = topFadeHeight,
-): Modifier =
-    graphicsLayer {
-        compositingStrategy = CompositingStrategy.Offscreen
-    }.drawWithCache {
-        val topFraction =
-            if (size.height > 0f) (topFadeHeight.toPx() / size.height).coerceIn(0f, 0.5f) else 0f
-        val bottomFraction =
-            if (size.height > 0f) (bottomFadeHeight.toPx() / size.height).coerceIn(0f, 0.5f) else 0f
-        val mask = Brush.verticalGradient(
-            colorStops = arrayOf(
-                0f to Color.Transparent,
-                topFraction to Color.Black,
-                (1f - bottomFraction) to Color.Black,
-                1f to Color.Transparent
-            )
+): Modifier = graphicsLayer {
+    compositingStrategy = CompositingStrategy.Offscreen
+}.drawWithCache {
+    val top = topFadeHeight.toPx().coerceIn(0f, size.height)
+    val bottom = bottomFadeHeight.toPx().coerceIn(0f, size.height)
+    val topMask = if (top > 0f) {
+        Brush.verticalGradient(
+            colors = listOf(Color.Transparent, Color.Black),
+            startY = 0f,
+            endY = top,
         )
+    } else null
+    val bottomMask = if (bottom > 0f) {
+        Brush.verticalGradient(
+            colors = listOf(Color.Black, Color.Transparent),
+            startY = size.height - bottom,
+            endY = size.height,
+        )
+    } else null
 
-        onDrawWithContent {
-            drawContent()
+    onDrawWithContent {
+        drawContent()
+
+        if (top > 0f) {
             drawRect(
-                brush = mask,
-                blendMode = BlendMode.DstIn
+                brush = topMask!!,
+                size = Size(size.width, top),
+                blendMode = BlendMode.DstIn,
+            )
+        }
+
+        if (bottom > 0f) {
+            val topY = size.height - bottom
+            drawRect(
+                brush = bottomMask!!,
+                topLeft = Offset(0f, topY),
+                size = Size(size.width, bottom),
+                blendMode = BlendMode.DstIn,
             )
         }
     }
+}
+
+internal fun Modifier.lyricsItemEdgeFade(
+    itemTopPx: () -> Float,
+    viewportHeightPx: () -> Float,
+    topFadePx: Float,
+    bottomFadePx: Float,
+): Modifier = drawWithCache {
+    val layerBounds = Rect(Offset.Zero, size)
+    val layerPaint = Paint()
+
+    onDrawWithContent {
+        val itemTop = itemTopPx()
+        val viewportHeight = viewportHeightPx().coerceAtLeast(0f)
+        val itemBottom = itemTop + size.height
+        val bottomFadeStart = viewportHeight - bottomFadePx
+        val intersectsTop = topFadePx > 0f && itemTop < topFadePx && itemBottom > 0f
+        val intersectsBottom = bottomFadePx > 0f &&
+                itemTop < viewportHeight && itemBottom > bottomFadeStart
+
+        if (!intersectsTop && !intersectsBottom) {
+            drawContent()
+            return@onDrawWithContent
+        }
+
+        drawContext.canvas.withSaveLayer(layerBounds, layerPaint) {
+            drawContent()
+
+            if (intersectsTop) {
+                val gradientStart = -itemTop
+                val gradientEnd = topFadePx - itemTop
+                val localStart = gradientStart.coerceAtLeast(0f)
+                val localEnd = gradientEnd.coerceAtMost(size.height)
+                if (localEnd > localStart) {
+                    drawRect(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(Color.Transparent, Color.Black),
+                            startY = gradientStart,
+                            endY = gradientEnd,
+                        ),
+                        topLeft = Offset(0f, localStart),
+                        size = Size(size.width, localEnd - localStart),
+                        blendMode = BlendMode.DstIn,
+                    )
+                }
+            }
+
+            if (intersectsBottom) {
+                val gradientStart = bottomFadeStart - itemTop
+                val gradientEnd = viewportHeight - itemTop
+                val localStart = gradientStart.coerceAtLeast(0f)
+                val localEnd = gradientEnd.coerceAtMost(size.height)
+                if (localEnd > localStart) {
+                    drawRect(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(Color.Black, Color.Transparent),
+                            startY = gradientStart,
+                            endY = gradientEnd,
+                        ),
+                        topLeft = Offset(0f, localStart),
+                        size = Size(size.width, localEnd - localStart),
+                        blendMode = BlendMode.DstIn,
+                    )
+                }
+            }
+        }
+    }
+}
 
 @Composable
 internal fun FullTimedLyricsLine(

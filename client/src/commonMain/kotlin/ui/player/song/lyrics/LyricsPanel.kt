@@ -328,6 +328,8 @@ private fun FullTimedLyrics(
         val itemGapPx = with(density) { FullLyricsItemGap.toPx() }
         val fallbackHeightPx = with(density) { FullLyricsFallbackHeight.toPx() }
         val gapIndicatorHeightPx = with(density) { FullLyricsGapIndicatorHeight.toPx() }
+        val topFadePx = with(density) { 130.dp.toPx() }
+        val bottomFadePx = with(density) { 160.dp.toPx() }
         val heightSnapshot = itemHeights.toMap()
         val absolutePositions = remember(
             displayItems,
@@ -572,7 +574,6 @@ private fun FullTimedLyrics(
                 modifier = Modifier
                     .fillMaxSize()
                     .clipToBounds()
-                    .lyricsEdgeFade(topFadeHeight = 130.dp, bottomFadeHeight = 160.dp)
                     .then(
                         if (userScrollEnabled) {
                             Modifier.scrollable(
@@ -637,6 +638,29 @@ private fun FullTimedLyrics(
                                         Column(
                                             modifier = Modifier
                                                 .fillMaxWidth()
+                                                .lyricsItemEdgeFade(
+                                                    itemTopPx = {
+                                                        val baseOffset = if (contentOffsetPx.isNaN()) {
+                                                            targetContentOffsetPx
+                                                        } else {
+                                                            contentOffsetPx
+                                                        }
+                                                        val transitionOffset = fullLyricsTransitionOffset(
+                                                            startOffset = transitionStartOffsets
+                                                                .getOrElse(displayIndex) { 0f },
+                                                            elapsedMs = transitionElapsedMs,
+                                                            distanceFromAnchor = abs(
+                                                                displayIndex - transitionAnchorDisplayIndex
+                                                            ),
+                                                            seeking = transitionSeeking,
+                                                        )
+                                                        baseOffset + absolutePositions[displayIndex] +
+                                                                transitionOffset
+                                                    },
+                                                    viewportHeightPx = { viewportHeightPx },
+                                                    topFadePx = topFadePx,
+                                                    bottomFadePx = bottomFadePx,
+                                                )
                                                 .onSizeChanged { size ->
                                                     if (itemHeights[displayIndex] != size.height) {
                                                         itemHeights[displayIndex] = size.height
@@ -697,6 +721,29 @@ private fun FullTimedLyrics(
                                             autoScrollSuppressed = autoScrollSuppressed,
                                             modifier = Modifier
                                                 .fillMaxWidth()
+                                                .lyricsItemEdgeFade(
+                                                    itemTopPx = {
+                                                        val baseOffset = if (contentOffsetPx.isNaN()) {
+                                                            targetContentOffsetPx
+                                                        } else {
+                                                            contentOffsetPx
+                                                        }
+                                                        val transitionOffset = fullLyricsTransitionOffset(
+                                                            startOffset = transitionStartOffsets
+                                                                .getOrElse(displayIndex) { 0f },
+                                                            elapsedMs = transitionElapsedMs,
+                                                            distanceFromAnchor = abs(
+                                                                displayIndex - transitionAnchorDisplayIndex
+                                                            ),
+                                                            seeking = transitionSeeking,
+                                                        )
+                                                        baseOffset + absolutePositions[displayIndex] +
+                                                                transitionOffset
+                                                    },
+                                                    viewportHeightPx = { viewportHeightPx },
+                                                    topFadePx = topFadePx,
+                                                    bottomFadePx = bottomFadePx,
+                                                )
                                                 .onSizeChanged { size ->
                                                     if (itemHeights[displayIndex] != size.height) {
                                                         itemHeights[displayIndex] = size.height
