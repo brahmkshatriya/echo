@@ -252,6 +252,7 @@ fun Controller() {
 fun ExpandedTimeline(
     i: Int,
     lyricsVisible: Boolean = false,
+    showCompactArtwork: Boolean = false,
     rowsCollapseProgress: Float = 0f,
     onArtworkClick: () -> Unit = {},
 ) {
@@ -282,7 +283,7 @@ fun ExpandedTimeline(
                 Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                AnimatedVisibility(lyricsVisible) {
+                AnimatedVisibility(lyricsVisible || showCompactArtwork) {
                     PlayerArtwork(
                         contentDescription = "Song $i artwork",
                         modifier = Modifier
@@ -293,7 +294,7 @@ fun ExpandedTimeline(
                             .clickable(onClick = onArtworkClick),
                     )
                 }
-                AnimatedVisibility(!lyricsVisible) {
+                AnimatedVisibility(!lyricsVisible && !showCompactArtwork) {
                     Spacer(Modifier.width(16.dp))
                 }
                 Column(Modifier.weight(1f)) {

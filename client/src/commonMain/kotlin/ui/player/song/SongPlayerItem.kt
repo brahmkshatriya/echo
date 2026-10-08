@@ -54,15 +54,19 @@ import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
-import androidx.compose.ui.layout.boundsInRoot
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
+import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.NavigationEventTransitionState
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import androidx.navigationevent.compose.NavigationBackHandler
@@ -98,9 +102,13 @@ import dev.brahmkshatriya.echo.app.ui.player.song.lyrics.rememberLyricsSelection
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.milliseconds
+
+private object PlayerHeroVisibleInfo : NavigationEventInfo()
+private object PlayerHeroHiddenInfo : NavigationEventInfo()
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -141,6 +149,7 @@ fun SongPlayerItem(
                 contentColor = colorScheme.onSurface
             )
             val listState = rememberLazyListState()
+            val scrollbarItemSizes = remember { PlayerScrollbarItemSizes() }
             val bottomBarKey = remember(i) { "player-bottom-bar-$i" }
             val isBottomBarSticky by remember(bottomBarKey) {
                 derivedStateOf {
@@ -159,11 +168,10 @@ fun SongPlayerItem(
                 sharedLyricsChromeCollapsed?.value ?: fallbackLyricsChromeCollapsed
             val setLyricsChromeCollapsed: (Boolean) -> Unit = { collapsed ->
                 if (isCurrentItem) {
-                    val effectiveCollapsed = collapsed && !isBottomBarSticky
                     if (sharedLyricsChromeCollapsed != null) {
-                        sharedLyricsChromeCollapsed.value = effectiveCollapsed
+                        sharedLyricsChromeCollapsed.value = collapsed
                     } else {
-                        fallbackLyricsChromeCollapsed = effectiveCollapsed
+                        fallbackLyricsChromeCollapsed = collapsed
                     }
                 }
             }
@@ -180,11 +188,6 @@ fun SongPlayerItem(
             LaunchedEffect(timelineState.isSeeking) {
                 if (showLyrics && timelineState.isSeeking) {
                     onLyricsChromeInteraction()
-                }
-            }
-            LaunchedEffect(isBottomBarSticky) {
-                if (isBottomBarSticky && lyricsChromeCollapsed) {
-                    setLyricsChromeCollapsed(false)
                 }
             }
             LaunchedEffect(
@@ -229,7 +232,7 @@ fun SongPlayerItem(
             val selectorRadiusAnimationSpec = motionScheme.defaultSpatialSpec<Float>()
             val selectorPredictiveBackProgress = remember(i) { Animatable(0f) }
             val selectorTransitionDensity = LocalDensity.current
-            val currentSelectorRevealSourceBounds = lyricsPillBoundsInRoot?.let { pillBounds ->
+            val liveSelectorRevealSourceBounds = lyricsPillBoundsInRoot?.let { pillBounds ->
                 playerBoundsInRoot?.let { playerBounds ->
                     Rect(
                         left = pillBounds.left - playerBounds.left,
@@ -238,7 +241,13 @@ fun SongPlayerItem(
                         bottom = pillBounds.bottom - playerBounds.top,
                     )
                 }
-            } ?: selectorRevealSourceBounds
+            }
+            val currentSelectorRevealSourceBounds =
+                if (showSelector || selectorMounted) {
+                    selectorRevealSourceBounds ?: liveSelectorRevealSourceBounds
+                } else {
+                    liveSelectorRevealSourceBounds ?: selectorRevealSourceBounds
+                }
 
             val selectorNavigationEventState = rememberNavigationEventState(
                 currentInfo = if (showSelector) LyricsSelectorPageInfo else LyricsSelectorPlayerInfo,
@@ -339,42 +348,45 @@ fun SongPlayerItem(
                     }
                 } else if (selectorMounted) {
                     val sourceCenter = currentSelectorRevealSourceBounds?.center
-                    coroutineScope {
-                        launch {
-                            selectorPillCenter.animateTo(
-                                targetValue = sourceCenter ?: selectorPillCenter.value,
-                                animationSpec = selectorPositionAnimationSpec,
-                            )
+                    try {
+                        coroutineScope {
+                            launch {
+                                selectorPillCenter.animateTo(
+                                    targetValue = sourceCenter ?: selectorPillCenter.value,
+                                    animationSpec = selectorPositionAnimationSpec,
+                                )
+                            }
+                            launch {
+                                selectorPillSize.animateTo(
+                                    targetValue = currentSelectorRevealSourceBounds?.size
+                                        ?: selectorPillSize.value,
+                                    animationSpec = selectorSizeAnimationSpec,
+                                )
+                            }
+                            launch {
+                                selectorPillRadius.animateTo(
+                                    targetValue = with(selectorTransitionDensity) {
+                                        (playerBottomBarControlSize / 2f).toPx()
+                                    },
+                                    animationSpec = selectorRadiusAnimationSpec,
+                                )
+                            }
+                            launch {
+                                selectorRevealProgress.animateTo(
+                                    targetValue = 0f,
+                                    animationSpec = selectorRevealAnimationSpec,
+                                )
+                            }
+                            launch {
+                                selectorContentScale.animateTo(
+                                    targetValue = 0.66f,
+                                    animationSpec = selectorRevealAnimationSpec,
+                                )
+                            }
                         }
-                        launch {
-                            selectorPillSize.animateTo(
-                                targetValue = currentSelectorRevealSourceBounds?.size
-                                    ?: selectorPillSize.value,
-                                animationSpec = selectorSizeAnimationSpec,
-                            )
-                        }
-                        launch {
-                            selectorPillRadius.animateTo(
-                                targetValue = with(selectorTransitionDensity) {
-                                    (playerBottomBarControlSize / 2f).toPx()
-                                },
-                                animationSpec = selectorRadiusAnimationSpec,
-                            )
-                        }
-                        launch {
-                            selectorRevealProgress.animateTo(
-                                targetValue = 0f,
-                                animationSpec = selectorRevealAnimationSpec,
-                            )
-                        }
-                        launch {
-                            selectorContentScale.animateTo(
-                                targetValue = 0.66f,
-                                animationSpec = selectorRevealAnimationSpec,
-                            )
-                        }
+                    } finally {
+                        if (!showSelector) selectorMounted = false
                     }
-                    selectorMounted = false
                 }
             }
             LaunchedEffect(selectorMounted) {
@@ -385,6 +397,117 @@ fun SongPlayerItem(
             }
             val isPlayerScrolledToTop by remember {
                 derivedStateOf { !listState.canScrollBackward }
+            }
+            val heroBackProgress = remember(i) { Animatable(0f) }
+            val heroBackAnimationSpec = motionScheme.defaultSpatialSpec<Float>()
+            var heroBackGestureActive by remember(i) { mutableStateOf(false) }
+            var heroBackStartIndex by remember(i) { mutableIntStateOf(0) }
+            var heroBackStartItemOffset by remember(i) { mutableIntStateOf(0) }
+            var heroBackStartScrollOffset by remember(i) { mutableIntStateOf(0) }
+            var heroBackFallbackSize by remember(i) { mutableIntStateOf(1) }
+            var heroBackTotalItems by remember(i) { mutableIntStateOf(0) }
+            val heroBackMaxPredictiveTravelPx = (constraints.maxHeight / 4).coerceAtLeast(1)
+
+            fun captureHeroBackStart(): Boolean {
+                val layoutInfo = listState.layoutInfo
+                val totalItems = layoutInfo.totalItemsCount
+                if (totalItems <= 0 || !isBottomBarSticky || !listState.canScrollBackward) {
+                    return false
+                }
+
+                layoutInfo.visibleItemsInfo.forEach { item ->
+                    scrollbarItemSizes.update(item.index, item.size)
+                }
+                val viewportSize =
+                    (layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset).coerceAtLeast(1)
+                val fallbackSize = scrollbarItemSizes.fallbackSize(viewportSize)
+                heroBackStartIndex = listState.firstVisibleItemIndex
+                heroBackStartItemOffset = listState.firstVisibleItemScrollOffset
+                heroBackStartScrollOffset = scrollbarItemSizes.estimatedScrollOffset(
+                    firstVisibleIndex = heroBackStartIndex,
+                    firstVisibleItemScrollOffset = heroBackStartItemOffset,
+                    fallbackSize = fallbackSize,
+                )
+                heroBackFallbackSize = fallbackSize
+                heroBackTotalItems = totalItems
+                heroBackGestureActive = heroBackStartScrollOffset > 0
+                return heroBackGestureActive
+            }
+
+            fun applyHeroBackProgress(progress: Float) {
+                if (!heroBackGestureActive || heroBackTotalItems <= 0) return
+                val predictiveTravel = minOf(
+                    heroBackStartScrollOffset,
+                    heroBackMaxPredictiveTravelPx,
+                )
+                val targetScrollOffset = (
+                        heroBackStartScrollOffset -
+                                predictiveTravel * progress.coerceIn(0f, 1f)
+                        ).roundToInt().coerceAtLeast(0)
+                val target = scrollbarItemSizes.itemAtOffset(
+                    targetScrollOffset = targetScrollOffset,
+                    totalItems = heroBackTotalItems,
+                    fallbackSize = heroBackFallbackSize,
+                )
+                listState.requestScrollToItem(
+                    index = (target ushr 32).toInt(),
+                    scrollOffset = target.toInt(),
+                )
+            }
+
+            val heroBackEnabled =
+                isCurrentItem && !selectorMounted &&
+                        (isBottomBarSticky || heroBackGestureActive)
+            val heroBackNavigationEventState = rememberNavigationEventState(
+                currentInfo = if (heroBackEnabled) PlayerHeroHiddenInfo else PlayerHeroVisibleInfo,
+                backInfo = if (heroBackEnabled) listOf(PlayerHeroVisibleInfo) else emptyList(),
+            )
+            if (LocalNavigationEventDispatcherOwner.current != null) {
+                NavigationBackHandler(
+                    state = heroBackNavigationEventState,
+                    isBackEnabled = heroBackEnabled,
+                    onBackCompleted = {
+                        scope.launch {
+                            listState.animateScrollToItem(0)
+                            heroBackStartScrollOffset = 0
+                            heroBackGestureActive = false
+                            heroBackProgress.snapTo(0f)
+                        }
+                    },
+                    onBackCancelled = {
+                        scope.launch {
+                            heroBackProgress.animateTo(
+                                targetValue = 0f,
+                                animationSpec = heroBackAnimationSpec,
+                            )
+                            listState.scrollToItem(
+                                heroBackStartIndex,
+                                heroBackStartItemOffset,
+                            )
+                            heroBackGestureActive = false
+                        }
+                    },
+                )
+            }
+            LaunchedEffect(heroBackNavigationEventState, heroBackProgress) {
+                snapshotFlow {
+                    when (val state = heroBackNavigationEventState.transitionState) {
+                        NavigationEventTransitionState.Idle -> null
+                        is NavigationEventTransitionState.InProgress -> state.latestEvent.progress
+                    }
+                }.collectLatest { progress ->
+                    if (progress != null) {
+                        if (!heroBackGestureActive && !captureHeroBackStart()) {
+                            return@collectLatest
+                        }
+                        heroBackProgress.snapTo(progress.coerceIn(0f, 1f))
+                    }
+                }
+            }
+            LaunchedEffect(heroBackProgress) {
+                snapshotFlow { heroBackProgress.value }.collectLatest { progress ->
+                    applyHeroBackProgress(progress)
+                }
             }
             val layoutDirection = LocalLayoutDirection.current
             val safeDrawing = WindowInsets.safeDrawing.asPaddingValues()
@@ -408,14 +531,41 @@ fun SongPlayerItem(
             }
 
             val selectorProgress = selectorRevealProgress.value
-            run {
-                val playerViewportHeightPx = constraints.maxHeight
+            val playerViewportHeightPx = constraints.maxHeight
+            val heroHeight = (maxHeight - topPadding - bottomPadding - playerBottomBarHeight)
+                .coerceAtLeast(0.dp)
+            val heroHeightPx = with(LocalDensity.current) { heroHeight.toPx().coerceAtLeast(1f) }
+            val heroAlpha by remember(listState, heroHeightPx) {
+                derivedStateOf {
+                    val scrollOffset = if (listState.firstVisibleItemIndex == 0) {
+                        listState.firstVisibleItemScrollOffset.toFloat()
+                    } else {
+                        heroHeightPx
+                    }
+                    1f - (scrollOffset / heroHeightPx).coerceIn(0f, 1f)
+                }
+            }
+            val coverViewportWidth = maxWidth
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .graphicsLayer {
+                        val backProgress =
+                            selectorPredictiveBackProgress.value.coerceIn(0f, 1f)
+                        val pageProgress =
+                            (selectorRevealProgress.value / 0.45f).coerceIn(0f, 1f) *
+                                    (1f - backProgress)
+                        val scale = 1f - 0.04f * pageProgress
+                        scaleX = scale
+                        scaleY = scale
+                        alpha = 1f - 2f * pageProgress
+                        compositingStrategy = CompositingStrategy.ModulateAlpha
+                    }
+            ) {
                 val transformModifier = Modifier.expandedListItemTransform(playerSheet) {
                     playerViewportHeightPx
                 }
-                val heroHeight = (maxHeight - topPadding - bottomPadding - playerBottomBarHeight)
-                    .coerceAtLeast(0.dp)
-                val coverViewportWidth = maxWidth
+
                 fun heroSnapTarget(directionY: Float): Int? {
                     val hero = listState.layoutInfo.visibleItemsInfo.firstOrNull {
                         it.key == "player-hero-$i"
@@ -432,6 +582,7 @@ fun SongPlayerItem(
                         else -> 0
                     }
                 }
+
                 val heroSnapConnection = remember(listState, i) {
                     object : NestedScrollConnection {
                         override suspend fun onPreFling(available: Velocity): Velocity {
@@ -455,9 +606,39 @@ fun SongPlayerItem(
                         }
                     }
                 }
+                var wheelScrollGeneration by remember(i) { mutableIntStateOf(0) }
+                var wheelScrollDirectionY by remember(i) { mutableFloatStateOf(0f) }
+                LaunchedEffect(wheelScrollGeneration, isCurrentItem, selectorMounted) {
+                    if (wheelScrollGeneration == 0 || !isCurrentItem || selectorMounted) {
+                        return@LaunchedEffect
+                    }
+                    // Wheel input does not dispatch a fling. Wait for the last
+                    // wheel event and any smooth scrolling before snapping.
+                    delay(180.milliseconds)
+                    snapshotFlow { listState.isScrollInProgress }.first { !it }
+                    heroSnapTarget(wheelScrollDirectionY)?.let { target ->
+                        listState.animateScrollToItem(target)
+                    }
+                }
                 LazyColumn(
                     Modifier
                         .nestedScroll(heroSnapConnection)
+                        .pointerInput(i, isCurrentItem, selectorMounted) {
+                            awaitPointerEventScope {
+                                while (true) {
+                                    val event = awaitPointerEvent(PointerEventPass.Initial)
+                                    if (event.type != PointerEventType.Scroll) continue
+                                    // Ctrl+wheel is handled by the desktop zoom control.
+                                    if (event.changes.any { it.isConsumed }) continue
+                                    val scrollY = event.changes.firstOrNull()?.scrollDelta?.y ?: 0f
+                                    if (scrollY != 0f && isCurrentItem && !selectorMounted) {
+                                        // Wheel down matches a negative fling velocity.
+                                        wheelScrollDirectionY = if (scrollY > 0f) -1f else 1f
+                                        wheelScrollGeneration++
+                                    }
+                                }
+                            }
+                        }
                         .paddingMask(safeDrawing) {
                             playerSheet?.progressState?.floatValue ?: 0f
                         },
@@ -483,7 +664,8 @@ fun SongPlayerItem(
                             transformModifier = transformModifier,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(heroHeight),
+                                .height(heroHeight)
+                                .graphicsLayer(alpha = heroAlpha),
                             onArtworkClick = {
                                 if (sharedLyricsVisible != null) {
                                     sharedLyricsVisible.value = false
@@ -507,7 +689,7 @@ fun SongPlayerItem(
                                 lyricsSelectorActive = selectorMounted,
                                 onLyricsPillBoundsChanged = { lyricsPillBoundsInRoot = it },
                                 onLyricsSelectorClick = {
-                                    selectorRevealSourceBounds = currentSelectorRevealSourceBounds
+                                    selectorRevealSourceBounds = liveSelectorRevealSourceBounds
                                     showSelector = true
                                 },
                                 onLyricsClick = {
@@ -590,7 +772,6 @@ fun SongPlayerItem(
                 }
 
                 CollapsedPlayer(i = i, showCover = showLyrics)
-                val scrollbarItemSizes = remember { PlayerScrollbarItemSizes() }
                 val scrollbarState = rememberPlayerScrollbarState(listState, scrollbarItemSizes)
                 val scrollbarThumbMover =
                     rememberPlayerScrollbarThumbMover(listState, scrollbarItemSizes)
@@ -632,27 +813,30 @@ fun SongPlayerItem(
             }
             if (selectorMounted) {
                 val density = LocalDensity.current
-                val pillContentAlpha =
-                    (1f - selectorProgress.coerceIn(0f, 1f)).coerceIn(0f, 1f)
-                val pageContentAlpha = ((selectorProgress - 0.5f) * 2f).coerceIn(0f, 1f)
+                val contentProgress = selectorProgress.coerceIn(0f, 1f)
+                val pillContentAlpha = 1f - contentProgress / 0.5f
+                val pageContentAlpha = (contentProgress - 0.5f) / 0.5f
                 val pageContentScale = selectorContentScale.value
+                val renderedSelectorCenter = selectorPillCenter.value
+                val renderedSelectorSize = selectorPillSize.value
+                val pageContentTranslationX =
+                    renderedSelectorCenter.x - constraints.maxWidth / 2f
+                val pageContentTranslationY =
+                    renderedSelectorCenter.y - constraints.maxHeight / 2f
                 val animatedBounds = currentSelectorRevealSourceBounds?.let {
-                    val center = selectorPillCenter.value
-                    val size = selectorPillSize.value
                     Rect(
-                        left = center.x - size.width / 2f,
-                        top = center.y - size.height / 2f,
-                        right = center.x + size.width / 2f,
-                        bottom = center.y + size.height / 2f,
+                        left = renderedSelectorCenter.x - renderedSelectorSize.width / 2f,
+                        top = renderedSelectorCenter.y - renderedSelectorSize.height / 2f,
+                        right = renderedSelectorCenter.x + renderedSelectorSize.width / 2f,
+                        bottom = renderedSelectorCenter.y + renderedSelectorSize.height / 2f,
                     )
                 }
                 val pillContentBounds = currentSelectorRevealSourceBounds?.let { source ->
-                    val center = selectorPillCenter.value
                     Rect(
-                        left = center.x - source.width / 2f,
-                        top = center.y - source.height / 2f,
-                        right = center.x + source.width / 2f,
-                        bottom = center.y + source.height / 2f,
+                        left = renderedSelectorCenter.x - source.width / 2f,
+                        top = renderedSelectorCenter.y - source.height / 2f,
+                        right = renderedSelectorCenter.x + source.width / 2f,
+                        bottom = renderedSelectorCenter.y + source.height / 2f,
                     )
                 }
                 val containerColor = lerp(
@@ -743,6 +927,8 @@ fun SongPlayerItem(
                                     alpha = pageContentAlpha
                                     scaleX = pageContentScale
                                     scaleY = pageContentScale
+                                    translationX = pageContentTranslationX
+                                    translationY = pageContentTranslationY
                                 }
                         }
                     ) {
@@ -750,7 +936,7 @@ fun SongPlayerItem(
                             selectedLyrics = selectedLyrics,
                             items = lyricsSelections,
                             topPadding = topPadding,
-                            bottomPadding = bottomPadding,
+                            interactive = showSelector,
                             onSelect = { selection ->
                                 val index = lyricsSelections.indexOf(selection)
                                 if (index >= 0) {
@@ -760,6 +946,25 @@ fun SongPlayerItem(
                             },
                             onClearSelection = { selectedLyricsIndex = null },
                             onBack = { showSelector = false },
+                        )
+                    }
+
+                    if (!showSelector) currentSelectorRevealSourceBounds?.let { bounds ->
+                        Box(
+                            Modifier
+                                .offset {
+                                    IntOffset(
+                                        bounds.left.roundToInt(),
+                                        bounds.top.roundToInt(),
+                                    )
+                                }
+                                .size(
+                                    width = with(density) { bounds.width.toDp() },
+                                    height = with(density) { bounds.height.toDp() },
+                                )
+                                .clickable {
+                                    showSelector = true
+                                }
                         )
                     }
                 }

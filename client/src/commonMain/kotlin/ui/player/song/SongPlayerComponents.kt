@@ -100,7 +100,7 @@ import echo.client.generated.resources.ic_close
 import echo.client.generated.resources.ic_favorite
 import echo.client.generated.resources.ic_favorite_filled
 import echo.client.generated.resources.ic_keyboard_arrow_down
-import echo.client.generated.resources.ic_keyboard_arrow_up
+import echo.client.generated.resources.ic_sentiment_excited
 import echo.client.generated.resources.ic_lyrics_mic
 import echo.client.generated.resources.ic_lyrics_mic_off
 import kotlinx.coroutines.delay
@@ -166,6 +166,7 @@ internal fun PlayerHero(
         animationSpec = tween(durationMillis = 320, easing = FastOutSlowInEasing),
         label = "Lyrics player chrome collapse",
     )
+    var compactArtwork by remember { mutableStateOf(false) }
     LaunchedEffect(showLyrics) {
         if (!showLyrics && collapseTimelineRowsForLyrics) {
             delay(LyricsModeTransitionDurationMs.toLong().milliseconds)
@@ -206,6 +207,7 @@ internal fun PlayerHero(
                 ExpandedTimeline(
                     i = i,
                     lyricsVisible = showLyrics,
+                    showCompactArtwork = compactArtwork,
                     rowsCollapseProgress = chromeCollapseProgress,
                     onArtworkClick = onArtworkClick,
                 )
@@ -237,6 +239,9 @@ internal fun PlayerHero(
         val coverVerticalPadding = ((coverHeightDp - coverMaxSize) / 2)
             .coerceAtLeast(songCoverVerticalPadding.dp)
         val cover = subcompose(PlayerHeroSlot.CoverOrLyrics) {
+            LaunchedEffect(coverMaxSize) {
+                compactArtwork = coverMaxSize < 64.dp
+            }
             val heroContentState = PlayerHeroContentState(
                 showLyrics = showLyrics,
                 lyrics = lyrics,
@@ -299,13 +304,15 @@ internal fun PlayerHero(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.TopStart,
                     ) {
-                        CoverArt(
-                            i = i,
-                            maxCoverSize = coverMaxSize,
-                            verticalPadding = coverVerticalPadding,
-                            topPadding = topPadding,
-                            viewportWidth = viewportWidth,
-                        )
+                        if (coverMaxSize >= 64.dp) {
+                            CoverArt(
+                                i = i,
+                                maxCoverSize = coverMaxSize,
+                                verticalPadding = coverVerticalPadding,
+                                topPadding = topPadding,
+                                viewportWidth = viewportWidth,
+                            )
+                        }
                     }
                 }
             }
@@ -550,8 +557,8 @@ private fun LyricsBottomBar(
             shapes = IconButtonDefaults.shapes()
         ) {
             Icon(
-                painterResource(Res.drawable.ic_keyboard_arrow_up),
-                contentDescription = "Scroll to Top"
+                painterResource(Res.drawable.ic_sentiment_excited),
+                contentDescription = "Excited"
             )
         }
     }

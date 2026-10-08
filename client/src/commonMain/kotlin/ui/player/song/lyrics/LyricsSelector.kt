@@ -1,16 +1,27 @@
 package dev.brahmkshatriya.echo.app.ui.player.song.lyrics
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -29,36 +40,44 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialShapes.Companion.Circle
 import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.material3.MaterialTheme.motionScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.navigationevent.NavigationEventInfo
+import dev.brahmkshatriya.echo.app.platform.imeAnimationInsetsOrNull
 import dev.brahmkshatriya.echo.app.ui.components.BetterImage
 import dev.brahmkshatriya.echo.app.ui.components.ScaledTopAppBar
 import dev.brahmkshatriya.echo.app.ui.components.materialGroup
@@ -68,9 +87,14 @@ import dev.brahmkshatriya.echo.app.ui.player.playerBottomBarItemSpacing
 import echo.client.generated.resources.Res
 import echo.client.generated.resources.ic_back
 import echo.client.generated.resources.ic_check_circle
+import echo.client.generated.resources.ic_chevron_backward
 import echo.client.generated.resources.ic_close_small
 import echo.client.generated.resources.ic_playlist_remove
 import echo.client.generated.resources.ic_search_outline
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.jetbrains.compose.resources.painterResource
 
 internal object LyricsSelectorPlayerInfo : NavigationEventInfo()
@@ -124,7 +148,7 @@ internal fun LyricsSelectionPage(
     selectedLyrics: LyricsSelectionItem?,
     items: List<LyricsSelectionItem>,
     topPadding: Dp,
-    bottomPadding: Dp,
+    interactive: Boolean = true,
     onSelect: (LyricsSelectionItem) -> Unit,
     onClearSelection: () -> Unit,
     onBack: () -> Unit,
@@ -146,10 +170,11 @@ internal fun LyricsSelectionPage(
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val resultsListState = rememberLazyListState()
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = Color.Transparent,
-        contentColor = colorScheme.onSurface,
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .imePadding()
+            .navigationBarsPadding(),
     ) {
         Scaffold(
             modifier = Modifier
@@ -166,7 +191,7 @@ internal fun LyricsSelectionPage(
                     actions = {
                         IconButton(
                             onClick = onClearSelection,
-                            enabled = selectedLyrics != null,
+                            enabled = interactive && selectedLyrics != null,
                         ) {
                             Icon(
                                 painter = painterResource(Res.drawable.ic_playlist_remove),
@@ -191,7 +216,7 @@ internal fun LyricsSelectionPage(
                     },
                     onSearch = { appliedQuery = queryState.text.toString().trim() },
                     onBack = onBack,
-                    bottomPadding = bottomPadding,
+                    interactive = interactive,
                 )
             },
         ) { contentPadding ->
@@ -205,6 +230,7 @@ internal fun LyricsSelectionPage(
                     .padding(contentPadding),
                 contentPadding = PaddingValues(horizontal = 8.dp),
                 reverseLayout = true,
+                userScrollEnabled = interactive,
                 verticalArrangement = Arrangement.Bottom,
             ) {
                 materialGroup(
@@ -221,6 +247,7 @@ internal fun LyricsSelectionPage(
                             LyricsSelectionRow(
                                 item = item,
                                 selected = item == selectedLyrics,
+                                enabled = interactive,
                                 onClick = { onSelect(item) },
                             )
                         }
@@ -248,12 +275,13 @@ internal fun LyricsSelectionPage(
 private fun LyricsSelectionRow(
     item: LyricsSelectionItem,
     selected: Boolean,
+    enabled: Boolean,
     onClick: () -> Unit,
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .clickable(enabled = enabled, onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -282,69 +310,204 @@ private fun LyricsSelectionRow(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun LyricsSelectionSearchBar(
+    modifier: Modifier = Modifier,
     queryState: TextFieldState,
     onClear: () -> Unit,
     onSearch: () -> Unit,
     onBack: () -> Unit,
-    bottomPadding: Dp,
+    interactive: Boolean,
 ) {
     val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val density = LocalDensity.current
+    val imeInsets = WindowInsets.ime
+    // Animation source/target insets are exposed by Android only. On desktop
+    // and other platforms, fall back to the normal IME inset.
+    val platformImeAnimationInsets = imeAnimationInsetsOrNull()
+    val imeAnimationSource = platformImeAnimationInsets?.first ?: imeInsets
+    val imeAnimationTarget = platformImeAnimationInsets?.second ?: imeInsets
+    val focusCloseMutex = remember { Mutex() }
+    val scope = rememberCoroutineScope()
+    var isFocused by remember { mutableStateOf(false) }
+    var fieldEnabled by remember { mutableStateOf(interactive) }
+    val extensionName = "Spotify"
+    val widthMotion = motionScheme.fastSpatialSpec<IntSize>()
+    val fadeMotion = motionScheme.fastEffectsSpec<Float>()
+    val searchButtonColors = if (isFocused) {
+        IconButtonDefaults.filledIconButtonColors()
+    } else {
+        IconButtonDefaults.iconButtonColors()
+    }
+    val searchButtonContainerColor by animateColorAsState(
+        targetValue = searchButtonColors.containerColor,
+        animationSpec = motionScheme.fastEffectsSpec(),
+        label = "LyricsSearchButtonContainer",
+    )
+    val searchButtonContentColor by animateColorAsState(
+        targetValue = searchButtonColors.contentColor,
+        animationSpec = motionScheme.fastEffectsSpec(),
+        label = "LyricsSearchButtonIconColor",
+    )
+
+    suspend fun clearSearchFocusAfterImeCloses() {
+        focusCloseMutex.withLock {
+            if (imeInsets.getBottom(density) == 0) {
+                focusManager.clearFocus(force = true)
+                return@withLock
+            }
+
+            keyboardController?.hide()
+            snapshotFlow {
+                imeInsets.getBottom(density) == 0 &&
+                        imeAnimationSource.getBottom(density) == 0 &&
+                        imeAnimationTarget.getBottom(density) == 0
+            }.first { it }
+            focusManager.clearFocus(force = true)
+        }
+    }
+
+    LaunchedEffect(interactive) {
+        if (!interactive) {
+            clearSearchFocusAfterImeCloses()
+            fieldEnabled = false
+        } else {
+            fieldEnabled = true
+        }
+    }
+
+    LaunchedEffect(isFocused, interactive) {
+        if (isFocused && interactive) {
+            var imeWasVisible = false
+            snapshotFlow {
+                Triple<Int, Int, Int>(
+                    imeInsets.getBottom(density),
+                    imeAnimationSource.getBottom(density),
+                    imeAnimationTarget.getBottom(density),
+                )
+            }.collect { (height, _, target) ->
+                if (height > 0) imeWasVisible = true
+                if (imeWasVisible && height == 0 && target == 0) {
+                    focusManager.clearFocus(force = true)
+                }
+            }
+        }
+    }
+
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(
                 start = playerBottomBarInset,
                 end = playerBottomBarInset,
                 top = playerBottomBarInset,
-                bottom = bottomPadding + playerBottomBarInset,
+                bottom = playerBottomBarInset,
             ),
-        horizontalArrangement = Arrangement.spacedBy(playerBottomBarItemSpacing),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        IconButton(
-            onClick = onBack,
-            shapes = IconButtonDefaults.shapes()
+        AnimatedVisibility(
+            visible = !isFocused,
+            enter = fadeIn(animationSpec = fadeMotion) +
+                    expandHorizontally(animationSpec = widthMotion, expandFrom = Alignment.Start),
+            exit = fadeOut(animationSpec = fadeMotion) +
+                    shrinkHorizontally(
+                        animationSpec = widthMotion,
+                        shrinkTowards = Alignment.Start
+                    ),
         ) {
-            Icon(
-                painter = painterResource(Res.drawable.ic_back),
-                contentDescription = "Back",
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(
+                    onClick = onBack,
+                    enabled = interactive,
+                    shapes = IconButtonDefaults.shapes(),
+                ) {
+                    Icon(
+                        painter = painterResource(Res.drawable.ic_back),
+                        contentDescription = "Back",
+                    )
+                }
+                Box(Modifier.size(playerBottomBarItemSpacing))
+            }
         }
+
         Row(
             modifier = Modifier
                 .height(playerBottomBarControlSize)
                 .weight(1f)
                 .clip(RoundedCornerShape(24.dp))
                 .background(colorScheme.primary.copy(alpha = 0.08f))
-                .padding(start = 16.dp, end = 4.dp),
+                .padding(start = 4.dp, end = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            AnimatedVisibility(
+                visible = isFocused,
+                enter = fadeIn(animationSpec = fadeMotion) +
+                        expandHorizontally(
+                            animationSpec = widthMotion,
+                            expandFrom = Alignment.Start
+                        ),
+                exit = fadeOut(animationSpec = fadeMotion) +
+                        shrinkHorizontally(
+                            animationSpec = widthMotion,
+                            shrinkTowards = Alignment.Start
+                        ),
+            ) {
+                IconButton(
+                    onClick = { scope.launch { clearSearchFocusAfterImeCloses() } },
+                    enabled = interactive,
+                    modifier = Modifier.size(40.dp),
+                ) {
+                    Icon(
+                        painter = painterResource(Res.drawable.ic_chevron_backward),
+                        contentDescription = "Exit search",
+                    )
+                }
+            }
+
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(4.dp),
+                    .padding(horizontal = 4.dp, vertical = 4.dp),
                 contentAlignment = Alignment.CenterStart,
             ) {
                 if (queryState.text.isEmpty()) {
-                    Text(
-                        text = "Search lyrics",
-                        style = typography.bodyLarge,
-                        color = colorScheme.onSurfaceVariant,
-                    )
+                    Crossfade(
+                        targetState = isFocused,
+                        animationSpec = fadeMotion,
+                        label = "LyricsSearchPlaceholder",
+                    ) { focused ->
+                        Text(
+                            text = if (focused) "Search lyrics" else extensionName,
+                            modifier = Modifier.padding(start = if (focused) 0.dp else 8.dp),
+                            style = typography.bodyLarge,
+                            color = if (focused) {
+                                colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                            } else {
+                                colorScheme.onSurfaceVariant
+                            },
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
                 }
+
                 BasicTextField(
                     state = queryState,
+                    enabled = fieldEnabled,
                     modifier = Modifier
                         .fillMaxWidth()
+                        .onFocusChanged {
+                            isFocused = it.isFocused
+                        }
                         .onPreviewKeyEvent { event ->
                             if (event.type != KeyEventType.KeyDown) {
                                 return@onPreviewKeyEvent false
                             }
                             when (event.key) {
                                 Key.Escape -> {
-                                    focusManager.clearFocus()
+                                    scope.launch { clearSearchFocusAfterImeCloses() }
                                     true
                                 }
 
@@ -360,14 +523,14 @@ private fun LyricsSelectionSearchBar(
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                     onKeyboardAction = { onSearch() },
                     textStyle = typography.bodyLarge.copy(color = colorScheme.onSurface),
-                    cursorBrush = Brush.verticalGradient(
-                        listOf(colorScheme.primary, colorScheme.primary)
-                    ),
+                    cursorBrush = SolidColor(colorScheme.onSurface),
                 )
             }
+
             if (queryState.text.isNotEmpty()) {
                 IconButton(
                     onClick = onClear,
+                    enabled = interactive,
                     modifier = Modifier.size(40.dp),
                 ) {
                     Icon(
@@ -376,9 +539,15 @@ private fun LyricsSelectionSearchBar(
                     )
                 }
             }
+
             IconButton(
                 onClick = onSearch,
+                enabled = interactive,
                 modifier = Modifier.size(40.dp),
+                colors = IconButtonDefaults.iconButtonColors(
+                    containerColor = searchButtonContainerColor,
+                    contentColor = searchButtonContentColor,
+                ),
             ) {
                 Icon(
                     painter = painterResource(Res.drawable.ic_search_outline),
@@ -386,15 +555,30 @@ private fun LyricsSelectionSearchBar(
                 )
             }
         }
-        IconButton(
-            onClick = { },
-            shapes = IconButtonDefaults.shapes()
+
+        AnimatedVisibility(
+            visible = !isFocused,
+            enter = fadeIn(animationSpec = fadeMotion) +
+                    expandHorizontally(animationSpec = widthMotion, expandFrom = Alignment.End),
+            exit = fadeOut(animationSpec = fadeMotion) +
+                    shrinkHorizontally(animationSpec = widthMotion, shrinkTowards = Alignment.End),
         ) {
-            BetterImage(
-                model = { "https://play-lh.googleusercontent.com/7ynvVIRdhJNAngCg_GI7i8TtH8BqkJYmffeUHsG-mJOdzt1XLvGmbsKuc5Q1SInBjDKN" },
-                "Spotify",
-                modifier = Modifier.padding(4.dp).clip(Circle.toShape())
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.size(playerBottomBarItemSpacing))
+                IconButton(
+                    onClick = { },
+                    enabled = interactive,
+                    shapes = IconButtonDefaults.shapes(),
+                ) {
+                    BetterImage(
+                        model = {
+                            "https://play-lh.googleusercontent.com/7ynvVIRdhJNAngCg_GI7i8TtH8BqkJYmffeUHsG-mJOdzt1XLvGmbsKuc5Q1SInBjDKN"
+                        },
+                        contentDescription = extensionName,
+                        modifier = Modifier.padding(4.dp).clip(Circle.toShape()),
+                    )
+                }
+            }
         }
     }
 }
