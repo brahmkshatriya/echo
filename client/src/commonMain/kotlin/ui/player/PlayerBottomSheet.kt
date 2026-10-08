@@ -1,6 +1,9 @@
 package dev.brahmkshatriya.echo.app.ui.player
 
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -12,7 +15,6 @@ import androidx.compose.foundation.layout.systemGestures
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.material3.SheetValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -24,6 +26,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -33,7 +36,6 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -78,8 +80,8 @@ fun ProvidePlayerControls(
     content: @Composable () -> Unit,
 ) {
     val controls = remember { PlayerControlsState() }
-    val lyricsVisible = remember { mutableStateOf(false) }
-    val lyricsChromeCollapsed = remember { mutableStateOf(false) }
+    val lyricsVisible = rememberSaveable { mutableStateOf(false) }
+    val lyricsChromeCollapsed = rememberSaveable { mutableStateOf(false) }
     PreloadAdjacentPlayerArtwork(pagerState)
     CompositionLocalProvider(
         LocalPlayerPagerState provides pagerState,
@@ -248,9 +250,14 @@ fun PlayerBottomSheet(
         }
         BetterSheetScaffold(
             sheetContent = {
-                Box(modifier.fillMaxSize().graphicsLayer {
+                BoxWithConstraints(Modifier.fillMaxSize().graphicsLayer {
                     val sheetProgress by betterSheet.progressState
                     alpha = 1 + sheetProgress.coerceIn(-1f, 0f)
+                    val backProgress = betterSheet.backProgressState.floatValue
+                    val scale = 1f - 0.15f * backProgress
+                    scaleX = scale
+                    scaleY = scale
+                    transformOrigin = TransformOrigin(0.5f, 1f)
                 }) {
                     ProvidePlayerControls(pagerState) {
                         HorizontalPager(

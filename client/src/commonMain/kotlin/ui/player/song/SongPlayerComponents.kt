@@ -53,7 +53,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.TransformOrigin
@@ -61,7 +60,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.SubcomposeLayout
-import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
@@ -100,7 +99,7 @@ import echo.client.generated.resources.ic_close
 import echo.client.generated.resources.ic_favorite
 import echo.client.generated.resources.ic_favorite_filled
 import echo.client.generated.resources.ic_keyboard_arrow_down
-import echo.client.generated.resources.ic_sentiment_excited
+import echo.client.generated.resources.ic_queue_music
 import echo.client.generated.resources.ic_lyrics_mic
 import echo.client.generated.resources.ic_lyrics_mic_off
 import kotlinx.coroutines.delay
@@ -436,8 +435,11 @@ internal fun BottomBar(
     lyricsVisible: Boolean = false,
     selectedLyrics: LyricsSelectionItem? = null,
     lyricsSelectorActive: Boolean = false,
+    queueButtonHidden: Boolean = false,
     onLyricsSelectorClick: () -> Unit = {},
-    onLyricsPillBoundsChanged: (Rect) -> Unit = {},
+    onLyricsPillBoundsChanged: (LayoutCoordinates) -> Unit = {},
+    onQueueButtonBoundsChanged: (LayoutCoordinates) -> Unit = {},
+    onQueueButtonClick: () -> Unit = {},
     onLyricsClick: () -> Unit = {}
 ) {
     val stickyProgress by animateFloatAsState(
@@ -459,8 +461,11 @@ internal fun BottomBar(
                 lyricsVisible = lyricsVisible,
                 selectedLyrics = selectedLyrics,
                 lyricsSelectorActive = lyricsSelectorActive,
+                queueButtonHidden = queueButtonHidden,
                 onLyricsSelectorClick = onLyricsSelectorClick,
                 onLyricsPillBoundsChanged = onLyricsPillBoundsChanged,
+                onQueueButtonBoundsChanged = onQueueButtonBoundsChanged,
+                onQueueButtonClick = onQueueButtonClick,
                 onLyricsClick = onLyricsClick,
             )
         }
@@ -507,8 +512,11 @@ private fun LyricsBottomBar(
     lyricsVisible: Boolean,
     selectedLyrics: LyricsSelectionItem?,
     lyricsSelectorActive: Boolean,
+    queueButtonHidden: Boolean,
     onLyricsSelectorClick: () -> Unit,
-    onLyricsPillBoundsChanged: (Rect) -> Unit,
+    onLyricsPillBoundsChanged: (LayoutCoordinates) -> Unit,
+    onQueueButtonBoundsChanged: (LayoutCoordinates) -> Unit,
+    onQueueButtonClick: () -> Unit,
     onLyricsClick: () -> Unit
 ) {
     val timelineState = LocalPlayerTimelineState.current ?: return
@@ -524,7 +532,7 @@ private fun LyricsBottomBar(
         Box(
             Modifier.height(playerBottomBarControlSize)
                 .weight(1f)
-                .onGloballyPositioned { onLyricsPillBoundsChanged(it.boundsInRoot()) }
+                .onGloballyPositioned { onLyricsPillBoundsChanged(it) }
                 .graphicsLayer { alpha = if (lyricsSelectorActive) 0f else 1f }
                 .clip(RoundedCornerShape(playerBottomBarControlSize / 2f))
                 .background(
@@ -532,6 +540,7 @@ private fun LyricsBottomBar(
                     shape = RoundedCornerShape(playerBottomBarControlSize / 2f),
                 )
                 .clickable(
+                    enabled = !lyricsSelectorActive,
                     onClick = if (lyricsVisible) onLyricsSelectorClick else onLyricsClick
                 )
         ) {
@@ -553,12 +562,15 @@ private fun LyricsBottomBar(
         }
 
         IconButton(
-            onClick = { },
-            shapes = IconButtonDefaults.shapes()
+            onClick = onQueueButtonClick,
+            enabled = !queueButtonHidden,
+            modifier = Modifier
+                .onGloballyPositioned { onQueueButtonBoundsChanged(it) }
+                .graphicsLayer { alpha = if (queueButtonHidden) 0f else 1f },
         ) {
             Icon(
-                painterResource(Res.drawable.ic_sentiment_excited),
-                contentDescription = "Excited"
+                painterResource(Res.drawable.ic_queue_music),
+                contentDescription = "Open queue"
             )
         }
     }

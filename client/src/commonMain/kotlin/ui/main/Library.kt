@@ -35,9 +35,9 @@ fun Library() {
             Box(Modifier.fillMaxSize().blurFadePagerTransition(pagerState, page) {
                 sheet?.progressState?.floatValue?.coerceIn(0f, 1f) ?: 1f
             }) {
-                PlayerItem(page) { scrolledToTop ->
+                PlayerItem(page, onScrolledToTopChanged = { scrolledToTop ->
                     pageScrolledToTop[page] = scrolledToTop
-                }
+                })
             }
         }
     }
