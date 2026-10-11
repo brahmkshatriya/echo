@@ -61,11 +61,65 @@ val LocalPlayerSheet = staticCompositionLocalOf<BetterSheet?> { null }
 val LocalInitialPlayerSheetValue = staticCompositionLocalOf { SheetValue.PartiallyExpanded }
 
 @Stable
-class PlayerControlsState {
+class PlayerControlsState(songCount: Int) {
     var isPlaying by mutableStateOf(false)
-    var repeatEnabled by mutableStateOf(false)
+    var repeatMode by mutableStateOf(RepeatMode.Off)
     var shuffleEnabled by mutableStateOf(false)
+        private set
+    var radioEnabled by mutableStateOf(false)
+
+    // Song IDs stay stable while their positions in the pager/playback list change.
+    private var unshuffledOrder by mutableStateOf((0 until songCount).toList())
+    var playbackOrder by mutableStateOf(unshuffledOrder)
+        private set
+
+    fun songAt(page: Int): Int = playbackOrder.getOrElse(page) { -1 }
+
+    fun pageOf(song: Int): Int = playbackOrder.indexOf(song)
+
+    fun setShuffle(enabled: Boolean, currentSong: Int) {
+        if (enabled == shuffleEnabled) return
+        shuffleEnabled = enabled
+        playbackOrder = if (enabled) {
+            // Keep the track that is playing, and shuffle the rest once. Navigation
+            // and the queue now both follow this same, persistent order.
+            val remaining = unshuffledOrder.filterNot { it == currentSong }
+            val shuffled = remaining.shuffled()
+            val next = if (remaining.size > 1 && shuffled == remaining) shuffled.reversed() else shuffled
+            listOf(currentSong).filter { it in unshuffledOrder } + next
+        } else {
+            unshuffledOrder
+        }
+    }
+
+    /** Radio can still choose a new next song, but the queue reflects that choice. */
+    fun selectRadioNext(currentSong: Int) {
+        val currentPage = pageOf(currentSong)
+        if (currentPage < 0 || playbackOrder.size <= 2) return
+        val nextPage = (currentPage + 1) % playbackOrder.size
+        val candidate = playbackOrder.filterNot { it == currentSong }.random()
+        val candidatePage = pageOf(candidate)
+        if (candidatePage == nextPage) return
+        val songs = playbackOrder.toMutableList()
+        songs[candidatePage] = songs[nextPage]
+        songs[nextPage] = candidate
+        playbackOrder = songs
+        if (!shuffleEnabled) unshuffledOrder = songs
+    }
+
+    fun moveUpcomingSong(currentSong: Int, songCount: Int, fromSong: Int, toSong: Int) {
+        if (fromSong == currentSong || fromSong !in 0 until songCount || toSong !in 0 until songCount) return
+        val songs = playbackOrder.toMutableList()
+        val from = songs.indexOf(fromSong)
+        val to = songs.indexOf(toSong)
+        if (from == -1 || to == -1 || from == to) return
+        songs.add(to, songs.removeAt(from))
+        playbackOrder = songs
+        if (!shuffleEnabled) unshuffledOrder = songs
+    }
 }
+
+enum class RepeatMode { Off, All, One }
 
 val LocalPlayerPagerState = staticCompositionLocalOf<PagerState?> { null }
 val LocalPlayerControls = staticCompositionLocalOf<PlayerControlsState?> { null }
@@ -77,12 +131,12 @@ val LocalPlayerLyricsChromeCollapsed =
 @Composable
 fun ProvidePlayerControls(
     pagerState: PagerState,
+    controls: PlayerControlsState,
     content: @Composable () -> Unit,
 ) {
-    val controls = remember { PlayerControlsState() }
     val lyricsVisible = rememberSaveable { mutableStateOf(false) }
     val lyricsChromeCollapsed = rememberSaveable { mutableStateOf(false) }
-    PreloadAdjacentPlayerArtwork(pagerState)
+    PreloadAdjacentPlayerArtwork(pagerState, controls)
     CompositionLocalProvider(
         LocalPlayerPagerState provides pagerState,
         LocalPlayerControls provides controls,
@@ -103,7 +157,7 @@ val LocalPlayerItems = staticCompositionLocalOf {
 }
 
 @Composable
-private fun PreloadAdjacentPlayerArtwork(pagerState: PagerState) {
+private fun PreloadAdjacentPlayerArtwork(pagerState: PagerState, controls: PlayerControlsState) {
     val artworks = LocalPlayerItems.current
     val landscapist = getLandscapist()
     val requestSize = with(LocalDensity.current) {
@@ -111,8 +165,9 @@ private fun PreloadAdjacentPlayerArtwork(pagerState: PagerState) {
     }
 
     LaunchedEffect(pagerState, artworks, landscapist, requestSize) {
-        snapshotFlow { pagerState.currentPage }.collectLatest { currentPage ->
+        snapshotFlow { pagerState.currentPage to controls.playbackOrder }.collectLatest { (currentPage, order) ->
             val adjacentPages = listOf(currentPage - 1, currentPage + 1)
+                .mapNotNull { order.getOrNull(it) }
                 .filter { it in artworks.indices }
 
             coroutineScope {
@@ -211,12 +266,13 @@ fun PlayerBottomSheet(
         }
     ) {
         val artWorks = LocalPlayerItems.current
+        val controls = remember(artWorks.size) { PlayerControlsState(artWorks.size) }
         val pagerState = rememberPagerState(2, pageCount = { artWorks.size })
         val pageScrolledToTop = remember { mutableStateMapOf<Int, Boolean>() }
         val pageInteractionLocked = remember { mutableStateMapOf<Int, Boolean>() }
         val interactionLocked by remember {
             derivedStateOf {
-                pageInteractionLocked[pagerState.currentPage] == true
+                pageInteractionLocked[controls.songAt(pagerState.currentPage)] == true
             }
         }
         val backGestureActive by remember {
@@ -226,7 +282,7 @@ fun PlayerBottomSheet(
             derivedStateOf {
                 !interactionLocked &&
                         !backGestureActive &&
-                        pageScrolledToTop[pagerState.currentPage] != false
+                        pageScrolledToTop[controls.songAt(pagerState.currentPage)] != false
             }
         }
 
@@ -259,7 +315,7 @@ fun PlayerBottomSheet(
                     scaleY = scale
                     transformOrigin = TransformOrigin(0.5f, 1f)
                 }) {
-                    ProvidePlayerControls(pagerState) {
+                    ProvidePlayerControls(pagerState, controls) {
                         HorizontalPager(
                             pagerState,
                             Modifier
@@ -269,18 +325,20 @@ fun PlayerBottomSheet(
                                     rightInsetPx = rightSystemGestureInset,
                                 ),
                             userScrollEnabled = pagerUserScrollEnabled,
+                            key = { controls.songAt(it) },
                         ) { page ->
+                            val song = controls.songAt(page)
                             Box(Modifier.fillMaxSize().blurFadePagerTransition(pagerState, page) {
                                 if (betterSheet.backProgressState.floatValue > 0f) 0f
                                 else betterSheet.progressState.floatValue.coerceIn(0f, 1f)
                             }) {
                                 PlayerItem(
-                                    i = page,
+                                    i = song,
                                     onScrolledToTopChanged = { scrolledToTop ->
-                                        pageScrolledToTop[page] = scrolledToTop
+                                        pageScrolledToTop[song] = scrolledToTop
                                     },
                                     onInteractionLockChanged = { locked ->
-                                        pageInteractionLocked[page] = locked
+                                        pageInteractionLocked[song] = locked
                                     },
                                 )
                             }

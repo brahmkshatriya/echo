@@ -46,7 +46,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
@@ -67,11 +66,13 @@ import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import dev.brahmkshatriya.echo.app.ui.Media
 import dev.brahmkshatriya.echo.app.ui.components.FastScrollbar
+import dev.brahmkshatriya.echo.app.ui.components.clover6Sided
 import dev.brahmkshatriya.echo.app.ui.components.LocalMainBackStack
 import dev.brahmkshatriya.echo.app.ui.components.materialGroup
 import dev.brahmkshatriya.echo.app.ui.components.paddingMask
 import dev.brahmkshatriya.echo.app.ui.main.Header
 import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerControls
+import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerItems
 import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerLyricsChromeCollapsed
 import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerLyricsVisible
 import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerPagerState
@@ -80,6 +81,7 @@ import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerTimelineState
 import dev.brahmkshatriya.echo.app.ui.player.PlayerBottomBarContentType
 import dev.brahmkshatriya.echo.app.ui.player.PlayerScrollbarItemSizes
 import dev.brahmkshatriya.echo.app.ui.player.QueuePage
+import dev.brahmkshatriya.echo.app.ui.player.RepeatMode
 import dev.brahmkshatriya.echo.app.ui.player.blockDescendantBringIntoView
 import dev.brahmkshatriya.echo.app.ui.player.clipHeaderTop
 import dev.brahmkshatriya.echo.app.ui.player.expandedListItemTransform
@@ -94,7 +96,7 @@ import dev.brahmkshatriya.echo.app.ui.player.song.lyrics.LyricsSelectorPageInfo
 import dev.brahmkshatriya.echo.app.ui.player.song.lyrics.LyricsSelectorPlayerInfo
 import dev.brahmkshatriya.echo.app.ui.player.song.lyrics.rememberLyricsSelections
 import echo.client.generated.resources.Res
-import echo.client.generated.resources.ic_queue_music
+import echo.client.generated.resources.ic_playlist_play
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
@@ -120,16 +122,17 @@ fun SongPlayerItem(
     val controls = LocalPlayerControls.current
     val pagerState = LocalPlayerPagerState.current
     val scope = rememberCoroutineScope()
-    val isCurrentItem = pagerState == null || pagerState.currentPage == i
+    val isCurrentItem = pagerState == null || controls?.songAt(pagerState.currentPage) == i
     val lyricsSelections = rememberLyricsSelections()
     val timelineState = rememberPlayerTimelineState(
         key = i,
         durationMs = 220_000f,
         running = isCurrentItem && controls?.isPlaying != false,
         onFinished = {
-            if (controls?.repeatEnabled != true && pagerState != null) {
+            if (controls?.repeatMode != RepeatMode.One && pagerState != null) {
                 scope.launch {
-                    pagerState.playNext(controls?.shuffleEnabled == true)
+                    if (controls?.radioEnabled == true) controls.selectRadioNext(i)
+                    pagerState.playNext()
                 }
                 true
             } else false
@@ -727,7 +730,9 @@ fun SongPlayerItem(
                     transition = queueTransition,
                     viewport = Size(constraints.maxWidth.toFloat(), constraints.maxHeight.toFloat()),
                     isCurrentPage = isCurrentItem,
-                    pillColor = Color.Transparent,
+                    pillColor = colorScheme.primary.copy(alpha = 0.1f),
+                    collapsedCornerRadius = 12.dp,
+                    collapsedPolygon = clover6Sided(),
                     openInfo = QueueOverlayPageInfo,
                     closedInfo = QueuePlayerInfo,
                     alternateSource = if (showLyrics && !isBottomBarSticky) {
@@ -741,7 +746,7 @@ fun SongPlayerItem(
                     pillContent = {
                         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             Icon(
-                                painter = painterResource(Res.drawable.ic_queue_music),
+                                painter = painterResource(Res.drawable.ic_playlist_play),
                                 contentDescription = null,
                                 tint = colorScheme.onPrimaryContainer,
                             )
@@ -750,15 +755,15 @@ fun SongPlayerItem(
                     pageContent = { interactive ->
                         QueuePage(
                             currentSong = i,
-                            songCount = dev.brahmkshatriya.echo.app.ui.player.LocalPlayerItems.current.size,
-                            topPadding = topPadding,
+                            songCount = LocalPlayerItems.current.size,
                             interactive = interactive,
                             onBack = { queueTransition.close() },
                             onSongSelected = { index ->
                                 queueTransition.close()
                                 scope.launch {
                                     snapshotFlow { queueTransition.mounted }.first { !it }
-                                    pagerState?.animateScrollToPage(index)
+                                    val page = controls?.pageOf(index) ?: index
+                                    if (page >= 0) pagerState?.requestScrollToPage(page)
                                 }
                             },
                         )

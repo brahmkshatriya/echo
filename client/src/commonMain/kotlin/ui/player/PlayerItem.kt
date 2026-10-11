@@ -24,7 +24,18 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.RoundRect
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathFillType
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalInspectionMode
@@ -45,9 +56,9 @@ import dev.brahmkshatriya.echo.app.ui.components.scrollbarStateValue
 import dev.brahmkshatriya.echo.app.ui.player.song.SongPlayerItem
 import dev.brahmkshatriya.echo.app.ui.player.song.maxSongCoverSize
 import dev.brahmkshatriya.echo.app.ui.theme.Primary
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.isActive
 import kotlin.math.roundToInt
-import kotlin.random.Random
 
 private data class PlayerArtworkCacheEntry(
     val artwork: ImageBitmap? = null,
@@ -113,6 +124,17 @@ internal fun PlayerItemHost(
     }
     var artwork by remember(artworkModel) { mutableStateOf(cachedArtwork?.artwork) }
     var palette by remember(artworkModel) { mutableStateOf(cachedArtwork?.palette) }
+    // Palette callbacks may arrive from an image-loading thread while the pager
+    // subcomposes a new page. Keep snapshot state writes in a composition effect.
+    val paletteUpdates = remember(artworkModel) { Channel<Palette>(Channel.CONFLATED) }
+    LaunchedEffect(artworkModel, paletteUpdates) {
+        for (loadedPalette in paletteUpdates) {
+            palette = loadedPalette
+            if (artworkModel != null) {
+                PlayerArtworkMemoryCache.putPalette(artworkModel, loadedPalette)
+            }
+        }
+    }
     val artworkRequestSize = with(LocalDensity.current) {
         artworkMaxSize.roundToPx().coerceAtLeast(1)
     }
@@ -131,8 +153,7 @@ internal fun PlayerItemHost(
                     PalettePlugin(
                         imageModel = artworkModel,
                         paletteLoadedListener = { loadedPalette ->
-                            palette = loadedPalette
-                            PlayerArtworkMemoryCache.putPalette(artworkModel, loadedPalette)
+                            paletteUpdates.trySend(loadedPalette)
                         },
                     )
                 )
@@ -174,9 +195,7 @@ internal fun PlayerItemHost(
 
 const val collapsedHorizontalPadding = 8
 internal val playerBottomBarHeight = 64.dp
-internal val playerBottomBarInset = 8.dp
 internal val playerBottomBarControlSize = 48.dp
-internal val playerBottomBarItemSpacing = 4.dp
 internal const val PlayerBottomBarContentType = "player-bottom-bar"
 internal const val PlayerScrollbarThumbSizePercent = 0.16f
 internal const val PlayerArtworkCrossfadeDurationMs = 250
@@ -223,41 +242,91 @@ internal fun rememberPlayerTimelineState(
 internal val LocalPlayerTimelineState = staticCompositionLocalOf<PlayerTimelineState?> { null }
 internal val LocalPlayerArtwork = staticCompositionLocalOf<ImageBitmap?> { null }
 
+private val CoverBrightnessFilter = ColorFilter.colorMatrix(ColorMatrix(floatArrayOf(
+    1.5f, 0f, 0f, 0f, 0f,
+    0f, 1.5f, 0f, 0f, 0f,
+    0f, 0f, 1.5f, 0f, 0f,
+    0f, 0f, 0f, 1f, 0f,
+)))
+
+/** Brighten the actual cover pixels inside a one-pixel ring. */
+internal fun Modifier.brightenedCoverOutline(
+    outlineWidthPx: Float = 1f,
+    outlineRadius: Dp = 8.dp,
+): Modifier = drawWithContent {
+    drawContent()
+
+    val strokeWidth = outlineWidthPx.coerceAtLeast(0f)
+    if (size.width <= strokeWidth * 2 || size.height <= strokeWidth * 2) return@drawWithContent
+    val radius = outlineRadius.toPx().coerceAtLeast(0f)
+    val ring = Path().apply {
+        fillType = PathFillType.EvenOdd
+        addRoundRect(RoundRect(Rect(Offset.Zero, size), CornerRadius(radius)))
+        addRoundRect(
+            RoundRect(
+                Rect(
+                    strokeWidth,
+                    strokeWidth,
+                    size.width - strokeWidth,
+                    size.height - strokeWidth,
+                ),
+                CornerRadius((radius - strokeWidth).coerceAtLeast(0f)),
+            )
+        )
+    }
+
+    // Redraw only the cover's edge with RGB channels multiplied, preserving
+    // each pixel's hue instead of replacing it with a translucent white tint.
+    drawContext.canvas.saveLayer(
+        Rect(Offset.Zero, size),
+        Paint().apply { colorFilter = CoverBrightnessFilter },
+    )
+    val redrawArtwork = { drawContent() }
+    clipPath(ring) { redrawArtwork() }
+    drawContext.canvas.restore()
+}
+
 @Composable
 internal fun PlayerArtwork(
     contentDescription: String?,
     modifier: Modifier = Modifier,
     contentScale: ContentScale = ContentScale.Crop,
+    outlineWidth: Dp? = null,
+    outlineRadius: Dp = 8.dp,
 ) {
-    Crossfade(
-        targetState = LocalPlayerArtwork.current,
-        modifier = modifier,
-        animationSpec = tween(PlayerArtworkCrossfadeDurationMs),
-    ) { bitmap ->
-        if (bitmap != null) {
-            Image(
-                bitmap = bitmap,
-                contentDescription = contentDescription,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = contentScale,
-            )
-        } else {
-            Box(Modifier.fillMaxSize())
+    val outlineWidthPx = outlineWidth?.let { with(LocalDensity.current) { it.toPx() } } ?: 1f
+    Box(modifier.brightenedCoverOutline(outlineWidthPx, outlineRadius)) {
+        Crossfade(
+            targetState = LocalPlayerArtwork.current,
+            modifier = Modifier.matchParentSize(),
+            animationSpec = tween(PlayerArtworkCrossfadeDurationMs),
+        ) { bitmap ->
+            if (bitmap != null) {
+                Image(
+                    bitmap = bitmap,
+                    contentDescription = contentDescription,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = contentScale,
+                )
+            } else {
+                Box(Modifier.fillMaxSize())
+            }
         }
     }
 }
 
-internal suspend fun PagerState.playPrevious() {
+internal fun PagerState.playPrevious() {
     if (pageCount <= 0) return
-    animateScrollToPage((currentPage - 1 + pageCount) % pageCount)
+    // An animated pager jump can synchronously force a remeasure, including a
+    // nested BoxWithConstraints subcomposition, while snapshot state is changing.
+    // Request the destination for the next measure instead.
+    requestScrollToPage((currentPage - 1 + pageCount) % pageCount)
 }
 
-internal suspend fun PagerState.playNext(shuffle: Boolean) {
+internal fun PagerState.playNext() {
     if (pageCount <= 0) return
-    val targetPage = if (shuffle && pageCount > 1)
-        (currentPage + Random.nextInt(1, pageCount)) % pageCount
-    else (currentPage + 1) % pageCount
-    animateScrollToPage(targetPage)
+    // The pager's backing list is already in the actual playback order.
+    requestScrollToPage((currentPage + 1) % pageCount)
 }
 
 @Stable

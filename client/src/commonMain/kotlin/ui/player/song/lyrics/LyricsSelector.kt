@@ -9,12 +9,14 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -35,6 +37,7 @@ import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -79,11 +82,12 @@ import androidx.compose.ui.unit.dp
 import androidx.navigationevent.NavigationEventInfo
 import dev.brahmkshatriya.echo.app.platform.imeAnimationInsetsOrNull
 import dev.brahmkshatriya.echo.app.ui.components.BetterImage
+import dev.brahmkshatriya.echo.app.ui.components.PolygonIconRipple
 import dev.brahmkshatriya.echo.app.ui.components.ScaledTopAppBar
+import dev.brahmkshatriya.echo.app.ui.components.animatedPolygonIconShape
+import dev.brahmkshatriya.echo.app.ui.components.clover6Sided
 import dev.brahmkshatriya.echo.app.ui.components.materialGroup
 import dev.brahmkshatriya.echo.app.ui.player.playerBottomBarControlSize
-import dev.brahmkshatriya.echo.app.ui.player.playerBottomBarInset
-import dev.brahmkshatriya.echo.app.ui.player.playerBottomBarItemSpacing
 import echo.client.generated.resources.Res
 import echo.client.generated.resources.ic_back
 import echo.client.generated.resources.ic_check_circle
@@ -324,8 +328,6 @@ private fun LyricsSelectionSearchBar(
     val keyboardController = LocalSoftwareKeyboardController.current
     val density = LocalDensity.current
     val imeInsets = WindowInsets.ime
-    // Animation source/target insets are exposed by Android only. On desktop
-    // and other platforms, fall back to the normal IME inset.
     val platformImeAnimationInsets = imeAnimationInsetsOrNull()
     val imeAnimationSource = platformImeAnimationInsets?.first ?: imeInsets
     val imeAnimationTarget = platformImeAnimationInsets?.second ?: imeInsets
@@ -382,7 +384,7 @@ private fun LyricsSelectionSearchBar(
         if (isFocused && interactive) {
             var imeWasVisible = false
             snapshotFlow {
-                Triple<Int, Int, Int>(
+                Triple(
                     imeInsets.getBottom(density),
                     imeAnimationSource.getBottom(density),
                     imeAnimationTarget.getBottom(density),
@@ -399,12 +401,7 @@ private fun LyricsSelectionSearchBar(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(
-                start = playerBottomBarInset,
-                end = playerBottomBarInset,
-                top = playerBottomBarInset,
-                bottom = playerBottomBarInset,
-            ),
+            .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         AnimatedVisibility(
@@ -419,16 +416,19 @@ private fun LyricsSelectionSearchBar(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(
-                    onClick = onBack,
+                    onClick = { },
                     enabled = interactive,
                     shapes = IconButtonDefaults.shapes(),
                 ) {
-                    Icon(
-                        painter = painterResource(Res.drawable.ic_back),
-                        contentDescription = "Back",
+                    BetterImage(
+                        model = {
+                            "https://play-lh.googleusercontent.com/7ynvVIRdhJNAngCg_GI7i8TtH8BqkJYmffeUHsG-mJOdzt1XLvGmbsKuc5Q1SInBjDKN"
+                        },
+                        contentDescription = extensionName,
+                        modifier = Modifier.padding(4.dp).clip(Circle.toShape()),
                     )
                 }
-                Box(Modifier.size(playerBottomBarItemSpacing))
+                Spacer(Modifier.size(4.dp))
             }
         }
 
@@ -436,9 +436,9 @@ private fun LyricsSelectionSearchBar(
             modifier = Modifier
                 .height(playerBottomBarControlSize)
                 .weight(1f)
-                .clip(RoundedCornerShape(24.dp))
+                .clip(RoundedCornerShape(playerBottomBarControlSize / 2))
                 .background(colorScheme.primary.copy(alpha = 0.08f))
-                .padding(start = 4.dp, end = 4.dp),
+                .padding(horizontal = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             AnimatedVisibility(
@@ -564,19 +564,28 @@ private fun LyricsSelectionSearchBar(
                     shrinkHorizontally(animationSpec = widthMotion, shrinkTowards = Alignment.End),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(Modifier.size(playerBottomBarItemSpacing))
-                IconButton(
-                    onClick = { },
+                Spacer(Modifier.size(4.dp))
+                val backInteractionSource = remember { MutableInteractionSource() }
+                FilledTonalIconButton(
+                    onClick = onBack,
                     enabled = interactive,
-                    shapes = IconButtonDefaults.shapes(),
+                    shape = animatedPolygonIconShape(
+                        shape = clover6Sided(),
+                        pressedShape = Circle,
+                        interactionSource = backInteractionSource,
+                    ),
+                    interactionSource = backInteractionSource,
+                    colors = IconButtonDefaults.iconButtonColors(
+                        colorScheme.primary.copy(0.1f),
+                        colorScheme.onPrimaryContainer
+                    ),
                 ) {
-                    BetterImage(
-                        model = {
-                            "https://play-lh.googleusercontent.com/7ynvVIRdhJNAngCg_GI7i8TtH8BqkJYmffeUHsG-mJOdzt1XLvGmbsKuc5Q1SInBjDKN"
-                        },
-                        contentDescription = extensionName,
-                        modifier = Modifier.padding(4.dp).clip(Circle.toShape()),
-                    )
+                    PolygonIconRipple(backInteractionSource) {
+                        Icon(
+                            painterResource(Res.drawable.ic_back),
+                            contentDescription = "Close queue"
+                        )
+                    }
                 }
             }
         }

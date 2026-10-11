@@ -73,7 +73,10 @@ import echo.client.generated.resources.ic_pause_32
 import echo.client.generated.resources.ic_play_arrow
 import echo.client.generated.resources.ic_play_arrow_32
 import echo.client.generated.resources.ic_repeat
+import echo.client.generated.resources.ic_repeat_on
+import echo.client.generated.resources.ic_repeat_one_on
 import echo.client.generated.resources.ic_shuffle
+import echo.client.generated.resources.ic_shuffle_on
 import echo.client.generated.resources.ic_skip_next
 import echo.client.generated.resources.ic_skip_next_32
 import echo.client.generated.resources.ic_skip_previous
@@ -87,20 +90,34 @@ import kotlin.math.roundToInt
 @Composable
 internal fun RepeatButton(modifier: Modifier = Modifier) {
     val controls = LocalPlayerControls.current
-    val enabled = controls?.repeatEnabled == true
+    val mode = controls?.repeatMode ?: RepeatMode.Off
     IconButton(
-        onClick = { controls?.repeatEnabled = !enabled },
+        onClick = {
+            controls?.repeatMode = when (mode) {
+                RepeatMode.Off -> RepeatMode.All
+                RepeatMode.All -> RepeatMode.One
+                RepeatMode.One -> RepeatMode.Off
+            }
+        },
         enabled = controls != null,
         modifier = modifier,
         shapes = IconButtonDefaults.shapes(),
         colors = IconButtonDefaults.iconButtonColors(
-            containerColor = if (enabled) colorScheme.primary else Color.Transparent,
-            contentColor = if (enabled) colorScheme.onPrimary else colorScheme.onPrimaryContainer
+            containerColor = Color.Transparent,
+            contentColor = colorScheme.onPrimaryContainer,
         )
     ) {
         Icon(
-            painterResource(Res.drawable.ic_repeat),
-            contentDescription = if (enabled) "Disable repeat" else "Enable repeat"
+            painterResource(when (mode) {
+                RepeatMode.Off -> Res.drawable.ic_repeat
+                RepeatMode.All -> Res.drawable.ic_repeat_on
+                RepeatMode.One -> Res.drawable.ic_repeat_one_on
+            }),
+            contentDescription = when (mode) {
+                RepeatMode.Off -> "Repeat off; enable repeat all"
+                RepeatMode.All -> "Repeat all; enable repeat one"
+                RepeatMode.One -> "Repeat one; disable repeat"
+            },
         )
     }
 }
@@ -191,13 +208,14 @@ internal fun CompactPlayPauseButton(modifier: Modifier = Modifier) {
 @Composable
 internal fun NextButton(modifier: Modifier = Modifier, large: Boolean = false) {
     val timelineState = LocalPlayerTimelineState.current
-    val controls = LocalPlayerControls.current
     val pagerState = LocalPlayerPagerState.current
     val scope = rememberCoroutineScope()
     IconButton(
         onClick = {
             timelineState?.positionMs = 0f
-            scope.launch { pagerState?.playNext(controls?.shuffleEnabled == true) }
+            scope.launch {
+                pagerState?.playNext()
+            }
         },
         enabled = timelineState != null,
         modifier = modifier,
@@ -215,19 +233,24 @@ internal fun NextButton(modifier: Modifier = Modifier, large: Boolean = false) {
 @Composable
 internal fun ShuffleButton(modifier: Modifier = Modifier) {
     val controls = LocalPlayerControls.current
+    val pagerState = LocalPlayerPagerState.current
     val enabled = controls?.shuffleEnabled == true
     IconButton(
-        onClick = { controls?.shuffleEnabled = !enabled },
+        onClick = {
+            if (controls != null && pagerState != null) {
+                controls.setShuffle(!enabled, controls.songAt(pagerState.currentPage))
+            }
+        },
         enabled = controls != null,
         modifier = modifier,
         shapes = IconButtonDefaults.shapes(),
         colors = IconButtonDefaults.iconButtonColors(
-            containerColor = if (enabled) colorScheme.primary else Color.Transparent,
-            contentColor = if (enabled) colorScheme.onPrimary else colorScheme.onPrimaryContainer
+            containerColor = Color.Transparent,
+            contentColor = colorScheme.onPrimaryContainer,
         )
     ) {
         Icon(
-            painterResource(Res.drawable.ic_shuffle),
+            painterResource(if (enabled) Res.drawable.ic_shuffle_on else Res.drawable.ic_shuffle),
             contentDescription = if (enabled) "Disable shuffle" else "Enable shuffle"
         )
     }

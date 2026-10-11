@@ -14,29 +14,33 @@ import dev.brahmkshatriya.echo.app.ui.components.blurFadePagerTransition
 import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerItems
 import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerSheet
 import dev.brahmkshatriya.echo.app.ui.player.PlayerItem
+import dev.brahmkshatriya.echo.app.ui.player.PlayerControlsState
 import dev.brahmkshatriya.echo.app.ui.player.ProvidePlayerControls
 
 @Composable
 fun Library() {
     val artWorks = LocalPlayerItems.current
+    val controls = remember(artWorks.size) { PlayerControlsState(artWorks.size) }
     val sheet = LocalPlayerSheet.current
     val pagerState = rememberPagerState(2, pageCount = { artWorks.size })
     val pageScrolledToTop = remember { mutableStateMapOf<Int, Boolean>() }
     val pagerUserScrollEnabled by remember {
         derivedStateOf {
-            pageScrolledToTop[pagerState.currentPage] != false
+            pageScrolledToTop[controls.songAt(pagerState.currentPage)] != false
         }
     }
-    ProvidePlayerControls(pagerState) {
+    ProvidePlayerControls(pagerState, controls) {
         HorizontalPager(
             state = pagerState,
             userScrollEnabled = pagerUserScrollEnabled,
+            key = { controls.songAt(it) },
         ) { page ->
+            val song = controls.songAt(page)
             Box(Modifier.fillMaxSize().blurFadePagerTransition(pagerState, page) {
                 sheet?.progressState?.floatValue?.coerceIn(0f, 1f) ?: 1f
             }) {
-                PlayerItem(page, onScrolledToTopChanged = { scrolledToTop ->
-                    pageScrolledToTop[page] = scrolledToTop
+                PlayerItem(song, onScrolledToTopChanged = { scrolledToTop ->
+                    pageScrolledToTop[song] = scrolledToTop
                 })
             }
         }

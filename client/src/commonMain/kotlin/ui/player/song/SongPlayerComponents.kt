@@ -31,11 +31,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FilledTonalIconToggleButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialShapes.Companion.Circle
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
@@ -44,6 +46,7 @@ import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -53,15 +56,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -69,7 +73,10 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import dev.brahmkshatriya.echo.app.platform.hasTouchInput
 import dev.brahmkshatriya.echo.app.ui.components.BetterImage
+import dev.brahmkshatriya.echo.app.ui.components.PolygonIconRipple
 import dev.brahmkshatriya.echo.app.ui.components.ResponsiveRow
+import dev.brahmkshatriya.echo.app.ui.components.animatedPolygonIconShape
+import dev.brahmkshatriya.echo.app.ui.components.clover6Sided
 import dev.brahmkshatriya.echo.app.ui.player.CompactPlayPauseButton
 import dev.brahmkshatriya.echo.app.ui.player.Controller
 import dev.brahmkshatriya.echo.app.ui.player.ExpandedTimeline
@@ -85,8 +92,6 @@ import dev.brahmkshatriya.echo.app.ui.player.ShuffleButton
 import dev.brahmkshatriya.echo.app.ui.player.TimelineWithVolume
 import dev.brahmkshatriya.echo.app.ui.player.collapsedHorizontalPadding
 import dev.brahmkshatriya.echo.app.ui.player.playerBottomBarControlSize
-import dev.brahmkshatriya.echo.app.ui.player.playerBottomBarInset
-import dev.brahmkshatriya.echo.app.ui.player.playerBottomBarItemSpacing
 import dev.brahmkshatriya.echo.app.ui.player.song.lyrics.Lyrics
 import dev.brahmkshatriya.echo.app.ui.player.song.lyrics.LyricsPanel
 import dev.brahmkshatriya.echo.app.ui.player.song.lyrics.LyricsSelectionItem
@@ -98,10 +103,9 @@ import echo.client.generated.resources.Res
 import echo.client.generated.resources.ic_close
 import echo.client.generated.resources.ic_favorite
 import echo.client.generated.resources.ic_favorite_filled
+import echo.client.generated.resources.ic_format_quotes
 import echo.client.generated.resources.ic_keyboard_arrow_down
-import echo.client.generated.resources.ic_queue_music
-import echo.client.generated.resources.ic_lyrics_mic
-import echo.client.generated.resources.ic_lyrics_mic_off
+import echo.client.generated.resources.ic_playlist_play
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
@@ -351,10 +355,24 @@ fun CoverArt(
         playerPadding.calculateStartPadding(layoutDirection) + (collapsedHorizontalPadding + 8).dp,
         tween()
     )
+    // The full cover scales to 48.dp when the player collapses. Compensate
+    // using its actual measured height so its border stays one *physical pixel*.
+    var coverHeightPx by remember { mutableIntStateOf(0) }
+    val density = LocalDensity.current
+    val progress = (playerSheet?.progressState?.floatValue ?: 1f).coerceIn(0f, 1f)
+    val collapsedScale = with(density) {
+        val fullHeightPx = if (coverHeightPx > 0) coverHeightPx.toFloat()
+        else maxCoverSize.toPx().coerceAtLeast(1f)
+        48.dp.toPx() / fullHeightPx
+    }
+    val coverScale = 1f + (collapsedScale - 1f) * (1f - progress)
     PlayerArtwork(
         contentDescription = "Song $i",
+        outlineWidth = with(density) { (1f / coverScale).toDp() },
+        outlineRadius = 8.dp / coverScale,
         modifier = Modifier
             .songCoverSize(maxCoverSize, verticalPadding)
+            .onSizeChanged { coverHeightPx = it.height }
             .graphicsLayer {
                 val sheetProgress = playerSheet?.progressState?.floatValue ?: 0f
                 val positiveProgress = sheetProgress.coerceIn(0f, 1f)
@@ -394,7 +412,10 @@ fun TopBar(
     val playerSheet = LocalPlayerSheet.current
     val sheetState = playerSheet?.sheetState
     val scope = rememberCoroutineScope()
-    Row(modifier.padding(end = 8.dp)) {
+    Row(
+        modifier.padding(horizontal = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
         IconButton(
             onClick = {
                 scope.launch { sheetState?.show() }
@@ -450,7 +471,7 @@ internal fun BottomBar(
         Modifier
             .fillMaxWidth()
             .background(colorScheme.primaryContainer.copy(alpha = stickyProgress))
-            .padding(playerBottomBarInset)
+            .padding(8.dp)
     ) {
         Crossfade(
             targetState = isSticky,
@@ -481,28 +502,31 @@ private fun LyricsToggle(
     FilledTonalIconToggleButton(
         checked = checked,
         onCheckedChange = onCheckedChange,
-        shapes = IconButtonDefaults.toggleableShapes(
-            checkedShape = RoundedCornerShape(100),
+        shape = animatedPolygonIconShape(
+            shape = MaterialShapes.Clover4Leaf,
+            pressedShape = MaterialShapes.Square,
+            checkedShape = MaterialShapes.Clover4Leaf,
+            checked = checked,
+            interactionSource = interactionSource,
         ),
         interactionSource = interactionSource,
         colors = IconButtonDefaults.filledTonalIconToggleButtonColors(
-            Color.Transparent,
+            colorScheme.primary.copy(0.1f),
             colorScheme.onPrimaryContainer,
-            checkedContainerColor = Color.Transparent,
-            checkedContentColor = colorScheme.onPrimaryContainer,
+            checkedContainerColor = colorScheme.primary,
+            checkedContentColor = colorScheme.onPrimary,
         ),
     ) {
-        Crossfade(
-            targetState = checked,
-            animationSpec = tween(LyricsTransitionDurationMs),
-        ) { isChecked ->
-            Icon(
-                painterResource(
-                    if (isChecked) Res.drawable.ic_lyrics_mic_off
-                    else Res.drawable.ic_lyrics_mic,
-                ),
-                contentDescription = if (isChecked) "Hide lyrics" else "Show lyrics",
-            )
+        PolygonIconRipple(interactionSource) {
+            Crossfade(
+                targetState = checked,
+                animationSpec = tween(LyricsTransitionDurationMs),
+            ) { isChecked ->
+                Icon(
+                    painterResource(Res.drawable.ic_format_quotes),
+                    contentDescription = if (isChecked) "Hide lyrics" else "Show lyrics",
+                )
+            }
         }
     }
 }
@@ -520,10 +544,11 @@ private fun LyricsBottomBar(
     onLyricsClick: () -> Unit
 ) {
     val timelineState = LocalPlayerTimelineState.current ?: return
+    val queueInteractionSource = remember { MutableInteractionSource() }
     Row(
         Modifier.fillMaxWidth().height(playerBottomBarControlSize),
-        horizontalArrangement = Arrangement.spacedBy(playerBottomBarItemSpacing),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         LyricsToggle(
             checked = lyricsVisible,
@@ -561,17 +586,30 @@ private fun LyricsBottomBar(
             }
         }
 
-        IconButton(
+        FilledTonalIconButton(
             onClick = onQueueButtonClick,
             enabled = !queueButtonHidden,
+            shape = animatedPolygonIconShape(
+                shape = clover6Sided(),
+                pressedShape = MaterialShapes.Square,
+                interactionSource = queueInteractionSource,
+            ),
+            interactionSource = queueInteractionSource,
+            colors = IconButtonDefaults.iconButtonColors(
+                colorScheme.primary.copy(0.1f),
+                colorScheme.onPrimaryContainer,
+
+            ),
             modifier = Modifier
                 .onGloballyPositioned { onQueueButtonBoundsChanged(it) }
                 .graphicsLayer { alpha = if (queueButtonHidden) 0f else 1f },
         ) {
-            Icon(
-                painterResource(Res.drawable.ic_queue_music),
-                contentDescription = "Open queue"
-            )
+            PolygonIconRipple(queueInteractionSource) {
+                Icon(
+                    painterResource(Res.drawable.ic_playlist_play),
+                    contentDescription = "Open queue"
+                )
+            }
         }
     }
 }

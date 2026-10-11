@@ -7,8 +7,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.motionScheme
 import androidx.compose.runtime.Composable
@@ -21,6 +23,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
@@ -31,6 +34,7 @@ import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -39,6 +43,9 @@ import androidx.navigationevent.NavigationEventTransitionState
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
+import androidx.graphics.shapes.Morph
+import androidx.graphics.shapes.RoundedPolygon
+import dev.brahmkshatriya.echo.app.ui.components.MorphingPolygonShape
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -99,6 +106,8 @@ internal fun PlayerPillOverlay(
     viewport: Size,
     isCurrentPage: Boolean,
     pillColor: Color,
+    collapsedCornerRadius: Dp? = null,
+    collapsedPolygon: RoundedPolygon? = null,
     openInfo: NavigationEventInfo,
     closedInfo: NavigationEventInfo,
     alternateSource: Rect? = null,
@@ -112,6 +121,10 @@ internal fun PlayerPillOverlay(
     val radiusSpec = motionScheme.defaultSpatialSpec<Float>()
     val fadeSpec = motionScheme.defaultSpatialSpec<Float>()
     val scope = rememberCoroutineScope()
+    val collapsedRadiusPx = collapsedCornerRadius?.let { with(density) { it.toPx() } }
+    val cloverMorph = remember(collapsedPolygon) {
+        collapsedPolygon?.let { Morph(it, MaterialShapes.Square) }
+    }
 
     val navigationState = rememberNavigationEventState(
         currentInfo = if (transition.open) openInfo else closedInfo,
@@ -152,7 +165,7 @@ internal fun PlayerPillOverlay(
         )
     }
 
-    LaunchedEffect(transition.open, transition.source, viewport) {
+    LaunchedEffect(transition.open, transition.source, viewport, collapsedRadiusPx) {
         val source = transition.source
         if (transition.open) {
             if (transition.restoring) {
@@ -171,7 +184,7 @@ internal fun PlayerPillOverlay(
                 coroutineScope {
                     launch { transition.center.snapTo(source.center) }
                     launch { transition.size.snapTo(source.size) }
-                    launch { transition.radius.snapTo(source.height / 2f) }
+                    launch { transition.radius.snapTo(collapsedRadiusPx ?: (source.height / 2f)) }
                     launch { transition.reveal.snapTo(0f) }
                     launch { transition.contentScale.snapTo(0.66f) }
                 }
@@ -191,7 +204,7 @@ internal fun PlayerPillOverlay(
             coroutineScope {
                 launch { transition.center.animateTo(exitSource.center, spatial) }
                 launch { transition.size.animateTo(exitSource.size, sizeSpec) }
-                launch { transition.radius.animateTo(exitSource.height / 2f, radiusSpec) }
+                launch { transition.radius.animateTo(collapsedRadiusPx ?: (exitSource.height / 2f), radiusSpec) }
                 launch { transition.reveal.animateTo(0f, fadeSpec) }
                 launch { transition.contentScale.animateTo(0.66f, fadeSpec) }
             }
@@ -211,6 +224,14 @@ internal fun PlayerPillOverlay(
     val pillAlpha = (1f - progress / 0.5f).coerceIn(0f, 1f)
     val pageAlpha = ((progress - 0.5f) / 0.5f).coerceIn(0f, 1f)
     val source = transition.source ?: Rect(left, top, left + size.width, top + size.height)
+    // As the queue page shrinks back into its button, morph its outline into
+    // the same clover as the button. Only do this while the pill content is
+    // visible; keep the regular rounded-page outline at larger sizes.
+    val pillShape = if (cloverMorph != null && progress < 0.5f) {
+        MorphingPolygonShape(cloverMorph, (progress / 0.5f).coerceIn(0f, 1f))
+    } else {
+        RoundedCornerShape(with(density) { transition.radius.value.coerceAtLeast(0f).toDp() })
+    }
 
     Box(Modifier.fillMaxSize()
         .zIndex(if (transition.open) 2f else 1f)
@@ -232,30 +253,37 @@ internal fun PlayerPillOverlay(
                     with(density) { size.width.coerceAtLeast(1f).toDp() },
                     with(density) { size.height.coerceAtLeast(1f).toDp() },
                 )
-                .clip(RoundedCornerShape(with(density) { transition.radius.value.coerceAtLeast(0f).toDp() }))
+                .clip(pillShape)
                 .background(lerp(pillColor, colorScheme.surfaceContainer, progress))
                 .clickable(interactionSource = null, indication = null) {
-                    if (transition.open) transition.close() else transition.openFrom(source)
+                    // Consume background taps without dismissing the expanded page.
+                    if (!transition.open) transition.openFrom(source)
                 },
-        )
-        if (pillAlpha > 0f) {
-            Box(Modifier.size(
-                with(density) { source.width.coerceAtLeast(1f).toDp() },
-                with(density) { source.height.coerceAtLeast(1f).toDp() },
-            ).graphicsLayer {
-                translationX = center.x - source.width / 2f
-                translationY = center.y - source.height / 2f
-                alpha = pillAlpha
-            }) { pillContent() }
-        }
-        if (pageAlpha > 0f) {
-            Box(Modifier.fillMaxSize().graphicsLayer {
-                alpha = pageAlpha
-                scaleX = transition.contentScale.value
-                scaleY = transition.contentScale.value
-                translationX = center.x - viewport.width / 2f
-                translationY = center.y - viewport.height / 2f
-            }) { pageContent(transition.open) }
+        ) {
+            if (pillAlpha > 0f) {
+                Box(
+                    Modifier.align(Alignment.Center)
+                        .requiredSize(
+                            with(density) { source.width.coerceAtLeast(1f).toDp() },
+                            with(density) { source.height.coerceAtLeast(1f).toDp() },
+                        )
+                        .graphicsLayer { alpha = pillAlpha },
+                ) { pillContent() }
+            }
+            if (pageAlpha > 0f) {
+                Box(
+                    Modifier.align(Alignment.Center)
+                        .requiredSize(
+                            with(density) { viewport.width.coerceAtLeast(1f).toDp() },
+                            with(density) { viewport.height.coerceAtLeast(1f).toDp() },
+                        )
+                        .graphicsLayer {
+                            alpha = pageAlpha
+                            scaleX = transition.contentScale.value
+                            scaleY = transition.contentScale.value
+                        },
+                ) { pageContent(transition.open) }
+            }
         }
         if (!transition.open || progress < 0.5f) {
             Box(
@@ -265,7 +293,7 @@ internal fun PlayerPillOverlay(
                         with(density) { source.height.coerceAtLeast(1f).toDp() },
                     )
                     .clickable(interactionSource = null, indication = null) {
-                        if (transition.open) transition.close() else transition.openFrom(source)
+                        if (!transition.open) transition.openFrom(source)
                     },
             )
         }
