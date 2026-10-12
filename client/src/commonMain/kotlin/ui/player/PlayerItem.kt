@@ -124,8 +124,6 @@ internal fun PlayerItemHost(
     }
     var artwork by remember(artworkModel) { mutableStateOf(cachedArtwork?.artwork) }
     var palette by remember(artworkModel) { mutableStateOf(cachedArtwork?.palette) }
-    // Palette callbacks may arrive from an image-loading thread while the pager
-    // subcomposes a new page. Keep snapshot state writes in a composition effect.
     val paletteUpdates = remember(artworkModel) { Channel<Palette>(Channel.CONFLATED) }
     LaunchedEffect(artworkModel, paletteUpdates) {
         for (loadedPalette in paletteUpdates) {
@@ -292,7 +290,7 @@ internal fun PlayerArtwork(
     modifier: Modifier = Modifier,
     contentScale: ContentScale = ContentScale.Crop,
     outlineWidth: Dp? = null,
-    outlineRadius: Dp = 8.dp,
+    outlineRadius: Dp = 4.dp,
 ) {
     val outlineWidthPx = outlineWidth?.let { with(LocalDensity.current) { it.toPx() } } ?: 1f
     Box(modifier.brightenedCoverOutline(outlineWidthPx, outlineRadius)) {
@@ -315,18 +313,17 @@ internal fun PlayerArtwork(
     }
 }
 
-internal fun PagerState.playPrevious() {
+internal suspend fun PagerState.playPrevious() {
     if (pageCount <= 0) return
-    // An animated pager jump can synchronously force a remeasure, including a
-    // nested BoxWithConstraints subcomposition, while snapshot state is changing.
-    // Request the destination for the next measure instead.
-    requestScrollToPage((currentPage - 1 + pageCount) % pageCount)
+    animateScrollToPage((currentPage - 1 + pageCount) % pageCount)
 }
 
-internal fun PagerState.playNext() {
-    if (pageCount <= 0) return
-    // The pager's backing list is already in the actual playback order.
-    requestScrollToPage((currentPage + 1) % pageCount)
+internal fun PagerState.hasNext(repeatMode: RepeatMode): Boolean =
+    pageCount > 0 && (currentPage < pageCount - 1 || repeatMode != RepeatMode.Off)
+
+internal suspend fun PagerState.playNext(repeatMode: RepeatMode) {
+    if (!hasNext(repeatMode)) return
+    animateScrollToPage((currentPage + 1) % pageCount)
 }
 
 @Stable

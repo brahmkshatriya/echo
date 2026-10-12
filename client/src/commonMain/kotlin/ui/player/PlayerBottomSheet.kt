@@ -23,6 +23,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,6 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.TransformOrigin
@@ -48,7 +50,10 @@ import dev.brahmkshatriya.echo.app.ui.components.BetterSheet
 import dev.brahmkshatriya.echo.app.ui.components.BetterSheetScaffold
 import dev.brahmkshatriya.echo.app.ui.components.blurFadePagerTransition
 import dev.brahmkshatriya.echo.app.ui.components.paddingMask
+import dev.brahmkshatriya.echo.app.ui.player.song.PlayerPillTransition
+import dev.brahmkshatriya.echo.app.ui.player.song.SharedPlayerQueueOverlay
 import dev.brahmkshatriya.echo.app.ui.player.song.maxSongCoverSize
+import dev.brahmkshatriya.echo.app.ui.player.song.rememberPlayerPillTransition
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -107,13 +112,12 @@ class PlayerControlsState(songCount: Int) {
         if (!shuffleEnabled) unshuffledOrder = songs
     }
 
-    fun moveUpcomingSong(currentSong: Int, songCount: Int, fromSong: Int, toSong: Int) {
-        if (fromSong == currentSong || fromSong !in 0 until songCount || toSong !in 0 until songCount) return
+    /** Move any queue entry, including the playing song, keeping its stable song ID. */
+    fun moveQueueSong(fromSong: Int, toIndex: Int) {
         val songs = playbackOrder.toMutableList()
         val from = songs.indexOf(fromSong)
-        val to = songs.indexOf(toSong)
-        if (from == -1 || to == -1 || from == to) return
-        songs.add(to, songs.removeAt(from))
+        if (from == -1 || toIndex !in songs.indices || from == toIndex) return
+        songs.add(toIndex, songs.removeAt(from))
         playbackOrder = songs
         if (!shuffleEnabled) unshuffledOrder = songs
     }
@@ -123,6 +127,7 @@ enum class RepeatMode { Off, All, One }
 
 val LocalPlayerPagerState = staticCompositionLocalOf<PagerState?> { null }
 val LocalPlayerControls = staticCompositionLocalOf<PlayerControlsState?> { null }
+internal val LocalPlayerQueueTransition = staticCompositionLocalOf<PlayerPillTransition?> { null }
 val LocalPlayerLyricsVisible =
     staticCompositionLocalOf<androidx.compose.runtime.MutableState<Boolean>?> { null }
 val LocalPlayerLyricsChromeCollapsed =
@@ -136,10 +141,13 @@ fun ProvidePlayerControls(
 ) {
     val lyricsVisible = rememberSaveable { mutableStateOf(false) }
     val lyricsChromeCollapsed = rememberSaveable { mutableStateOf(false) }
+    // A queue opened on one song remains the same overlay on every pager page.
+    val queueTransition = rememberPlayerPillTransition("queue")
     PreloadAdjacentPlayerArtwork(pagerState, controls)
     CompositionLocalProvider(
         LocalPlayerPagerState provides pagerState,
         LocalPlayerControls provides controls,
+        LocalPlayerQueueTransition provides queueTransition,
         LocalPlayerLyricsVisible provides lyricsVisible,
         LocalPlayerLyricsChromeCollapsed provides lyricsChromeCollapsed,
         content = content,
@@ -268,6 +276,14 @@ fun PlayerBottomSheet(
         val artWorks = LocalPlayerItems.current
         val controls = remember(artWorks.size) { PlayerControlsState(artWorks.size) }
         val pagerState = rememberPagerState(2, pageCount = { artWorks.size })
+        var currentSong by remember(controls) {
+            mutableIntStateOf(controls.songAt(pagerState.currentPage))
+        }
+        LaunchedEffect(pagerState, controls) {
+            snapshotFlow { pagerState.currentPage }.collect { page ->
+                currentSong = controls.songAt(page)
+            }
+        }
         val pageScrolledToTop = remember { mutableStateMapOf<Int, Boolean>() }
         val pageInteractionLocked = remember { mutableStateMapOf<Int, Boolean>() }
         val interactionLocked by remember {
@@ -315,8 +331,11 @@ fun PlayerBottomSheet(
                     scaleY = scale
                     transformOrigin = TransformOrigin(0.5f, 1f)
                 }) {
+                    val queueViewport = Size(constraints.maxWidth.toFloat(), constraints.maxHeight.toFloat())
                     ProvidePlayerControls(pagerState, controls) {
-                        HorizontalPager(
+                        val queueTransition = LocalPlayerQueueTransition.current
+                        Box(Modifier.fillMaxSize()) {
+                          HorizontalPager(
                             pagerState,
                             Modifier
                                 .fillMaxSize()
@@ -326,7 +345,7 @@ fun PlayerBottomSheet(
                                 ),
                             userScrollEnabled = pagerUserScrollEnabled,
                             key = { controls.songAt(it) },
-                        ) { page ->
+                          ) { page ->
                             val song = controls.songAt(page)
                             Box(Modifier.fillMaxSize().blurFadePagerTransition(pagerState, page) {
                                 if (betterSheet.backProgressState.floatValue > 0f) 0f
@@ -342,6 +361,27 @@ fun PlayerBottomSheet(
                                     },
                                 )
                             }
+                          }
+                          if (queueTransition != null && (queueTransition.open || queueTransition.mounted)) {
+                            PlayerItemHost(
+                                index = currentSong,
+                                artworkMaxSize = maxSongCoverSize.dp,
+                                coloredBackground = false,
+                            ) {
+                                SharedPlayerQueueOverlay(
+                                    transition = queueTransition,
+                                    viewport = queueViewport,
+                                    currentSong = currentSong,
+                                    onSongSelected = { song ->
+                                        val page = controls.pageOf(song)
+                                        if (page >= 0) {
+                                            currentSong = song
+                                            pagerState.requestScrollToPage(page)
+                                        }
+                                    },
+                                )
+                            }
+                          }
                         }
                     }
                 }

@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
@@ -41,14 +42,13 @@ import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.MaterialShapes.Companion.Circle
+import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.motionScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -85,7 +85,6 @@ import dev.brahmkshatriya.echo.app.ui.components.BetterImage
 import dev.brahmkshatriya.echo.app.ui.components.PolygonIconRipple
 import dev.brahmkshatriya.echo.app.ui.components.ScaledTopAppBar
 import dev.brahmkshatriya.echo.app.ui.components.animatedPolygonIconShape
-import dev.brahmkshatriya.echo.app.ui.components.clover6Sided
 import dev.brahmkshatriya.echo.app.ui.components.materialGroup
 import dev.brahmkshatriya.echo.app.ui.player.playerBottomBarControlSize
 import echo.client.generated.resources.Res
@@ -114,6 +113,7 @@ internal val LyricsPosition.textAlign: TextAlign
 @Composable
 internal fun LyricsSelectionPillContent(
     selectedLyrics: LyricsSelectionItem?,
+    chromeCollapsed: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -124,16 +124,25 @@ internal fun LyricsSelectionPillContent(
         verticalArrangement = Arrangement.Center,
     ) {
         if (selectedLyrics != null) {
-            Text(
-                text = selectedLyrics.title,
-                style = typography.labelLarge,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
+            Crossfade(
+                targetState = if (chromeCollapsed) "Lyrics By" else "Selected Lyrics",
+                modifier = Modifier.fillMaxWidth(),
+                animationSpec = motionScheme.fastEffectsSpec<Float>(),
+                label = "Lyrics pill label",
+            ) { label ->
+                Text(
+                    text = label,
+                    modifier = Modifier.fillMaxWidth(),
+                    style = typography.labelSmall,
+                    color = colorScheme.primary,
+                    textAlign = TextAlign.Center,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
             Text(
                 text = selectedLyrics.extension,
-                style = typography.labelSmall,
-                color = colorScheme.primary,
+                style = typography.labelLarge,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -425,7 +434,7 @@ private fun LyricsSelectionSearchBar(
                             "https://play-lh.googleusercontent.com/7ynvVIRdhJNAngCg_GI7i8TtH8BqkJYmffeUHsG-mJOdzt1XLvGmbsKuc5Q1SInBjDKN"
                         },
                         contentDescription = extensionName,
-                        modifier = Modifier.padding(4.dp).clip(Circle.toShape()),
+                        modifier = Modifier.padding(4.dp).clip(CircleShape),
                     )
                 }
                 Spacer(Modifier.size(4.dp))
@@ -570,14 +579,14 @@ private fun LyricsSelectionSearchBar(
                     onClick = onBack,
                     enabled = interactive,
                     shape = animatedPolygonIconShape(
-                        shape = clover6Sided(),
-                        pressedShape = Circle,
+                        shape = MaterialShapes.Circle,
+                        pressedShape = MaterialShapes.Square,
                         interactionSource = backInteractionSource,
                     ),
                     interactionSource = backInteractionSource,
                     colors = IconButtonDefaults.iconButtonColors(
-                        colorScheme.primary.copy(0.1f),
-                        colorScheme.onPrimaryContainer
+                        colorScheme.tertiary,
+                        colorScheme.onTertiary
                     ),
                 ) {
                     PolygonIconRipple(backInteractionSource) {

@@ -26,7 +26,7 @@ internal fun rememberLyricsSelections(): List<LyricsSelectionItem> {
 private suspend fun loadLyricsSelections(): List<LyricsSelectionItem> {
     val result = mutableListOf<LyricsSelectionItem>()
     for (relativePath in lyricsResourcePaths) {
-        loadLyricsSelection(relativePath)?.let(result::add)
+        loadLyricsSelection("Apple Lyrics", relativePath)?.let(result::add)
     }
     return result
 }
@@ -36,9 +36,12 @@ private val lyricsResourcePaths = listOf(
     "blackorwhite.ttml",
 )
 
-private suspend fun loadLyricsSelection(relativePath: String): LyricsSelectionItem? {
-    val extension = relativePath.substringAfterLast('.', "").lowercase()
-    if (extension !in supportedLyricsExtensions) return null
+private suspend fun loadLyricsSelection(
+    extension: String,
+    relativePath: String
+): LyricsSelectionItem? {
+    val fileExtension = relativePath.substringAfterLast('.', "").lowercase()
+    if (fileExtension !in supportedLyricsExtensions) return null
 
     val text = try {
         Res.readBytes("files/lyrics/$relativePath").decodeToString()
@@ -47,7 +50,7 @@ private suspend fun loadLyricsSelection(relativePath: String): LyricsSelectionIt
     }
 
     val lyrics = runCatching {
-        when (extension) {
+        when (fileExtension) {
             "ttml" -> TtmlLyricsParser.parse(text)
             "lrc" -> LrcLyricsParser.parse(text)
             "json" -> LrcLibLyricsParser.parseJson(text)
@@ -55,11 +58,6 @@ private suspend fun loadLyricsSelection(relativePath: String): LyricsSelectionIt
         }
     }.getOrNull() ?: return null
 
-    val format = when (extension) {
-        "ttml" -> "TTML"
-        "lrc" -> "LRC"
-        else -> "LRCLIB"
-    }
     val syncType = when (lyrics) {
         is Lyrics.Word -> "Word synced lyrics"
         is Lyrics.Line -> "Line synced lyrics"
@@ -72,8 +70,8 @@ private suspend fun loadLyricsSelection(relativePath: String): LyricsSelectionIt
     }
     return LyricsSelectionItem(
         title = relativePath.substringAfterLast('/').substringBeforeLast('.').toDisplayTitle(),
-        subtitle = "$format • $syncType",
-        extension = format,
+        subtitle = "$extension • $syncType",
+        extension = extension,
         lyrics = lyrics,
         timingIndex = timingIndex,
     )

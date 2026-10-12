@@ -40,6 +40,7 @@ import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialShapes.Companion.Circle
 import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.material3.MaterialTheme.motionScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.material3.toShape
@@ -75,10 +76,10 @@ import dev.brahmkshatriya.echo.app.platform.hasTouchInput
 import dev.brahmkshatriya.echo.app.ui.components.BetterImage
 import dev.brahmkshatriya.echo.app.ui.components.PolygonIconRipple
 import dev.brahmkshatriya.echo.app.ui.components.ResponsiveRow
+import dev.brahmkshatriya.echo.app.ui.components.SwitchingIcon
 import dev.brahmkshatriya.echo.app.ui.components.animatedPolygonIconShape
 import dev.brahmkshatriya.echo.app.ui.components.clover6Sided
 import dev.brahmkshatriya.echo.app.ui.player.CompactPlayPauseButton
-import dev.brahmkshatriya.echo.app.ui.player.Controller
 import dev.brahmkshatriya.echo.app.ui.player.ExpandedTimeline
 import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerPadding
 import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerSheet
@@ -109,14 +110,12 @@ import echo.client.generated.resources.ic_playlist_play
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
-import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.milliseconds
 
 private enum class PlayerHeroSlot {
     TopBar,
     CoverOrLyrics,
     Timeline,
-    Controller,
 }
 
 private class PlayerHeroContentState(
@@ -164,9 +163,10 @@ internal fun PlayerHero(
     onArtworkClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val coverLyricsScaleSpec = motionScheme.defaultSpatialSpec<Float>()
     val chromeCollapseProgress by animateFloatAsState(
         targetValue = if (collapseTimelineRowsForLyrics) 1f else 0f,
-        animationSpec = tween(durationMillis = 320, easing = FastOutSlowInEasing),
+        animationSpec = motionScheme.defaultSpatialSpec(),
         label = "Lyrics player chrome collapse",
     )
     var compactArtwork by remember { mutableStateOf(false) }
@@ -216,22 +216,8 @@ internal fun PlayerHero(
                 )
             }
         }.single().measure(childConstraints)
-        val controller = subcompose(PlayerHeroSlot.Controller) {
-            Box(
-                transformModifier
-                    .then(chromeInteractionModifier)
-                    .graphicsLayer {
-                        alpha = 1f - chromeCollapseProgress
-                    }
-            ) {
-                Controller()
-            }
-        }.single().measure(childConstraints)
-        val controllerVisibleHeight = (controller.height * (1f - chromeCollapseProgress))
-            .roundToInt().coerceAtLeast(0)
-
         val coverHeight = (
-                constraints.maxHeight - topBar.height - timeline.height - controllerVisibleHeight
+                constraints.maxHeight - topBar.height - timeline.height
                 ).coerceAtLeast(0)
         val coverHeightDp = coverHeight.toDp()
         val coverMaxSize = minOf(
@@ -270,9 +256,9 @@ internal fun PlayerHero(
                             LyricsModeTransitionDurationMs,
                             easing = FastOutSlowInEasing,
                         )
-                        val enter = fadeIn(animation) + scaleIn(animation, 0.96f)
+                        val enter = fadeIn(animation) + scaleIn(coverLyricsScaleSpec, 0.96f)
                         val exit = fadeOut(tween(LyricsModeTransitionDurationMs / 2)) +
-                                scaleOut(animation, 1.04f)
+                                scaleOut(coverLyricsScaleSpec, 1.04f)
                         enter togetherWith exit
                     }
                 },
@@ -333,8 +319,6 @@ internal fun PlayerHero(
             cover.placeRelative(0, y)
             y += cover.height
             timeline.placeRelative(0, y)
-            y += timeline.height
-            controller.placeRelative(0, y)
         }
     }
 }
@@ -366,10 +350,12 @@ fun CoverArt(
         48.dp.toPx() / fullHeightPx
     }
     val coverScale = 1f + (collapsedScale - 1f) * (1f - progress)
+    // The large artwork has 8.dp corners; its 48.dp collapsed form has 4.dp.
+    val visibleCornerRadius = 4.dp + 4.dp * progress
     PlayerArtwork(
         contentDescription = "Song $i",
         outlineWidth = with(density) { (1f / coverScale).toDp() },
-        outlineRadius = 8.dp / coverScale,
+        outlineRadius = visibleCornerRadius / coverScale,
         modifier = Modifier
             .songCoverSize(maxCoverSize, verticalPadding)
             .onSizeChanged { coverHeightPx = it.height }
@@ -398,7 +384,7 @@ fun CoverArt(
                 translationY = collapsedY * offset
 
                 clip = true
-                shape = RoundedCornerShape((8 / coverScale).dp)
+                shape = RoundedCornerShape(visibleCornerRadius / coverScale)
             }
             .background(colorScheme.primaryFixed),
     )
@@ -419,7 +405,9 @@ fun TopBar(
         IconButton(
             onClick = {
                 scope.launch { sheetState?.show() }
-            }, shapes = IconButtonDefaults.shapes()
+            },
+            modifier = Modifier.width(32.dp),
+            shapes = IconButtonDefaults.shapes()
         ) {
             Icon(
                 painterResource(Res.drawable.ic_keyboard_arrow_down),
@@ -454,6 +442,7 @@ internal fun BottomBar(
     index: Int = 0,
     isSticky: Boolean = false,
     lyricsVisible: Boolean = false,
+    lyricsChromeCollapsed: Boolean = false,
     selectedLyrics: LyricsSelectionItem? = null,
     lyricsSelectorActive: Boolean = false,
     queueButtonHidden: Boolean = false,
@@ -480,6 +469,7 @@ internal fun BottomBar(
             if (sticky) StickyMiniPlayer(index)
             else LyricsBottomBar(
                 lyricsVisible = lyricsVisible,
+                lyricsChromeCollapsed = lyricsChromeCollapsed,
                 selectedLyrics = selectedLyrics,
                 lyricsSelectorActive = lyricsSelectorActive,
                 queueButtonHidden = queueButtonHidden,
@@ -511,16 +501,16 @@ private fun LyricsToggle(
         ),
         interactionSource = interactionSource,
         colors = IconButtonDefaults.filledTonalIconToggleButtonColors(
-            colorScheme.primary.copy(0.1f),
-            colorScheme.onPrimaryContainer,
-            checkedContainerColor = colorScheme.primary,
-            checkedContentColor = colorScheme.onPrimary,
+            colorScheme.primary,
+            colorScheme.onPrimary,
+            checkedContainerColor = colorScheme.secondary,
+            checkedContentColor = colorScheme.onSecondary,
         ),
     ) {
         PolygonIconRipple(interactionSource) {
             Crossfade(
                 targetState = checked,
-                animationSpec = tween(LyricsTransitionDurationMs),
+                animationSpec = motionScheme.fastSpatialSpec(),
             ) { isChecked ->
                 Icon(
                     painterResource(Res.drawable.ic_format_quotes),
@@ -534,6 +524,7 @@ private fun LyricsToggle(
 @Composable
 private fun LyricsBottomBar(
     lyricsVisible: Boolean,
+    lyricsChromeCollapsed: Boolean,
     selectedLyrics: LyricsSelectionItem?,
     lyricsSelectorActive: Boolean,
     queueButtonHidden: Boolean,
@@ -574,7 +565,10 @@ private fun LyricsBottomBar(
                 animationSpec = tween(LyricsTransitionDurationMs)
             ) { state ->
                 if (state.lyricsVisible) {
-                    LyricsSelectionPillContent(state.selectedLyrics)
+                    LyricsSelectionPillContent(
+                        selectedLyrics = state.selectedLyrics,
+                        chromeCollapsed = lyricsChromeCollapsed && state.lyricsVisible,
+                    )
                 } else if (state.selectedLyrics != null) {
                     LyricsTicker(
                         lyrics = state.selectedLyrics.lyrics,
@@ -596,8 +590,8 @@ private fun LyricsBottomBar(
             ),
             interactionSource = queueInteractionSource,
             colors = IconButtonDefaults.iconButtonColors(
-                colorScheme.primary.copy(0.1f),
-                colorScheme.onPrimaryContainer,
+                colorScheme.tertiary,
+                colorScheme.onTertiary,
 
             ),
             modifier = Modifier
@@ -632,7 +626,7 @@ private fun StickyMiniPlayer(
                 modifier = Modifier
                     .padding(start = 4.dp)
                     .size(48.dp)
-                    .clip(RoundedCornerShape(8.dp))
+                    .clip(RoundedCornerShape(4.dp))
                     .background(colorScheme.primaryFixed),
             )
         },
@@ -689,7 +683,7 @@ fun CollapsedPlayer(
                         contentDescription = "Song $i artwork",
                         modifier = Modifier
                             .fillMaxSize()
-                            .clip(RoundedCornerShape(8.dp))
+                            .clip(RoundedCornerShape(4.dp))
                             .background(colorScheme.primaryFixed),
                     )
                 }
@@ -760,11 +754,9 @@ private fun CollapsedPlayerContent(
                     checkedContainerColor = colorScheme.onTertiaryContainer
                 ),
             ) {
-                Icon(
-                    painterResource(
-                        if (favourite) Res.drawable.ic_favorite_filled
-                        else Res.drawable.ic_favorite
-                    ),
+                SwitchingIcon(
+                    icon = if (favourite) Res.drawable.ic_favorite_filled
+                        else Res.drawable.ic_favorite,
                     contentDescription = if (favourite) "Favourite" else "Unfavourite"
                 )
             }

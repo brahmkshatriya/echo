@@ -38,6 +38,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -76,6 +77,7 @@ import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerItems
 import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerLyricsChromeCollapsed
 import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerLyricsVisible
 import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerPagerState
+import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerQueueTransition
 import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerSheet
 import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerTimelineState
 import dev.brahmkshatriya.echo.app.ui.player.PlayerBottomBarContentType
@@ -83,6 +85,7 @@ import dev.brahmkshatriya.echo.app.ui.player.PlayerScrollbarItemSizes
 import dev.brahmkshatriya.echo.app.ui.player.QueuePage
 import dev.brahmkshatriya.echo.app.ui.player.RepeatMode
 import dev.brahmkshatriya.echo.app.ui.player.blockDescendantBringIntoView
+import dev.brahmkshatriya.echo.app.ui.player.hasNext
 import dev.brahmkshatriya.echo.app.ui.player.clipHeaderTop
 import dev.brahmkshatriya.echo.app.ui.player.expandedListItemTransform
 import dev.brahmkshatriya.echo.app.ui.player.playNext
@@ -130,18 +133,22 @@ fun SongPlayerItem(
         running = isCurrentItem && controls?.isPlaying != false,
         onFinished = {
             if (controls?.repeatMode != RepeatMode.One && pagerState != null) {
-                scope.launch {
-                    if (controls?.radioEnabled == true) controls.selectRadioNext(i)
-                    pagerState.playNext()
+                val repeatMode = controls?.repeatMode ?: RepeatMode.Off
+                if (pagerState.hasNext(repeatMode)) {
+                    scope.launch {
+                        if (controls?.radioEnabled == true) controls.selectRadioNext(i)
+                        pagerState.playNext(repeatMode)
+                    }
+                } else {
+                    controls?.isPlaying = false
                 }
                 true
             } else false
         },
     )
-    // Two actual destinations, each with independent state and animations.
-    // They only share the PlayerPillOverlay implementation.
+    // Lyrics remains local to this song; queue state is shared by the pager.
     val lyricsTransition = rememberPlayerPillTransition("lyrics")
-    val queueTransition = rememberPlayerPillTransition("queue")
+    val queueTransition = LocalPlayerQueueTransition.current ?: rememberPlayerPillTransition("queue")
     var playerCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
     var lyricsPillCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
     var queueButtonCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
@@ -224,8 +231,8 @@ fun SongPlayerItem(
                 if (root?.isAttached != true || anchor?.isAttached != true) return null
                 return root.localBoundingBoxOf(anchor, clipBounds = false)
             }
-            fun queuePillBounds(): Rect? {
-                val bounds = localPillBounds(queueButtonCoordinates) ?: return null
+            fun queuePillBounds(anchor: LayoutCoordinates? = queueButtonCoordinates): Rect? {
+                val bounds = localPillBounds(anchor) ?: return null
                 val container = IconButtonDefaults.smallContainerSize()
                 val width = with(pillDensity) { container.width.toPx() }
                 val height = with(pillDensity) { container.height.toPx() }
@@ -236,10 +243,10 @@ fun SongPlayerItem(
                     bounds.center.y + height / 2f,
                 )
             }
-            LaunchedEffect(playerCoordinates, lyricsPillCoordinates, queueButtonCoordinates, isBottomBarSticky) {
+            LaunchedEffect(playerCoordinates, lyricsPillCoordinates, queueButtonCoordinates, isBottomBarSticky, isCurrentItem) {
                 if (!isBottomBarSticky) {
-                    localPillBounds(lyricsPillCoordinates)?.let(lyricsTransition::updateRestoredAnchor)
-                    queuePillBounds()?.let(queueTransition::updateRestoredAnchor)
+                    localPillBounds(lyricsPillCoordinates)?.let(lyricsTransition::updateAnchor)
+                    if (isCurrentItem) queuePillBounds()?.let(queueTransition::updateAnchor)
                 }
             }
             fun openLyrics(bounds: Rect) {
@@ -249,6 +256,18 @@ fun SongPlayerItem(
             fun openQueue(bounds: Rect) {
                 lyricsTransition.close()
                 queueTransition.openFrom(bounds)
+            }
+            SideEffect {
+                if (isCurrentItem) {
+                    queueTransition.alternateSource = if (showLyrics && !isBottomBarSticky) {
+                        localPillBounds(lyricsPillCoordinates)
+                    } else null
+                    queueTransition.onAlternateClick = {
+                        if (showLyrics && !isBottomBarSticky) {
+                            localPillBounds(lyricsPillCoordinates)?.let(::openLyrics)
+                        }
+                    }
+                }
             }
             LaunchedEffect(selectorMounted) {
                 onLyricsSelectorOpenChanged(selectorMounted)
@@ -543,6 +562,7 @@ fun SongPlayerItem(
                                 index = i,
                                 isSticky = isBottomBarSticky,
                                 lyricsVisible = showLyrics,
+                                lyricsChromeCollapsed = lyricsChromeCollapsed,
                                 selectedLyrics = selectedLyrics,
                                 lyricsSelectorActive = lyricsMounted,
                                 queueButtonHidden = queueMounted,
@@ -550,15 +570,15 @@ fun SongPlayerItem(
                                     lyricsPillCoordinates = bounds
                                     if (!isBottomBarSticky) {
                                         localPillBounds(bounds)?.let {
-                                            lyricsTransition.updateRestoredAnchor(it)
+                                            lyricsTransition.updateAnchor(it)
                                         }
                                     }
                                 },
                                 onQueueButtonBoundsChanged = { bounds ->
                                     queueButtonCoordinates = bounds
-                                    if (!isBottomBarSticky) {
-                                        queuePillBounds()?.let {
-                                            queueTransition.updateRestoredAnchor(it)
+                                    if (isCurrentItem && !isBottomBarSticky) {
+                                        queuePillBounds(bounds)?.let {
+                                            queueTransition.updateAnchor(it)
                                         }
                                     }
                                 },
@@ -703,11 +723,17 @@ fun SongPlayerItem(
                     pillColor = colorScheme.primary.copy(alpha = 0.1f),
                     openInfo = LyricsSelectorPageInfo,
                     closedInfo = LyricsSelectorPlayerInfo,
+                    currentSource = { localPillBounds(lyricsPillCoordinates) },
                     alternateSource = if (isBottomBarSticky) null else queuePillBounds(),
                     onAlternateClick = {
                         if (!isBottomBarSticky) queuePillBounds()?.let(::openQueue)
                     },
-                    pillContent = { LyricsSelectionPillContent(selectedLyrics) },
+                    pillContent = {
+                        LyricsSelectionPillContent(
+                            selectedLyrics = selectedLyrics,
+                            chromeCollapsed = showLyrics && lyricsChromeCollapsed,
+                        )
+                    },
                     pageContent = { interactive ->
                         LyricsSelectionPage(
                             selectedLyrics = selectedLyrics,
@@ -725,51 +751,48 @@ fun SongPlayerItem(
                     },
                 )
             }
-            if (queueMounted) {
-                PlayerPillOverlay(
-                    transition = queueTransition,
-                    viewport = Size(constraints.maxWidth.toFloat(), constraints.maxHeight.toFloat()),
-                    isCurrentPage = isCurrentItem,
-                    pillColor = colorScheme.primary.copy(alpha = 0.1f),
-                    collapsedCornerRadius = 12.dp,
-                    collapsedPolygon = clover6Sided(),
-                    openInfo = QueueOverlayPageInfo,
-                    closedInfo = QueuePlayerInfo,
-                    alternateSource = if (showLyrics && !isBottomBarSticky) {
-                        localPillBounds(lyricsPillCoordinates)
-                    } else null,
-                    onAlternateClick = {
-                        if (showLyrics && !isBottomBarSticky) {
-                            localPillBounds(lyricsPillCoordinates)?.let(::openLyrics)
-                        }
-                    },
-                    pillContent = {
-                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Icon(
-                                painter = painterResource(Res.drawable.ic_playlist_play),
-                                contentDescription = null,
-                                tint = colorScheme.onPrimaryContainer,
-                            )
-                        }
-                    },
-                    pageContent = { interactive ->
-                        QueuePage(
-                            currentSong = i,
-                            songCount = LocalPlayerItems.current.size,
-                            interactive = interactive,
-                            onBack = { queueTransition.close() },
-                            onSongSelected = { index ->
-                                queueTransition.close()
-                                scope.launch {
-                                    snapshotFlow { queueTransition.mounted }.first { !it }
-                                    val page = controls?.pageOf(index) ?: index
-                                    if (page >= 0) pagerState?.requestScrollToPage(page)
-                                }
-                            },
-                        )
-                    },
-                )
-            }
         }
     }
+}
+
+/** The queue's only composition is outside the pager, so moving the playing
+ * song's pager key cannot unmount the queue for a frame. */
+@Composable
+internal fun SharedPlayerQueueOverlay(
+    transition: PlayerPillTransition,
+    viewport: Size,
+    currentSong: Int,
+    onSongSelected: (Int) -> Unit,
+) {
+    PlayerPillOverlay(
+        transition = transition,
+        viewport = viewport,
+        isCurrentPage = true,
+        pillColor = colorScheme.tertiary,
+        collapsedCornerRadius = 12.dp,
+        collapsedPolygon = clover6Sided(),
+        openInfo = QueueOverlayPageInfo,
+        closedInfo = QueuePlayerInfo,
+        currentSource = { transition.source },
+        alternateSource = transition.alternateSource,
+        onAlternateClick = { transition.onAlternateClick?.invoke() },
+        pillContent = {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Icon(
+                    painter = painterResource(Res.drawable.ic_playlist_play),
+                    contentDescription = null,
+                    tint = colorScheme.onTertiary,
+                )
+            }
+        },
+        pageContent = { interactive ->
+            QueuePage(
+                currentSong = currentSong,
+                songCount = LocalPlayerItems.current.size,
+                interactive = interactive,
+                onBack = transition::close,
+                onSongSelected = onSongSelected,
+            )
+        },
+    )
 }

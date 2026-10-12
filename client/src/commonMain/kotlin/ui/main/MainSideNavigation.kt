@@ -69,6 +69,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigationevent.NavigationEventTransitionState
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import dev.brahmkshatriya.echo.app.ui.components.BetterImage
+import dev.brahmkshatriya.echo.app.ui.components.SwitchingIcon
 import dev.brahmkshatriya.echo.app.ui.components.paddingMask
 import echo.client.generated.resources.Res
 import echo.client.generated.resources.ic_close
@@ -126,8 +127,8 @@ fun MainSideNavigation(
                 MainRoute.entries.forEachIndexed { i, it ->
                     NavigationBarItem(
                         icon = {
-                            Icon(
-                                painterResource(if (selected == it) it.selected else it.unselected),
+                            SwitchingIcon(
+                                icon = if (selected == it) it.selected else it.unselected,
                                 contentDescription = it.name,
                             )
                         },
@@ -169,8 +170,8 @@ fun MainSideNavigation(
                 MainRoute.entries.forEachIndexed { i, it ->
                     NavigationRailItem(
                         icon = {
-                            Icon(
-                                painterResource(if (selected == it) it.selected else it.unselected),
+                            SwitchingIcon(
+                                icon = if (selected == it) it.selected else it.unselected,
                                 contentDescription = it.name,
                             )
                         },

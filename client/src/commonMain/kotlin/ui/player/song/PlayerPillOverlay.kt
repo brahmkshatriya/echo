@@ -10,9 +10,9 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.motionScheme
+import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -43,9 +43,7 @@ import androidx.navigationevent.NavigationEventTransitionState
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
-import androidx.graphics.shapes.Morph
 import androidx.graphics.shapes.RoundedPolygon
-import dev.brahmkshatriya.echo.app.ui.components.MorphingPolygonShape
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -60,6 +58,8 @@ internal class PlayerPillTransition(openState: MutableState<Boolean>) {
         internal set
     var source by mutableStateOf<Rect?>(null)
         private set
+    var alternateSource by mutableStateOf<Rect?>(null)
+    var onAlternateClick: (() -> Unit)? = null
     // Rotation can settle bottom-bar placement over multiple layout passes.
     private var trackingRestoredAnchor = openState.value
     var backGestureActive by mutableStateOf(false)
@@ -78,8 +78,10 @@ internal class PlayerPillTransition(openState: MutableState<Boolean>) {
         open = true
     }
 
-    fun updateRestoredAnchor(bounds: Rect) {
-        if (trackingRestoredAnchor && source != bounds) source = bounds
+    fun updateAnchor(bounds: Rect) {
+        if ((trackingRestoredAnchor || open || mounted) && source != bounds) {
+            source = bounds
+        }
     }
 
     fun close() {
@@ -110,6 +112,7 @@ internal fun PlayerPillOverlay(
     collapsedPolygon: RoundedPolygon? = null,
     openInfo: NavigationEventInfo,
     closedInfo: NavigationEventInfo,
+    currentSource: (() -> Rect?)? = null,
     alternateSource: Rect? = null,
     onAlternateClick: () -> Unit = {},
     pillContent: @Composable () -> Unit,
@@ -122,9 +125,10 @@ internal fun PlayerPillOverlay(
     val fadeSpec = motionScheme.defaultSpatialSpec<Float>()
     val scope = rememberCoroutineScope()
     val collapsedRadiusPx = collapsedCornerRadius?.let { with(density) { it.toPx() } }
-    val cloverMorph = remember(collapsedPolygon) {
-        collapsedPolygon?.let { Morph(it, MaterialShapes.Square) }
-    }
+    val collapsedShape = collapsedPolygon?.toShape()
+    // Remember the viewport only while this overlay is mounted. Reopening after
+    // a window resize should still animate from the pill, not snap open.
+    var previousViewport by remember(transition) { mutableStateOf(viewport) }
 
     val navigationState = rememberNavigationEventState(
         currentInfo = if (transition.open) openInfo else closedInfo,
@@ -165,8 +169,26 @@ internal fun PlayerPillOverlay(
         )
     }
 
-    LaunchedEffect(transition.open, transition.source, viewport, collapsedRadiusPx) {
-        val source = transition.source
+    val viewportChanged = previousViewport != viewport
+    LaunchedEffect(transition.open, viewport, collapsedRadiusPx) {
+        if (viewportChanged && transition.open && transition.mounted) {
+            coroutineScope {
+                launch { transition.center.snapTo(Offset(viewport.width / 2f, viewport.height / 2f)) }
+                launch { transition.size.snapTo(viewport) }
+                launch { transition.radius.snapTo(0f) }
+                launch { transition.reveal.snapTo(1f) }
+                launch { transition.contentScale.snapTo(1f) }
+            }
+            previousViewport = viewport
+            transition.restoring = false
+            return@LaunchedEffect
+        }
+        previousViewport = viewport
+        val source = if (!transition.open) {
+            (currentSource?.invoke() ?: transition.source).also { bounds ->
+                if (bounds != null) transition.updateAnchor(bounds)
+            }
+        } else transition.source
         if (transition.open) {
             if (transition.restoring) {
                 coroutineScope {
@@ -213,24 +235,38 @@ internal fun PlayerPillOverlay(
     }
 
     if (!transition.mounted) return
-    val progress = transition.reveal.value.coerceIn(0f, 1f)
+    // LaunchedEffect runs after composition. Read the new viewport immediately
+    // on a resize, rather than drawing one frame at the previous animation
+    // bounds and waiting for its snapTo calls.
+    val resizeSnap = viewportChanged && transition.open
+    val progress = if (resizeSnap) 1f else transition.reveal.value.coerceIn(0f, 1f)
     val back = if (transition.backGestureActive) {
         transition.backProgress.value.coerceIn(0f, 1f)
     } else 0f
-    val center = transition.center.value
-    val size = transition.size.value
+    val center = if (resizeSnap) Offset(viewport.width / 2f, viewport.height / 2f)
+        else transition.center.value
+    val size = if (resizeSnap) viewport else transition.size.value
     val left = center.x - size.width / 2f
     val top = center.y - size.height / 2f
     val pillAlpha = (1f - progress / 0.5f).coerceIn(0f, 1f)
     val pageAlpha = ((progress - 0.5f) / 0.5f).coerceIn(0f, 1f)
     val source = transition.source ?: Rect(left, top, left + size.width, top + size.height)
-    // As the queue page shrinks back into its button, morph its outline into
-    // the same clover as the button. Only do this while the pill content is
-    // visible; keep the regular rounded-page outline at larger sizes.
-    val pillShape = if (cloverMorph != null && progress < 0.5f) {
-        MorphingPolygonShape(cloverMorph, (progress / 0.5f).coerceIn(0f, 1f))
+    val shapeChangeEnd = 0.5f
+    val silhouetteBlend = (progress / shapeChangeEnd).coerceIn(0f, 1f)
+    val pageCornerProgress = ((progress - shapeChangeEnd) / (1f - shapeChangeEnd))
+        .coerceIn(0f, 1f)
+    val roundedShape = RoundedCornerShape(
+        if (collapsedShape != null) {
+            (collapsedCornerRadius ?: 12.dp) * (1f - pageCornerProgress)
+        } else {
+            with(density) { transition.radius.value.coerceAtLeast(0f).toDp() }
+        }
+    )
+    val fadingSilhouettes = collapsedShape != null && progress < shapeChangeEnd
+    val backgroundColor = if (collapsedShape != null) {
+        lerp(pillColor, colorScheme.surfaceContainer, silhouetteBlend)
     } else {
-        RoundedCornerShape(with(density) { transition.radius.value.coerceAtLeast(0f).toDp() })
+        lerp(pillColor, colorScheme.surfaceContainer, progress)
     }
 
     Box(Modifier.fillMaxSize()
@@ -253,13 +289,30 @@ internal fun PlayerPillOverlay(
                     with(density) { size.width.coerceAtLeast(1f).toDp() },
                     with(density) { size.height.coerceAtLeast(1f).toDp() },
                 )
-                .clip(pillShape)
-                .background(lerp(pillColor, colorScheme.surfaceContainer, progress))
+                .then(
+                    if (fadingSilhouettes) Modifier
+                    else Modifier.clip(roundedShape).background(backgroundColor)
+                )
                 .clickable(interactionSource = null, indication = null) {
                     // Consume background taps without dismissing the expanded page.
                     if (!transition.open) transition.openFrom(source)
                 },
         ) {
+            if (collapsedShape != null && progress < shapeChangeEnd) {
+                Box(
+                    Modifier.align(Alignment.Center)
+                        .size(with(density) { minOf(size.width, size.height).coerceAtLeast(1f).toDp() })
+                        .graphicsLayer { alpha = 1f - silhouetteBlend }
+                        .clip(collapsedShape)
+                        .background(backgroundColor)
+                )
+                Box(
+                    Modifier.matchParentSize()
+                        .graphicsLayer { alpha = silhouetteBlend }
+                        .clip(roundedShape)
+                        .background(backgroundColor)
+                )
+            }
             if (pillAlpha > 0f) {
                 Box(
                     Modifier.align(Alignment.Center)
@@ -279,8 +332,8 @@ internal fun PlayerPillOverlay(
                         )
                         .graphicsLayer {
                             alpha = pageAlpha
-                            scaleX = transition.contentScale.value
-                            scaleY = transition.contentScale.value
+                            scaleX = if (resizeSnap) 1f else transition.contentScale.value
+                            scaleY = if (resizeSnap) 1f else transition.contentScale.value
                         },
                 ) { pageContent(transition.open) }
             }

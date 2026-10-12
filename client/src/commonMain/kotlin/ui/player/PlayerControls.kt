@@ -3,6 +3,10 @@ package dev.brahmkshatriya.echo.app.ui.player
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.hoverable
@@ -10,7 +14,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -24,8 +27,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilledTonalIconToggleButton
 import androidx.compose.material3.Icon
@@ -33,6 +34,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.material3.MaterialTheme.motionScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.material3.onPointerScrollY
@@ -51,19 +53,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import dev.brahmkshatriya.echo.app.platform.hasTouchInput
+import dev.brahmkshatriya.echo.app.ui.components.MorphingProgressIconButton
 import dev.brahmkshatriya.echo.app.ui.components.SquigglySlider
+import dev.brahmkshatriya.echo.app.ui.components.SwitchingIcon
 import echo.client.generated.resources.Res
 import echo.client.generated.resources.ic_favorite
 import echo.client.generated.resources.ic_favorite_filled
@@ -107,12 +113,12 @@ internal fun RepeatButton(modifier: Modifier = Modifier) {
             contentColor = colorScheme.onPrimaryContainer,
         )
     ) {
-        Icon(
-            painterResource(when (mode) {
+        SwitchingIcon(
+            icon = when (mode) {
                 RepeatMode.Off -> Res.drawable.ic_repeat
                 RepeatMode.All -> Res.drawable.ic_repeat_on
                 RepeatMode.One -> Res.drawable.ic_repeat_one_on
-            }),
+            },
             contentDescription = when (mode) {
                 RepeatMode.Off -> "Repeat off; enable repeat all"
                 RepeatMode.All -> "Repeat all; enable repeat one"
@@ -141,18 +147,19 @@ internal fun PreviousButton(modifier: Modifier = Modifier, large: Boolean = fals
         modifier = modifier,
         shapes = IconButtonDefaults.shapes()
     ) {
-        Icon(
-            painterResource(
-                if (large) Res.drawable.ic_skip_previous_32
-                else Res.drawable.ic_skip_previous
-            ),
+        SwitchingIcon(
+            icon = if (large) Res.drawable.ic_skip_previous_32
+            else Res.drawable.ic_skip_previous,
             contentDescription = "Previous song"
         )
     }
 }
 
 @Composable
-internal fun PlayPauseButton(modifier: Modifier = Modifier, large: Boolean = false) {
+internal fun PlayPauseButton(
+    modifier: Modifier = Modifier,
+    large: Boolean = false,
+) {
     val controls = LocalPlayerControls.current
     val isPlaying = controls?.isPlaying == true
     FilledIconButton(
@@ -160,15 +167,13 @@ internal fun PlayPauseButton(modifier: Modifier = Modifier, large: Boolean = fal
         enabled = controls != null,
         modifier = modifier,
     ) {
-        Icon(
-            painterResource(
-                when {
-                    isPlaying && large -> Res.drawable.ic_pause_32
-                    isPlaying -> Res.drawable.ic_pause
-                    large -> Res.drawable.ic_play_arrow_32
-                    else -> Res.drawable.ic_play_arrow
-                }
-            ),
+        SwitchingIcon(
+            icon = when {
+                isPlaying && large -> Res.drawable.ic_pause_32
+                isPlaying -> Res.drawable.ic_pause
+                large -> Res.drawable.ic_play_arrow_32
+                else -> Res.drawable.ic_play_arrow
+            },
             contentDescription = if (isPlaying) "Pause" else "Play"
         )
     }
@@ -176,6 +181,8 @@ internal fun PlayPauseButton(modifier: Modifier = Modifier, large: Boolean = fal
 
 @Composable
 internal fun CompactPlayPauseButton(modifier: Modifier = Modifier) {
+    val controls = LocalPlayerControls.current
+    val isPlaying = controls?.isPlaying == true
     val timelineState = LocalPlayerTimelineState.current
     val progress = if (timelineState == null || timelineState.durationMs <= 0f) {
         0f
@@ -184,24 +191,22 @@ internal fun CompactPlayPauseButton(modifier: Modifier = Modifier) {
     }
     val progressColor = colorScheme.primary
     val backgroundColor = colorScheme.primary.copy(alpha = 0.33f)
-
-    Box(
-        modifier = modifier
-            .size(46.dp)
-            .background(backgroundColor, CircleShape),
-        contentAlignment = Alignment.Center,
+    val buttonColors = IconButtonDefaults.filledIconButtonColors()
+    val enabled = controls != null
+    MorphingProgressIconButton(
+        progress = progress,
+        onClick = { controls?.isPlaying = !isPlaying },
+        enabled = enabled,
+        backgroundColor = backgroundColor,
+        progressColor = progressColor,
+        buttonColor = if (enabled) buttonColors.containerColor else buttonColors.disabledContainerColor,
+        modifier = modifier,
     ) {
-        CircularProgressIndicator(
-            progress = { progress },
-            modifier = Modifier.size(44.5.dp),
-            color = progressColor,
-            strokeWidth = 1.5.dp,
-            trackColor = Color.Transparent,
-            strokeCap = StrokeCap.Round,
-            gapSize = 0.dp,
+        SwitchingIcon(
+            icon = if (isPlaying) Res.drawable.ic_pause else Res.drawable.ic_play_arrow,
+            contentDescription = if (isPlaying) "Pause" else "Play",
+            tint = if (enabled) buttonColors.contentColor else buttonColors.disabledContentColor,
         )
-
-        PlayPauseButton(Modifier.size(40.dp))
     }
 }
 
@@ -209,22 +214,23 @@ internal fun CompactPlayPauseButton(modifier: Modifier = Modifier) {
 internal fun NextButton(modifier: Modifier = Modifier, large: Boolean = false) {
     val timelineState = LocalPlayerTimelineState.current
     val pagerState = LocalPlayerPagerState.current
+    val repeatMode = LocalPlayerControls.current?.repeatMode ?: RepeatMode.Off
+    val canGoNext = pagerState?.hasNext(repeatMode) == true
     val scope = rememberCoroutineScope()
     IconButton(
         onClick = {
+            if (!canGoNext) return@IconButton
             timelineState?.positionMs = 0f
             scope.launch {
-                pagerState?.playNext()
+                pagerState.playNext(repeatMode)
             }
         },
-        enabled = timelineState != null,
+        enabled = timelineState != null && canGoNext,
         modifier = modifier,
         shapes = IconButtonDefaults.shapes()
     ) {
-        Icon(
-            painterResource(
-                if (large) Res.drawable.ic_skip_next_32 else Res.drawable.ic_skip_next
-            ),
+        SwitchingIcon(
+            icon = if (large) Res.drawable.ic_skip_next_32 else Res.drawable.ic_skip_next,
             contentDescription = "Next song"
         )
     }
@@ -249,8 +255,8 @@ internal fun ShuffleButton(modifier: Modifier = Modifier) {
             contentColor = colorScheme.onPrimaryContainer,
         )
     ) {
-        Icon(
-            painterResource(if (enabled) Res.drawable.ic_shuffle_on else Res.drawable.ic_shuffle),
+        SwitchingIcon(
+            icon = if (enabled) Res.drawable.ic_shuffle_on else Res.drawable.ic_shuffle,
             contentDescription = if (enabled) "Disable shuffle" else "Enable shuffle"
         )
     }
@@ -298,6 +304,8 @@ fun ExpandedTimeline(
     val collapseProgress = rowsCollapseProgress.coerceIn(0f, 1f)
     val secondaryRowsAlpha = 1f - collapseProgress
     val compactPlayPauseVisible = lyricsVisible && collapseProgress >= 0.5f
+    val inlineCoverSlideSpec = motionScheme.defaultSpatialSpec<IntOffset>()
+    val inlineCoverWidthSpec = motionScheme.defaultSpatialSpec<IntSize>()
 
     SubcomposeLayout(Modifier.fillMaxWidth().clipToBounds()) { constraints ->
         val looseConstraints = constraints.copy(minHeight = 0)
@@ -306,18 +314,31 @@ fun ExpandedTimeline(
                 Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                AnimatedVisibility(lyricsVisible || showCompactArtwork) {
+                AnimatedVisibility(
+                    visible = lyricsVisible || showCompactArtwork,
+                    enter = slideInHorizontally(inlineCoverSlideSpec) { -it } +
+                            expandHorizontally(inlineCoverWidthSpec, expandFrom = Alignment.Start),
+                    exit = slideOutHorizontally(inlineCoverSlideSpec) { -it } +
+                            shrinkHorizontally(
+                                inlineCoverWidthSpec,
+                                shrinkTowards = Alignment.Start
+                            ),
+                ) {
                     PlayerArtwork(
                         contentDescription = "Song $i artwork",
                         modifier = Modifier
                             .padding(start = 16.dp, end = 8.dp)
                             .size(48.dp)
-                            .clip(RoundedCornerShape(8.dp))
+                            .clip(RoundedCornerShape(4.dp))
                             .background(colorScheme.primaryFixed)
                             .clickable(onClick = onArtworkClick),
                     )
                 }
-                AnimatedVisibility(!lyricsVisible && !showCompactArtwork) {
+                AnimatedVisibility(
+                    visible = !lyricsVisible && !showCompactArtwork,
+                    enter = expandHorizontally(inlineCoverWidthSpec),
+                    exit = shrinkHorizontally(inlineCoverWidthSpec),
+                ) {
                     Spacer(Modifier.width(16.dp))
                 }
                 Column(Modifier.weight(1f)) {
@@ -338,91 +359,96 @@ fun ExpandedTimeline(
             }
         }.single().measure(looseConstraints)
 
-        val times = subcompose("times") {
-            Row(
-                Modifier.fillMaxWidth()
-                    .graphicsLayer { alpha = secondaryRowsAlpha }
-                    .padding(horizontal = 8.dp)
-            ) {
-                Text(
-                    text = currentTimeLabel,
-                    style = mergedStyle,
-                    modifier = Modifier.padding(8.dp),
+        val chromeTop = (metadata.height - 12.dp.roundToPx()).coerceAtLeast(0)
+        val chrome = subcompose("chrome") {
+            Layout(
+                modifier = Modifier.fillMaxWidth(),
+                content = {
+                    Row(
+                        Modifier.fillMaxWidth().padding(horizontal = 8.dp)
+                    ) {
+                        Text(
+                            text = currentTimeLabel,
+                            style = mergedStyle,
+                            modifier = Modifier.padding(8.dp),
+                        )
+                        Spacer(Modifier.weight(1f))
+                        val endInteraction = remember { MutableInteractionSource() }
+                        Text(
+                            text = endLabel,
+                            style = mergedStyle,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable(interactionSource = endInteraction) {
+                                    showRemainingTime = !showRemainingTime
+                                }
+                                .padding(8.dp),
+                        )
+                    }
+                    PlayerSlider(
+                        modifier = Modifier.height(72.dp),
+                        timelineState = timelineState,
+                    )
+                    Text(
+                        text = "FLAC",
+                        style = mergedStyle,
+                        modifier = Modifier
+                            .padding(bottom = 4.dp)
+                            .clip(RoundedCornerShape(100))
+                            .background(colorScheme.primary.copy(0.1f))
+                            .clickable {}
+                            .padding(12.dp, 4.dp),
+                    )
+                    Controller()
+                },
+            ) { measurables, chromeConstraints ->
+                val chromeLoose = chromeConstraints.copy(minHeight = 0)
+                val times = measurables[0].measure(chromeLoose)
+                val sliderHorizontalPadding = 16.dp.roundToPx()
+                val sliderWidth =
+                    (chromeConstraints.maxWidth - sliderHorizontalPadding * 2).coerceAtLeast(0)
+                val slider = measurables[1].measure(
+                    Constraints(
+                        minWidth = sliderWidth,
+                        maxWidth = sliderWidth,
+                        minHeight = 0,
+                        maxHeight = chromeLoose.maxHeight,
+                    )
                 )
-                Spacer(Modifier.weight(1f))
-                val endInteraction = remember { MutableInteractionSource() }
-                Text(
-                    text = endLabel,
-                    style = mergedStyle,
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .clickable(interactionSource = endInteraction) {
-                            showRemainingTime = !showRemainingTime
-                        }
-                        .padding(8.dp),
+                val formatBadge = measurables[2].measure(chromeLoose.copy(minWidth = 0))
+                val controls = measurables[3].measure(chromeLoose)
+                val timesTop = metadata.height + 40.dp.roundToPx() - chromeTop
+                val chromeContentHeight = maxOf(
+                    timesTop + times.height,
+                    slider.height,
+                    formatBadge.height,
                 )
+
+                layout(chromeConstraints.maxWidth, chromeContentHeight + controls.height) {
+                    slider.placeRelative(sliderHorizontalPadding, 0)
+                    times.placeRelative(0, timesTop)
+                    formatBadge.placeRelative(
+                        (chromeConstraints.maxWidth - formatBadge.width) / 2,
+                        chromeContentHeight - formatBadge.height,
+                    )
+                    controls.placeRelative(0, chromeContentHeight)
+                }
             }
         }.single().measure(looseConstraints)
 
-        val sliderHorizontalPadding = 16.dp.roundToPx()
-        val sliderWidth = (constraints.maxWidth - sliderHorizontalPadding * 2).coerceAtLeast(0)
-        val slider = subcompose("slider") {
-            PlayerSlider(
-                modifier = Modifier.fillMaxWidth()
-                    .height(72.dp)
-                    .graphicsLayer { alpha = secondaryRowsAlpha },
-                timelineState = timelineState,
-            )
-        }.single().measure(
-            Constraints(
-                minWidth = sliderWidth,
-                maxWidth = sliderWidth,
-                minHeight = 0,
-                maxHeight = looseConstraints.maxHeight,
-            )
-        )
-
-        val formatBadge = subcompose("format") {
-            Text(
-                text = "FLAC",
-                style = mergedStyle,
-                modifier = Modifier
-                    .graphicsLayer { alpha = secondaryRowsAlpha }
-                    .padding(bottom = 4.dp)
-                    .clip(RoundedCornerShape(100))
-                    .background(colorScheme.primary.copy(0.1f))
-                    .clickable {}
-                    .padding(12.dp, 4.dp),
-            )
-        }.single().measure(looseConstraints.copy(minWidth = 0))
-
-        val metadataToTimesSpacing = 40.dp.roundToPx()
-        val sliderTop = (metadata.height - 12.dp.roundToPx()).coerceAtLeast(0)
-        val expandedContentHeight = maxOf(
-            metadata.height + metadataToTimesSpacing + times.height,
-            sliderTop + slider.height,
-            formatBadge.height,
-        ).coerceIn(constraints.minHeight, constraints.maxHeight)
-        val collapsedContentHeight = metadata.height.coerceIn(
-            constraints.minHeight,
-            constraints.maxHeight,
-        )
-        val floatContentHeight =
-            expandedContentHeight + (collapsedContentHeight - expandedContentHeight) * collapseProgress
-        val contentHeight =
-            floatContentHeight.roundToInt().coerceIn(constraints.minHeight, constraints.maxHeight)
-        val floatSecondaryRowsOffset =
-            (expandedContentHeight - collapsedContentHeight) * collapseProgress
-        val secondaryRowsOffset = floatSecondaryRowsOffset.roundToInt()
+        val expandedContentHeight = chromeTop + chrome.height
+        val collapsedContentHeight = metadata.height
+        val contentHeight = (expandedContentHeight +
+                (collapsedContentHeight - expandedContentHeight) * collapseProgress)
+            .roundToInt().coerceIn(constraints.minHeight, constraints.maxHeight)
+        val chromeTravel = (expandedContentHeight - collapsedContentHeight) * collapseProgress
 
         layout(constraints.maxWidth, contentHeight) {
-            slider.placeRelative(sliderHorizontalPadding, sliderTop + secondaryRowsOffset)
+            chrome.placeRelativeWithLayer(0, chromeTop) {
+                alpha = secondaryRowsAlpha
+                translationY = chromeTravel
+            }
             metadata.placeRelative(0, 0)
-            times.placeRelative(0, metadata.height + metadataToTimesSpacing + secondaryRowsOffset)
-            formatBadge.placeRelative(
-                x = (constraints.maxWidth - formatBadge.width) / 2,
-                y = expandedContentHeight - formatBadge.height + secondaryRowsOffset,
-            )
         }
     }
 }
@@ -443,7 +469,7 @@ fun MoreButton() {
 
 @Composable
 fun LikeToggle() {
-    val favourite = remember { mutableStateOf(true) }
+    val favourite = remember { mutableStateOf(false) }
     val interactionSource = remember { MutableInteractionSource() }
     FilledTonalIconToggleButton(
         checked = favourite.value,
@@ -454,17 +480,15 @@ fun LikeToggle() {
         ),
         interactionSource = interactionSource,
         colors = IconButtonDefaults.filledTonalIconToggleButtonColors(
-            colorScheme.primary.copy(0.25f),
+            Color.Transparent,
             colorScheme.onPrimaryContainer,
             checkedContentColor = colorScheme.tertiaryContainer,
             checkedContainerColor = colorScheme.onTertiaryContainer
         ),
     ) {
-        Icon(
-            painterResource(
-                if (favourite.value) Res.drawable.ic_favorite_filled
-                else Res.drawable.ic_favorite
-            ),
+        SwitchingIcon(
+            icon = if (favourite.value) Res.drawable.ic_favorite_filled
+            else Res.drawable.ic_favorite,
             contentDescription = if (favourite.value) "Favourite" else "Unfavourite"
         )
     }
@@ -687,11 +711,9 @@ fun VolumeAdjuster() {
             },
             modifier = Modifier.size(40.dp),
         ) {
-            Icon(
-                painterResource(
-                    if (position.floatValue == 0f) Res.drawable.ic_volume_off
-                    else Res.drawable.ic_volume_up,
-                ),
+            SwitchingIcon(
+                icon = if (position.floatValue == 0f) Res.drawable.ic_volume_off
+                else Res.drawable.ic_volume_up,
                 contentDescription = if (hasTouch) {
                     if (isSliderPinned) "Unpin volume slider" else "Pin volume slider"
                 } else {
