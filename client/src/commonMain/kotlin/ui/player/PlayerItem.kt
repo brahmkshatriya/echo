@@ -1,25 +1,17 @@
 package dev.brahmkshatriya.echo.app.ui.player
 
-import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.pager.PagerState
-import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
@@ -27,197 +19,36 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.BlurEffect
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.ColorMatrix
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.Paint
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.PathFillType
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TileMode
-import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalInspectionMode
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.kmpalette.generatePalette
-import com.kmpalette.palette.graphics.Palette
-import com.materialkolor.ktx.animateColorScheme
-import com.skydoves.landscapist.image.LandscapistImage
-import com.skydoves.landscapist.image.convertToImageBitmap
 import dev.brahmkshatriya.echo.app.ui.components.ScrollbarState
 import dev.brahmkshatriya.echo.app.ui.components.scrollbarStateValue
-import dev.brahmkshatriya.echo.app.ui.player.song.SongPlayerItem
-import dev.brahmkshatriya.echo.app.ui.player.song.maxSongCoverSize
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
 
-private data class PlayerArtworkCacheEntry(
-    val artwork: ImageBitmap? = null,
-    val palette: Palette? = null,
-)
-
-private object PlayerArtworkMemoryCache {
-    private const val MAX_ENTRIES = 12
-    private const val MAX_PALETTE_ENTRIES = 48
-    private val entries = LinkedHashMap<String, PlayerArtworkCacheEntry>()
-    // Invalidate adjacent pager pages as soon as their palettes are prefetched.
-    private val palettes = mutableStateMapOf<String, Palette>()
-
-    fun getPalette(model: String): Palette? = palettes[model] ?: entries[model]?.palette
-
-    fun get(model: String): PlayerArtworkCacheEntry? {
-        val entry = entries.remove(model) ?: return null
-        entries[model] = entry
-        return entry
-    }
-
-    fun putArtwork(model: String, artwork: ImageBitmap) {
-        put(model, (entries[model] ?: PlayerArtworkCacheEntry()).copy(artwork = artwork))
-    }
-
-    fun putPalette(model: String, palette: Palette) {
-        palettes[model] = palette
-        while (palettes.size > MAX_PALETTE_ENTRIES) {
-            palettes.remove(palettes.keys.first())
-        }
-        put(model, (entries[model] ?: PlayerArtworkCacheEntry()).copy(palette = palette))
-    }
-
-    private fun put(model: String, entry: PlayerArtworkCacheEntry) {
-        entries.remove(model)
-        entries[model] = entry
-        while (entries.size > MAX_ENTRIES) {
-            val oldestKey = entries.keys.firstOrNull() ?: break
-            entries.remove(oldestKey)
-        }
-    }
-}
-
-/** Precompute the same 64-swatch palette that a player page would create.
- * Separate palette storage keeps it available after bitmap LRU eviction. */
-internal suspend fun prefetchPlayerArtworkPalette(model: String, artwork: ImageBitmap) {
-    if (PlayerArtworkMemoryCache.getPalette(model) != null) return
-    val palette = withContext(Dispatchers.Default) {
-        artwork.generatePalette {
-            maximumColorCount(64)
-            clearFilters()
-        }
-    }
-    PlayerArtworkMemoryCache.putPalette(model, palette)
-}
-
-internal fun cachedPlayerArtworkPalette(model: String): Palette? =
-    PlayerArtworkMemoryCache.getPalette(model)
-
-internal fun cachePlayerArtwork(model: String, artwork: ImageBitmap) {
-    PlayerArtworkMemoryCache.putArtwork(model, artwork)
-}
-
-@Composable
-fun PlayerItem(
-    i: Int,
-    onScrolledToTopChanged: (Boolean) -> Unit = {},
-    onInteractionLockChanged: (Boolean) -> Unit = {},
-) {
-    PlayerItemHost(
-        index = i,
-        artworkMaxSize = maxSongCoverSize.dp,
-    ) {
-        SongPlayerItem(
-            i = i,
-            onScrolledToTopChanged = onScrolledToTopChanged,
-            onLyricsSelectorOpenChanged = onInteractionLockChanged,
-        )
-    }
-}
-
+/** Neutral item shell. Song items supply a theme and background color;
+ * video items can leave both colors unset. */
 @Composable
 internal fun PlayerItemHost(
-    index: Int,
-    artworkMaxSize: Dp,
-    coloredBackground: Boolean = true,
+    backgroundColor: Color? = null,
+    outlineColor: Color? = null,
     content: @Composable () -> Unit,
 ) {
-    val artworkModel = LocalPlayerItems.current.getOrNull(index)
-    val cachedArtwork = remember(artworkModel) {
-        artworkModel?.let(PlayerArtworkMemoryCache::get)
-    }
-    var artwork by remember(artworkModel) { mutableStateOf(cachedArtwork?.artwork) }
-    var locallyLoadedPalette by remember(artworkModel) { mutableStateOf(cachedArtwork?.palette) }
-    // Prefetch may finish after an offscreen pager page was first composed.
-    // Observe cache updates so that page uses the prefetched scheme immediately.
-    val prefetchedPalette = artworkModel?.let(PlayerArtworkMemoryCache::getPalette)
-    val palette = prefetchedPalette ?: locallyLoadedPalette
-    LaunchedEffect(artworkModel, artwork, palette == null) {
-        if (artworkModel != null && palette == null) {
-            artwork?.let { bitmap ->
-                // More swatches retain small, subdued cover details (for
-                // example, greens amid Led Zeppelin IV's pale yellows).
-                prefetchPlayerArtworkPalette(artworkModel, bitmap)
-                locallyLoadedPalette = PlayerArtworkMemoryCache.getPalette(artworkModel)
-            }
-        }
-    }
-    val artworkRequestSize = with(LocalDensity.current) {
-        artworkMaxSize.roundToPx().coerceAtLeast(1)
-    }
-
-    if (
-        artworkModel != null &&
-        (artwork == null || palette == null) &&
-        !LocalInspectionMode.current
-    ) {
-        LandscapistImage(
-            imageModel = { artworkModel },
-            modifier = Modifier.size(0.dp),
-            requestBuilder = { size(artworkRequestSize, artworkRequestSize) },
-            success = { state, _ ->
-                val loadedArtwork = remember(state.data) {
-                    state.data?.let { convertToImageBitmap(it) }
-                }
-                LaunchedEffect(artworkModel, loadedArtwork) {
-                    if (loadedArtwork != null) {
-                        artwork = loadedArtwork
-                        PlayerArtworkMemoryCache.putArtwork(artworkModel, loadedArtwork)
-                    }
-                }
-            },
-            failure = { state ->
-                println("PLAYER ARTWORK FAILED: ${state.reason?.stackTraceToString()}")
-            },
-        )
-    }
-
-    val isDark = isSystemInDarkTheme()
-    val scheme = remember(palette, isDark, artworkModel) {
-        palette.artworkColorScheme(isDark, artworkModel?.hashCode() ?: 0)
-    }
-    CompositionLocalProvider(LocalPlayerArtwork provides artwork) {
-        MaterialExpressiveTheme(animateColorScheme(scheme)) {
-            Box(Modifier.playerBackground(coloredBackground)) { content() }
-        }
-    }
+    Box(Modifier.playerBackground(backgroundColor, outlineColor)) { content() }
 }
+
 
 const val collapsedHorizontalPadding = 8
 internal val playerBottomBarHeight = 64.dp
 internal val playerBottomBarControlSize = 48.dp
 internal const val PlayerBottomBarContentType = "player-bottom-bar"
 internal const val PlayerScrollbarThumbSizePercent = 0.16f
-internal const val PlayerArtworkCrossfadeDurationMs = 250
 
 @Stable
 internal class PlayerTimelineState(val durationMs: Float) {
@@ -259,78 +90,6 @@ internal fun rememberPlayerTimelineState(
 }
 
 internal val LocalPlayerTimelineState = staticCompositionLocalOf<PlayerTimelineState?> { null }
-internal val LocalPlayerArtwork = staticCompositionLocalOf<ImageBitmap?> { null }
-
-private val CoverBrightnessFilter = ColorFilter.colorMatrix(ColorMatrix(floatArrayOf(
-    1.5f, 0f, 0f, 0f, 0f,
-    0f, 1.5f, 0f, 0f, 0f,
-    0f, 0f, 1.5f, 0f, 0f,
-    0f, 0f, 0f, 1f, 0f,
-)))
-
-/** Brighten the actual cover pixels inside a one-pixel ring. */
-internal fun Modifier.brightenedCoverOutline(
-    outlineWidthPx: Float = 1f,
-    outlineRadius: Dp = 8.dp,
-): Modifier = drawWithContent {
-    drawContent()
-
-    val strokeWidth = outlineWidthPx.coerceAtLeast(0f)
-    if (size.width <= strokeWidth * 2 || size.height <= strokeWidth * 2) return@drawWithContent
-    val radius = outlineRadius.toPx().coerceAtLeast(0f)
-    val ring = Path().apply {
-        fillType = PathFillType.EvenOdd
-        addRoundRect(RoundRect(Rect(Offset.Zero, size), CornerRadius(radius)))
-        addRoundRect(
-            RoundRect(
-                Rect(
-                    strokeWidth,
-                    strokeWidth,
-                    size.width - strokeWidth,
-                    size.height - strokeWidth,
-                ),
-                CornerRadius((radius - strokeWidth).coerceAtLeast(0f)),
-            )
-        )
-    }
-
-    drawContext.canvas.saveLayer(
-        Rect(Offset.Zero, size),
-        Paint().apply { colorFilter = CoverBrightnessFilter },
-    )
-    val redrawArtwork = { drawContent() }
-    clipPath(ring) { redrawArtwork() }
-    drawContext.canvas.restore()
-}
-
-@Composable
-internal fun PlayerArtwork(
-    contentDescription: String?,
-    modifier: Modifier = Modifier,
-    contentScale: ContentScale = ContentScale.Crop,
-    outlineWidth: Dp? = null,
-    outlineRadius: Dp = 4.dp,
-) {
-    val outlineWidthPx = outlineWidth?.let { with(LocalDensity.current) { it.toPx() } } ?: 1f
-    Box(modifier.brightenedCoverOutline(outlineWidthPx, outlineRadius)) {
-        Crossfade(
-            targetState = LocalPlayerArtwork.current,
-            modifier = Modifier.matchParentSize(),
-            animationSpec = tween(PlayerArtworkCrossfadeDurationMs),
-        ) { bitmap ->
-            if (bitmap != null) {
-                Image(
-                    bitmap = bitmap,
-                    contentDescription = contentDescription,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = contentScale,
-                )
-            } else {
-                Box(Modifier.fillMaxSize())
-            }
-        }
-    }
-}
 
 /** Page-local buttons stay in place during skips: select the target instantly,
  * then animate the new page's visibility instead of sliding its click targets. */
@@ -405,11 +164,14 @@ internal class PlayerSkipNavigator(
 internal fun Modifier.animatedSkipEntrance(
     navigator: PlayerSkipNavigator?,
     song: Int,
+    effectProgress: () -> Float = { 1f },
 ): Modifier = graphicsLayer {
     if (navigator?.enteringSong == song) {
+        // Fade on every skip, including when collapsed. Only blur is gated
+        // by sheet expansion so the mini-player remains sharp.
         val remaining = (1f - navigator.entryProgress).coerceIn(0f, 1f)
         alpha = 1f - remaining * 0.28f
-        val blur = 18.dp.toPx() * remaining
+        val blur = 18.dp.toPx() * remaining * effectProgress().coerceIn(0f, 1f)
         renderEffect = if (blur > 0.5f) BlurEffect(blur, blur, TileMode.Decal) else null
     } else {
         alpha = 1f

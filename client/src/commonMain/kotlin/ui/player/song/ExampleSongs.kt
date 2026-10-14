@@ -1,8 +1,5 @@
-package dev.brahmkshatriya.echo.app.ui.player
+package dev.brahmkshatriya.echo.app.ui.player.song
 
-/** Fixed demo playlist. Album, artist and artwork URLs are taken from the
- * supplied Top 100 Album Cover Art JSON (Rolling Stone cover list).
- * Track titles are representative songs from each album. */
 internal data class ExampleSong(
     val title: String,
     val artist: String,

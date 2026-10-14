@@ -2,6 +2,7 @@ package dev.brahmkshatriya.echo.app.platform
 
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -17,6 +18,9 @@ import kotlinx.cinterop.value
 import sdl3.SDL_GetTouchDeviceType
 import sdl3.SDL_GetTouchDevices
 import sdl3.SDL_TOUCH_DEVICE_DIRECT
+import sdl3.SDL_DisableScreenSaver
+import sdl3.SDL_EnableScreenSaver
+import sdl3.SDL_ScreenSaverEnabled
 import sdl3.SDL_free
 import kotlin.experimental.ExperimentalNativeApi
 import kotlin.native.Platform as NativePlatform
@@ -54,3 +58,13 @@ private fun queryHasTouchInput(): Boolean = memScoped {
 
 @Composable
 internal actual fun imeAnimationInsetsOrNull(): Pair<WindowInsets, WindowInsets>? = null
+
+@Composable
+@OptIn(ExperimentalForeignApi::class)
+internal actual fun KeepScreenAwake(enabled: Boolean) {
+    DisposableEffect(enabled) {
+        val wasEnabled = SDL_ScreenSaverEnabled()
+        if (enabled) SDL_DisableScreenSaver()
+        onDispose { if (enabled && wasEnabled) SDL_EnableScreenSaver() }
+    }
+}

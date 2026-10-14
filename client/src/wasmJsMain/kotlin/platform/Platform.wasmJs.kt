@@ -49,3 +49,40 @@ private fun observeTouchInputChanges(onChange: () -> Unit): () -> Unit = js(
 
 @Composable
 internal actual fun imeAnimationInsetsOrNull(): Pair<WindowInsets, WindowInsets>? = null
+
+@Composable
+internal actual fun KeepScreenAwake(enabled: Boolean) {
+    DisposableEffect(enabled) {
+        val release = if (enabled) acquireScreenWakeLock() else null
+        onDispose { release?.invoke() }
+    }
+}
+
+/** The Screen Wake Lock API is optional and works only in secure contexts.
+ * Re-acquire after the tab becomes visible because browsers release the lock
+ * when the document is hidden. Release on disposal, including pending requests. */
+@Suppress("unused")
+private fun acquireScreenWakeLock(): () -> Unit = js(
+    """(() => {
+        let active = true;
+        let sentinel = null;
+        const request = async () => {
+            if (!active || document.visibilityState !== 'visible' || !navigator.wakeLock) return;
+            try {
+                const acquired = await navigator.wakeLock.request('screen');
+                if (!active) { acquired.release(); return; }
+                sentinel = acquired;
+            } catch (_) { /* Wake locks may be unavailable or denied. */ }
+        };
+        const onVisibility = () => {
+            if (document.visibilityState === 'visible') request();
+        };
+        document.addEventListener('visibilitychange', onVisibility);
+        request();
+        return () => {
+            active = false;
+            document.removeEventListener('visibilitychange', onVisibility);
+            if (sentinel) sentinel.release();
+        };
+    })()"""
+)

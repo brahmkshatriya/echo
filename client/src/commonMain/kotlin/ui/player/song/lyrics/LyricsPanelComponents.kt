@@ -49,6 +49,10 @@ import dev.brahmkshatriya.echo.app.platform.VariableText
 import dev.brahmkshatriya.echo.app.ui.player.PlayerTimelineState
 import dev.brahmkshatriya.echo.app.ui.theme.googleSansFontFamily
 
+// Timed lyrics and the kinetic-shapes view share one viewport fade geometry.
+internal val FullLyricsTopFadeHeight = 130.dp
+internal val FullLyricsBottomFadeHeight = 160.dp
+
 @Composable
 internal fun FullLyricsGapIndicator(
     visible: Boolean,

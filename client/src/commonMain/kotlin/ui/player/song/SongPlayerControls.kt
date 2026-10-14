@@ -1,8 +1,7 @@
-package dev.brahmkshatriya.echo.app.ui.player
+package dev.brahmkshatriya.echo.app.ui.player.song
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.slideInHorizontally
@@ -19,10 +18,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -56,14 +52,11 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.SubcomposeLayout
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
@@ -76,6 +69,11 @@ import dev.brahmkshatriya.echo.app.platform.hasTouchInput
 import dev.brahmkshatriya.echo.app.ui.components.MorphingProgressIconButton
 import dev.brahmkshatriya.echo.app.ui.components.SquigglySlider
 import dev.brahmkshatriya.echo.app.ui.components.SwitchingIcon
+import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerControls
+import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerSkipNavigator
+import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerTimelineState
+import dev.brahmkshatriya.echo.app.ui.player.PlayerTimelineState
+import dev.brahmkshatriya.echo.app.ui.player.RepeatMode
 import echo.client.generated.resources.Res
 import echo.client.generated.resources.ic_favorite
 import echo.client.generated.resources.ic_favorite_filled
@@ -87,8 +85,6 @@ import echo.client.generated.resources.ic_play_arrow_32
 import echo.client.generated.resources.ic_repeat
 import echo.client.generated.resources.ic_repeat_on
 import echo.client.generated.resources.ic_repeat_one_on
-import echo.client.generated.resources.ic_shuffle
-import echo.client.generated.resources.ic_shuffle_on
 import echo.client.generated.resources.ic_skip_next
 import echo.client.generated.resources.ic_skip_next_32
 import echo.client.generated.resources.ic_skip_previous
@@ -108,13 +104,16 @@ fun defaultIconButtonColors() = IconButtonDefaults.iconButtonColors(
 
 @Composable
 internal fun favouriteButtonColors() = colorScheme.primaryContainer
-    .favouriteButtonPalette(dark = colorScheme.background.luminance() < 0.20f)
-    .let { palette ->
+    .favouriteButtonPalette(
+        dark = colorScheme.background.luminance() < 0.20f,
+        artworkAccent = LocalPlayerFavouriteAccent.current,
+    )
+    .let { (checked, onChecked) ->
         IconButtonDefaults.filledTonalIconToggleButtonColors(
-            palette.container,
-            palette.content,
-            checkedContainerColor = palette.checkedContainer,
-            checkedContentColor = palette.checkedContent,
+            colorScheme.onPrimaryContainer.copy(0.1f),
+            colorScheme.onPrimaryContainer,
+            checkedContainerColor = checked,
+            checkedContentColor = onChecked,
         )
     }
 
@@ -133,10 +132,7 @@ internal fun RepeatButton(modifier: Modifier = Modifier) {
         enabled = controls != null,
         modifier = modifier,
         shapes = IconButtonDefaults.shapes(),
-        colors = IconButtonDefaults.iconButtonColors(
-            containerColor = Color.Transparent,
-            contentColor = colorScheme.onPrimaryContainer,
-        )
+        colors = defaultIconButtonColors()
     ) {
         SwitchingIcon(
             icon = when (mode) {
@@ -289,32 +285,6 @@ internal fun NextButton(
 }
 
 @Composable
-internal fun ShuffleButton(modifier: Modifier = Modifier) {
-    val controls = LocalPlayerControls.current
-    val pagerState = LocalPlayerPagerState.current
-    val enabled = controls?.shuffleEnabled == true
-    IconButton(
-        onClick = {
-            if (controls != null && pagerState != null) {
-                controls.setShuffle(!enabled, controls.currentSong)
-            }
-        },
-        enabled = controls != null,
-        modifier = modifier,
-        shapes = IconButtonDefaults.shapes(),
-        colors = IconButtonDefaults.iconButtonColors(
-            containerColor = Color.Transparent,
-            contentColor = colorScheme.onPrimaryContainer,
-        )
-    ) {
-        SwitchingIcon(
-            icon = if (enabled) Res.drawable.ic_shuffle_on else Res.drawable.ic_shuffle,
-            contentDescription = if (enabled) "Disable shuffle" else "Enable shuffle"
-        )
-    }
-}
-
-@Composable
 fun Controller() = BoxWithConstraints(Modifier.fillMaxWidth()) {
     val expandedShapes = IconButtonDefaults.shapes(
         shape = RoundedCornerShape(50),
@@ -460,7 +430,7 @@ fun ExpandedTimeline(
                     )
                 }
                 Spacer(Modifier.width(4.dp))
-                LikeToggle()
+                LikeToggle(i)
                 AnimatedVisibility(compactPlayPauseVisible) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Spacer(Modifier.width(4.dp))
@@ -484,7 +454,7 @@ fun ExpandedTimeline(
                         Text(
                             text = currentTimeLabel,
                             style = mergedStyle,
-                            modifier = Modifier.padding(8.dp),
+                            modifier = Modifier.padding(8.dp, 4.dp),
                         )
                         Spacer(Modifier.weight(1f))
                         val endInteraction = remember { MutableInteractionSource() }
@@ -496,7 +466,7 @@ fun ExpandedTimeline(
                                 .clickable(interactionSource = endInteraction) {
                                     showRemainingTime = !showRemainingTime
                                 }
-                                .padding(8.dp),
+                                .padding(8.dp, 4.dp),
                         )
                     }
                     PlayerSlider(
@@ -583,12 +553,14 @@ fun MoreButton() {
 }
 
 @Composable
-fun LikeToggle() {
-    val favourite = remember { mutableStateOf(false) }
+fun LikeToggle(song: Int) {
+    val controls = LocalPlayerControls.current
+    val favourite = controls?.isFavourite(song) == true
     val interactionSource = remember { MutableInteractionSource() }
     FilledTonalIconToggleButton(
-        checked = favourite.value,
-        onCheckedChange = { favourite.value = it },
+        checked = favourite,
+        onCheckedChange = { controls?.setFavourite(song, it) },
+        enabled = controls != null,
         modifier = Modifier.size(44.dp),
         shapes = IconButtonDefaults.toggleableShapes(
             checkedShape = RoundedCornerShape(100)
@@ -597,47 +569,15 @@ fun LikeToggle() {
         colors = favouriteButtonColors(),
     ) {
         SwitchingIcon(
-            icon = if (favourite.value) Res.drawable.ic_favorite_filled
+            icon = if (favourite) Res.drawable.ic_favorite_filled
             else Res.drawable.ic_favorite,
-            contentDescription = if (favourite.value) "Favourite" else "Unfavourite",
+            contentDescription = if (favourite) "Unfavourite" else "Favourite",
             modifier = Modifier.padding(top = 2.dp)
         )
     }
 }
 
 
-@Composable
-fun Modifier.playerBackground(colored: Boolean = false): Modifier {
-    val playerSheet = LocalPlayerSheet.current
-    val playerPadding = LocalPlayerPadding.current
-    val peekHeight = playerSheet?.peekHeight ?: 80.dp
-    val layoutDirection = LocalLayoutDirection.current
-    val startPadding = playerPadding.calculateStartPadding(layoutDirection)
-    val endPadding = playerPadding.calculateEndPadding(layoutDirection)
-    val animatedStart = animateDpAsState(
-        startPadding + collapsedHorizontalPadding.dp, tween()
-    )
-    val animatedEnd = animateDpAsState(
-        endPadding + collapsedHorizontalPadding.dp, tween()
-    )
-
-    return fillMaxSize().graphicsLayer {
-        val sheetProgress = playerSheet?.progressState?.floatValue ?: 0f
-        val positiveProgress = sheetProgress.coerceIn(0f, 1f)
-        val backProgress = playerSheet?.backProgressState?.floatValue ?: 0f
-        clip = true
-        shape = ClippedShape(
-            peekHeight - 8.dp,
-            positiveProgress,
-            backProgress,
-            8.dp,
-            animatedStart.value,
-            animatedEnd.value
-        )
-    }.run {
-        if (colored) background(colorScheme.primaryContainer) else this
-    }
-}
 
 
 fun formatTime(ms: Float): String {
@@ -686,7 +626,7 @@ fun Timeline(modifier: Modifier = Modifier) {
         Text(
             text = currentTimeLabel,
             style = mergedStyle,
-            modifier = Modifier.widthIn(min = 40.dp),
+            modifier = Modifier.widthIn(min = 40.dp) .padding(8.dp, 4.dp),
             textAlign = TextAlign.Center
         )
 
@@ -703,9 +643,11 @@ fun Timeline(modifier: Modifier = Modifier) {
             style = mergedStyle,
             modifier = Modifier
                 .widthIn(min = 40.dp)
+                .clip(RoundedCornerShape(8.dp))
                 .clickable(interactionSource = endInteraction) {
                     showRemainingTime = !showRemainingTime
-                },
+                }
+                .padding(8.dp, 4.dp),
             textAlign = TextAlign.Center
         )
     }

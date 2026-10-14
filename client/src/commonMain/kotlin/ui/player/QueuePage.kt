@@ -84,6 +84,9 @@ import dev.brahmkshatriya.echo.app.ui.components.PolygonIconRipple
 import dev.brahmkshatriya.echo.app.ui.components.SwitchingIcon
 import dev.brahmkshatriya.echo.app.ui.components.animatedPolygonIconShape
 import dev.brahmkshatriya.echo.app.ui.components.clipToMaterialGroupViewport
+import dev.brahmkshatriya.echo.app.ui.player.song.LocalPlayerItems
+import dev.brahmkshatriya.echo.app.ui.player.song.exampleSong
+import dev.brahmkshatriya.echo.app.ui.player.song.grayCoverOutline
 import echo.client.generated.resources.Res
 import echo.client.generated.resources.ic_back
 import echo.client.generated.resources.ic_drag_indicator
@@ -171,6 +174,7 @@ internal fun QueuePage(
                     listState.firstVisibleItemIndex == headerIndex -> requestedScroll.coerceAtLeast(
                         -listState.firstVisibleItemScrollOffset.toFloat()
                     )
+
                     else -> requestedScroll
                 }
             } else {
@@ -182,6 +186,7 @@ internal fun QueuePage(
                         (lastItem.offset + lastItem.size - layoutInfo.viewportEndOffset)
                             .coerceAtLeast(0).toFloat()
                     )
+
                     layoutInfo.visibleItemsInfo.any { it.index > lastSongIndex } -> 0f
                     else -> requestedScroll
                 }
@@ -609,7 +614,10 @@ private fun QueueSongRow(
             modifier = Modifier.size(48.dp)
                 .clip(RoundedCornerShape(4.dp))
                 .background(colorScheme.surfaceVariant)
-                .brightenedCoverOutline(outlineRadius = 4.dp),
+                .grayCoverOutline(
+                    outlineColor = Color.Gray,
+                    outlineRadius = 4.dp,
+                ),
             contentAlignment = Alignment.Center,
         ) {
             Icon(

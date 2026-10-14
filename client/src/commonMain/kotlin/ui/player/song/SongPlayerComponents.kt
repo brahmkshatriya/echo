@@ -78,26 +78,15 @@ import dev.brahmkshatriya.echo.app.platform.hasTouchInput
 import dev.brahmkshatriya.echo.app.ui.components.BetterImage
 import dev.brahmkshatriya.echo.app.ui.components.PolygonIconRipple
 import dev.brahmkshatriya.echo.app.ui.components.ResponsiveRow
-import dev.brahmkshatriya.echo.app.ui.components.SwitchingIcon
 import dev.brahmkshatriya.echo.app.ui.components.animatedPolygonIconShape
 import dev.brahmkshatriya.echo.app.ui.components.clover6Sided
-import dev.brahmkshatriya.echo.app.ui.player.CompactPlayPauseButton
-import dev.brahmkshatriya.echo.app.ui.player.ExpandedTimeline
 import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerPadding
 import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerSheet
 import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerTimelineState
-import dev.brahmkshatriya.echo.app.ui.player.NextButton
-import dev.brahmkshatriya.echo.app.ui.player.PlayPauseButton
-import dev.brahmkshatriya.echo.app.ui.player.PlayerArtwork
-import dev.brahmkshatriya.echo.app.ui.player.PreviousButton
-import dev.brahmkshatriya.echo.app.ui.player.RepeatButton
-import dev.brahmkshatriya.echo.app.ui.player.ShuffleButton
-import dev.brahmkshatriya.echo.app.ui.player.TimelineWithVolume
 import dev.brahmkshatriya.echo.app.ui.player.collapsedHorizontalPadding
-import dev.brahmkshatriya.echo.app.ui.player.defaultIconButtonColors
-import dev.brahmkshatriya.echo.app.ui.player.exampleSong
-import dev.brahmkshatriya.echo.app.ui.player.favouriteButtonColors
 import dev.brahmkshatriya.echo.app.ui.player.playerBottomBarControlSize
+import dev.brahmkshatriya.echo.app.ui.player.song.lyrics.FullLyricsBottomFadeHeight
+import dev.brahmkshatriya.echo.app.ui.player.song.lyrics.FullLyricsTopFadeHeight
 import dev.brahmkshatriya.echo.app.ui.player.song.lyrics.Lyrics
 import dev.brahmkshatriya.echo.app.ui.player.song.lyrics.LyricsPanel
 import dev.brahmkshatriya.echo.app.ui.player.song.lyrics.LyricsSelectionItem
@@ -105,10 +94,9 @@ import dev.brahmkshatriya.echo.app.ui.player.song.lyrics.LyricsSelectionPillCont
 import dev.brahmkshatriya.echo.app.ui.player.song.lyrics.LyricsTicker
 import dev.brahmkshatriya.echo.app.ui.player.song.lyrics.LyricsTimingIndex
 import dev.brahmkshatriya.echo.app.ui.player.song.lyrics.NoLyricsTicker
+import dev.brahmkshatriya.echo.app.ui.player.song.lyrics.lyricsEdgeFade
 import echo.client.generated.resources.Res
 import echo.client.generated.resources.ic_close
-import echo.client.generated.resources.ic_favorite
-import echo.client.generated.resources.ic_favorite_filled
 import echo.client.generated.resources.ic_format_quotes
 import echo.client.generated.resources.ic_keyboard_arrow_down
 import echo.client.generated.resources.ic_playlist_play
@@ -118,6 +106,7 @@ import org.jetbrains.compose.resources.painterResource
 import kotlin.time.Duration.Companion.milliseconds
 
 private enum class PlayerHeroSlot {
+    KineticShapes,
     TopBar,
     CoverOrLyrics,
     Timeline,
@@ -125,16 +114,20 @@ private enum class PlayerHeroSlot {
 
 private class PlayerHeroContentState(
     val showLyrics: Boolean,
+    val showKineticShapes: Boolean,
     val lyrics: Lyrics?,
     val timingIndex: LyricsTimingIndex?,
 ) {
     override fun equals(other: Any?): Boolean {
-        if (other !is PlayerHeroContentState || showLyrics != other.showLyrics) return false
+        if (other !is PlayerHeroContentState ||
+            showLyrics != other.showLyrics || showKineticShapes != other.showKineticShapes) return false
         if (!showLyrics) return true
         return lyrics === other.lyrics && timingIndex === other.timingIndex
     }
 
-    override fun hashCode(): Int = if (!showLyrics) 0 else {
+    override fun hashCode(): Int = if (!showLyrics) {
+        if (showKineticShapes) 2 else 0
+    } else {
         31 + if (lyrics == null) 0 else 1
     }
 }
@@ -158,16 +151,21 @@ internal fun PlayerHero(
     lyrics: Lyrics?,
     lyricsTimingIndex: LyricsTimingIndex?,
     showLyrics: Boolean,
+    showKineticShapes: Boolean,
+    kineticShapesActive: Boolean,
     collapseTimelineRowsForLyrics: Boolean,
     onCollapseTimelineRowsForLyricsChange: (Boolean) -> Unit,
     onLyricsChromeInteraction: () -> Unit,
+    onKineticShapesChromeClick: () -> Unit,
     userScrollEnabled: Boolean,
     topPadding: Dp,
     viewportWidth: Dp,
     transformModifier: Modifier,
     onArtworkClick: () -> Unit,
+    onLargeArtworkClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val immersiveMode = showLyrics || showKineticShapes
     val coverLyricsScaleSpec = motionScheme.defaultSpatialSpec<Float>()
     val chromeCollapseProgress by animateFloatAsState(
         targetValue = if (collapseTimelineRowsForLyrics) 1f else 0f,
@@ -175,15 +173,17 @@ internal fun PlayerHero(
         label = "Lyrics player chrome collapse",
     )
     var compactArtwork by remember { mutableStateOf(false) }
-    LaunchedEffect(showLyrics) {
-        if (!showLyrics && collapseTimelineRowsForLyrics) {
+    LaunchedEffect(immersiveMode) {
+        if (!immersiveMode && collapseTimelineRowsForLyrics) {
             delay(LyricsModeTransitionDurationMs.toLong().milliseconds)
             onCollapseTimelineRowsForLyricsChange(false)
         }
     }
 
     val currentOnLyricsChromeInteraction by rememberUpdatedState(onLyricsChromeInteraction)
-    val chromeInteractionModifier = if (showLyrics) {
+    val currentOnKineticShapesChromeClick by rememberUpdatedState(onKineticShapesChromeClick)
+    val kineticShapesInteractionSource = remember { MutableInteractionSource() }
+    val chromeInteractionModifier = if (immersiveMode) {
         Modifier.pointerInput(Unit) {
             awaitEachGesture {
                 var consumedByDescendant: Boolean
@@ -204,7 +204,7 @@ internal fun PlayerHero(
     } else Modifier
 
     SubcomposeLayout(
-        modifier.then(if (showLyrics) Modifier.clipToBounds() else Modifier)
+        modifier.then(if (immersiveMode) Modifier.clipToBounds() else Modifier)
     ) { constraints ->
         val childConstraints = constraints.copy(minHeight = 0)
         val topBar = subcompose(PlayerHeroSlot.TopBar) {
@@ -214,7 +214,7 @@ internal fun PlayerHero(
             Box(transformModifier.then(chromeInteractionModifier)) {
                 ExpandedTimeline(
                     i = i,
-                    lyricsVisible = showLyrics,
+                    lyricsVisible = immersiveMode,
                     showCompactArtwork = compactArtwork,
                     rowsCollapseProgress = chromeCollapseProgress,
                     onArtworkClick = onArtworkClick,
@@ -232,12 +232,52 @@ internal fun PlayerHero(
         )
         val coverVerticalPadding = ((coverHeightDp - coverMaxSize) / 2)
             .coerceAtLeast(songCoverVerticalPadding.dp)
+        // Original fade motion before the timeline-synchronization changes:
+        // interpolate independently between the timeline and bottom pill.
+        val kineticShapesViewportHeight = (
+            topBar.height + coverHeight +
+                (timeline.height * chromeCollapseProgress).toInt()
+        ).coerceIn(0, constraints.maxHeight)
+        val kineticShapes = subcompose(PlayerHeroSlot.KineticShapes) {
+            Box(Modifier.fillMaxSize()) {
+                AnimatedVisibility(
+                    visible = showKineticShapes,
+                    enter = fadeIn(tween(LyricsModeTransitionDurationMs)),
+                    exit = fadeOut(tween(LyricsModeTransitionDurationMs)),
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    Box(
+                        modifier = transformModifier.fillMaxSize()
+                            .lyricsEdgeFade(
+                                topFadeHeight = FullLyricsTopFadeHeight,
+                                bottomFadeHeight = FullLyricsBottomFadeHeight,
+                            )
+                            .clickable(
+                                interactionSource = kineticShapesInteractionSource,
+                                indication = null,
+                                onClick = { currentOnKineticShapesChromeClick() },
+                            ),
+                    ) {
+                        KineticShapesBackground(
+                            artworkKey = LocalPlayerItems.current.getOrNull(i).orEmpty(),
+                            active = showKineticShapes && kineticShapesActive,
+                        )
+                    }
+                }
+            }
+        }.single().measure(
+            childConstraints.copy(
+                minHeight = kineticShapesViewportHeight,
+                maxHeight = kineticShapesViewportHeight,
+            )
+        )
         val cover = subcompose(PlayerHeroSlot.CoverOrLyrics) {
             LaunchedEffect(coverMaxSize) {
                 compactArtwork = coverMaxSize < 64.dp
             }
             val heroContentState = PlayerHeroContentState(
                 showLyrics = showLyrics,
+                showKineticShapes = showKineticShapes,
                 lyrics = lyrics,
                 timingIndex = lyricsTimingIndex,
             )
@@ -268,7 +308,11 @@ internal fun PlayerHero(
                     }
                 },
             ) { state ->
-                if (state.showLyrics) {
+                if (state.showKineticShapes) {
+                    // The visible kinetic-shapes layer owns the tap target; keeping this
+                    // overlay non-clickable avoids double taps and ripples.
+                    Box(modifier = transformModifier.fillMaxSize())
+                } else if (state.showLyrics) {
                     if (state.lyrics != null) {
                         LyricsPanel(
                             lyrics = state.lyrics,
@@ -305,6 +349,7 @@ internal fun PlayerHero(
                                 verticalPadding = coverVerticalPadding,
                                 topPadding = topPadding,
                                 viewportWidth = viewportWidth,
+                                onClick = onLargeArtworkClick,
                             )
                         }
                     }
@@ -318,6 +363,7 @@ internal fun PlayerHero(
         )
 
         layout(constraints.maxWidth, constraints.maxHeight) {
+            kineticShapes.placeRelative(0, 0)
             var y = 0
             topBar.placeRelative(0, y)
             y += topBar.height
@@ -335,6 +381,7 @@ fun CoverArt(
     verticalPadding: Dp,
     topPadding: Dp,
     viewportWidth: Dp,
+    onClick: () -> Unit = {},
 ) {
     val playerSheet = LocalPlayerSheet.current
     val playerPadding = LocalPlayerPadding.current
@@ -345,7 +392,7 @@ fun CoverArt(
         tween()
     )
     // The full cover scales to 48.dp when the player collapses. Compensate
-    // using its actual measured height so its border stays one *physical pixel*.
+    // using its actual measured height so its border stays 0.33dp on screen.
     var coverHeightPx by remember { mutableIntStateOf(0) }
     val density = LocalDensity.current
     val progress = (playerSheet?.progressState?.floatValue ?: 1f).coerceIn(0f, 1f)
@@ -356,10 +403,10 @@ fun CoverArt(
     }
     val coverScale = 1f + (collapsedScale - 1f) * (1f - progress)
     // The large artwork has 8.dp corners; its 48.dp collapsed form has 4.dp.
-    val visibleCornerRadius = 4.dp + 4.dp * progress
+    val visibleCornerRadius = 8.dp
     PlayerArtwork(
         contentDescription = "${exampleSong(i)?.album ?: "Album"} cover art",
-        outlineWidth = with(density) { (1f / coverScale).toDp() },
+        outlineWidth = 0.5.dp / coverScale,
         outlineRadius = visibleCornerRadius / coverScale,
         modifier = Modifier
             .songCoverSize(maxCoverSize, verticalPadding)
@@ -391,7 +438,8 @@ fun CoverArt(
                 clip = true
                 shape = RoundedCornerShape(visibleCornerRadius / coverScale)
             }
-            .background(colorScheme.primaryFixed),
+            .background(colorScheme.primaryFixed)
+            .clickable(enabled = progress > 0.9f, onClick = onClick),
     )
 }
 
@@ -426,13 +474,22 @@ fun TopBar(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             val mergedStyle = LocalTextStyle.current.merge(typography.labelLarge)
-            Text("Playing From", fontWeight = FontWeight.Normal, style = mergedStyle)
+            Text(
+                "Playing From",
+                color = colorScheme.onPrimaryContainer.copy(0.66f),
+                fontWeight = FontWeight.Normal,
+                style = mergedStyle
+            )
             Text(
                 exampleSong(index)?.album ?: "Unknown album",
                 fontWeight = FontWeight.Bold,
                 style = mergedStyle,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .clickable { }
+                    .padding(8.dp, 4.dp)
             )
         }
         IconButton(
@@ -649,7 +706,8 @@ private fun StickyMiniPlayer(
                 onClick = { scope.launch { sheetState?.show() } },
                 interactionSource = interactionSource,
                 shapes = IconButtonDefaults.shapes(),
-                colors = defaultIconButtonColors()
+                colors = defaultIconButtonColors(),
+                modifier = Modifier.size(44.dp)
             ) {
                 Icon(
                     painterResource(Res.drawable.ic_keyboard_arrow_down),
@@ -681,7 +739,7 @@ fun CollapsedPlayer(
                 translationY = -positiveProgress * size.height
             }
             .padding(playerPadding)
-            .padding(top = 8.dp)
+            .padding(top = 8.dp, end = 2.dp)
             .padding(horizontal = collapsedHorizontalPadding.dp)
             .clip(RoundedCornerShape(16.dp))
             .clickable { scope.launch { sheetState?.expand() } }
@@ -709,11 +767,13 @@ fun CollapsedPlayer(
                 IconButton(
                     onClick = { scope.launch { sheetState?.hide() } },
                     interactionSource = interactionSource,
-                    modifier = Modifier.size(40.dp),
-                    shapes = IconButtonDefaults.shapes()
+                    modifier = Modifier.size(44.dp),
+                    shapes = IconButtonDefaults.shapes(),
+                    colors = defaultIconButtonColors()
                 ) {
                     Icon(
-                        painterResource(Res.drawable.ic_close), contentDescription = "Close Player"
+                        painterResource(Res.drawable.ic_close),
+                        contentDescription = "Close Player"
                     )
                 }
             }
@@ -731,22 +791,28 @@ private fun CollapsedPlayerContent(
     val song = exampleSong(i)
     ResponsiveRow(
         modifier = modifier,
-        spacing = 8.dp,
+        spacing = 4.dp,
     ) {
         item(priority = 90, key = "artwork") {
             leadingContent()
         }
 
         item(priority = 80, key = "metadata") {
-            Column(Modifier.width(128.dp)) {
+            Column(Modifier.width(128.dp).padding(start = 4.dp)) {
                 val mergedStyle = LocalTextStyle.current.merge(typography.labelLarge)
                 Text(
-                    song?.title ?: "Unknown track", fontWeight = FontWeight.Bold, style = mergedStyle,
-                    maxLines = 1, overflow = TextOverflow.Ellipsis,
+                    song?.title ?: "Unknown track",
+                    fontWeight = FontWeight.Bold,
+                    style = mergedStyle,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    song?.artist ?: "Unknown artist", fontWeight = FontWeight.Normal, style = mergedStyle,
-                    maxLines = 1, overflow = TextOverflow.Ellipsis,
+                    song?.artist ?: "Unknown artist",
+                    fontWeight = FontWeight.Normal,
+                    style = mergedStyle,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
         }
@@ -758,24 +824,7 @@ private fun CollapsedPlayerContent(
         )
 
         item(priority = 60, key = "favourite") {
-            var favourite by remember { mutableStateOf(true) }
-            val interactionSource = remember { MutableInteractionSource() }
-            FilledTonalIconToggleButton(
-                checked = favourite,
-                onCheckedChange = { favourite = it },
-                modifier = Modifier.size(44.dp),
-                shapes = IconButtonDefaults.toggleableShapes(
-                    checkedShape = RoundedCornerShape(100)
-                ),
-                interactionSource = interactionSource,
-                colors = favouriteButtonColors(),
-            ) {
-                SwitchingIcon(
-                    icon = if (favourite) Res.drawable.ic_favorite_filled
-                    else Res.drawable.ic_favorite,
-                    contentDescription = if (favourite) "Favourite" else "Unfavourite"
-                )
-            }
+            LikeToggle(i)
         }
 
         item(priority = 10, key = "timeline-volume", weight = 1f) {
@@ -783,7 +832,7 @@ private fun CollapsedPlayerContent(
         }
 
         item(priority = 49, key = "previous") {
-            PreviousButton(Modifier.size(40.dp))
+            PreviousButton(Modifier.size(44.dp))
         }
 
         item(
@@ -799,19 +848,15 @@ private fun CollapsedPlayerContent(
             key = "play-pause",
             whenItemVisible = "timeline-volume",
         ) {
-            PlayPauseButton(Modifier.size(40.dp))
+            PlayPauseButton(Modifier.size(44.dp))
         }
 
         item(priority = 50, key = "next") {
-            NextButton(Modifier.size(40.dp))
+            NextButton(Modifier.height(44.dp).width(36.dp))
         }
 
         item(priority = 30, key = "repeat") {
-            RepeatButton(Modifier.size(40.dp))
-        }
-
-        item(priority = 20, key = "shuffle") {
-            ShuffleButton(Modifier.size(40.dp))
+            RepeatButton(Modifier.size(44.dp))
         }
 
         item(priority = 100, key = "trailing") {

@@ -73,9 +73,6 @@ import dev.brahmkshatriya.echo.app.ui.components.materialGroup
 import dev.brahmkshatriya.echo.app.ui.components.paddingMask
 import dev.brahmkshatriya.echo.app.ui.main.Header
 import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerControls
-import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerItems
-import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerLyricsChromeCollapsed
-import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerLyricsVisible
 import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerPagerState
 import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerQueueTransition
 import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerSheet
@@ -170,6 +167,10 @@ fun SongPlayerItem(
             var fallbackShowLyrics by rememberSaveable(i) { mutableStateOf(false) }
             val sharedLyricsVisible = LocalPlayerLyricsVisible.current
             val showLyrics = sharedLyricsVisible?.value ?: fallbackShowLyrics
+            var fallbackShowKineticShapes by rememberSaveable(i) { mutableStateOf(false) }
+            val sharedKineticShapesVisible = LocalPlayerKineticShapesVisible.current
+            val showKineticShapes = sharedKineticShapesVisible?.value ?: fallbackShowKineticShapes
+            val immersiveMode = showLyrics || showKineticShapes
             var fallbackLyricsChromeCollapsed by rememberSaveable(i) { mutableStateOf(false) }
             val sharedLyricsChromeCollapsed = LocalPlayerLyricsChromeCollapsed.current
             val lyricsChromeCollapsed =
@@ -185,21 +186,22 @@ fun SongPlayerItem(
             }
             var lyricsChromeInteractionNonce by remember(i) { mutableIntStateOf(0) }
             val onLyricsChromeInteraction: () -> Unit = {
-                if (isCurrentItem && showLyrics) {
+                if (isCurrentItem && immersiveMode) {
                     setLyricsChromeCollapsed(false)
                     lyricsChromeInteractionNonce++
                 }
             }
-            LaunchedEffect(showLyrics) {
-                if (!showLyrics) lyricsChromeInteractionNonce = 0
+            LaunchedEffect(immersiveMode) {
+                if (!immersiveMode) lyricsChromeInteractionNonce = 0
             }
             LaunchedEffect(timelineState.isSeeking) {
-                if (showLyrics && timelineState.isSeeking) {
+                if (immersiveMode && timelineState.isSeeking) {
                     onLyricsChromeInteraction()
                 }
             }
             LaunchedEffect(
                 showLyrics,
+                showKineticShapes,
                 lyricsChromeInteractionNonce,
                 timelineState.isSeeking,
                 isCurrentItem,
@@ -207,7 +209,7 @@ fun SongPlayerItem(
             ) {
                 if (
                     !isCurrentItem ||
-                    !showLyrics ||
+                    !immersiveMode ||
                     timelineState.isSeeking ||
                     isBottomBarSticky
                 ) return@LaunchedEffect
@@ -528,9 +530,18 @@ fun SongPlayerItem(
                             lyrics = selectedLyrics?.lyrics,
                             lyricsTimingIndex = selectedLyrics?.timingIndex,
                             showLyrics = showLyrics,
+                            showKineticShapes = showKineticShapes,
+                            kineticShapesActive = isCurrentItem && !isBottomBarSticky &&
+                                (playerSheet?.isExpandedState?.value != false),
                             collapseTimelineRowsForLyrics = lyricsChromeCollapsed,
                             onCollapseTimelineRowsForLyricsChange = setLyricsChromeCollapsed,
                             onLyricsChromeInteraction = onLyricsChromeInteraction,
+                            onKineticShapesChromeClick = {
+                                if (isCurrentItem && showKineticShapes) {
+                                    setLyricsChromeCollapsed(!lyricsChromeCollapsed)
+                                    lyricsChromeInteractionNonce++
+                                }
+                            },
                             userScrollEnabled = isPlayerScrolledToTop,
                             topPadding = topPadding,
                             viewportWidth = coverViewportWidth,
@@ -544,6 +555,27 @@ fun SongPlayerItem(
                                     sharedLyricsVisible.value = false
                                 } else {
                                     fallbackShowLyrics = false
+                                }
+                                if (sharedKineticShapesVisible != null) {
+                                    sharedKineticShapesVisible.value = false
+                                } else {
+                                    fallbackShowKineticShapes = false
+                                }
+                            },
+                            onLargeArtworkClick = {
+                                if (isCurrentItem) {
+                                    if (sharedKineticShapesVisible != null) {
+                                        sharedKineticShapesVisible.value = true
+                                    } else {
+                                        fallbackShowKineticShapes = true
+                                    }
+                                    if (sharedLyricsVisible != null) {
+                                        sharedLyricsVisible.value = false
+                                    } else {
+                                        fallbackShowLyrics = false
+                                    }
+                                    setLyricsChromeCollapsed(false)
+                                    lyricsChromeInteractionNonce++
                                 }
                             },
                         )
@@ -594,6 +626,17 @@ fun SongPlayerItem(
                                 },
                                 onLyricsClick = {
                                     listState.requestScrollToItem(0)
+                                    if (showKineticShapes) {
+                                        // Switching immersive views starts a fresh three-second
+                                        // chrome timeout rather than inheriting the kinetic-shapes view's state.
+                                        setLyricsChromeCollapsed(false)
+                                        lyricsChromeInteractionNonce++
+                                    }
+                                    if (sharedKineticShapesVisible != null) {
+                                        sharedKineticShapesVisible.value = false
+                                    } else {
+                                        fallbackShowKineticShapes = false
+                                    }
                                     if (sharedLyricsVisible != null) {
                                         sharedLyricsVisible.value = !sharedLyricsVisible.value
                                     } else {
@@ -671,7 +714,7 @@ fun SongPlayerItem(
                     }
                 }
 
-                CollapsedPlayer(i = i, showCover = showLyrics)
+                CollapsedPlayer(i = i, showCover = immersiveMode)
                 val scrollbarState = rememberPlayerScrollbarState(listState, scrollbarItemSizes)
                 val scrollbarThumbMover =
                     rememberPlayerScrollbarThumbMover(listState, scrollbarItemSizes)

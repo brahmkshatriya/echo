@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.app.ui.player
+package dev.brahmkshatriya.echo.app.ui.player.song
 
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.darkColorScheme
@@ -120,6 +120,7 @@ private fun List<Sample>.dominantColorFamily(): Lab? {
         val visibility = ((color.l - 0.16) / 0.12).coerceIn(0.0, 1.0)
         return sample.population / total * chroma * visibility
     }
+
     val weighted = samples.map { it to weight(it) }.filter { it.second > 0.0 }
     if (weighted.isEmpty()) return null
 
@@ -170,6 +171,17 @@ private fun List<Sample>.isMostlyGrayscale(): Boolean {
     return grayCoverage >= 0.57 || (nearGrayCoverage >= 0.87 && colorfulCoverage < 0.06)
 }
 
+/** Very dark photographic pixels often have a small blue/purple chroma from
+ * compression. Count those as near-black when they make up most of the cover;
+ * otherwise a few much brighter colored pixels can tint the entire player.
+ * This doesn't affect vibrant accents, which are selected separately. */
+private fun List<Sample>.dominantNearBlack(): Lab? {
+    val total = sumOf { it.population }.toDouble().coerceAtLeast(1.0)
+    val nearBlack = filter { it.color.l < 0.28 && it.color.chroma < 0.06 }
+    if (nearBlack.sumOf { it.population } / total < 0.65) return null
+    return nearBlack.averageColor()?.let { Lab(it.l, 0.0, 0.0) }
+}
+
 /** Extract small, vivid accent *families* instead of requiring individual
  * swatches to cover a large part of the image. The red type on Ready to Die is
  * split across several tiny palette swatches, while most of its pixels are
@@ -187,8 +199,8 @@ private fun List<Sample>.vibrantArtworkAccents(dominant: Lab, grayscale: Boolean
     val eligible = samples.filter { sample ->
         val color = sample.color
         color.chroma >= minimumChroma && color.l in 0.18..0.94 &&
-            (color.l >= 0.30 || color.chroma >= 0.10) &&
-            (grayscale || color.hueSeparationDegrees(dominant) >= 32.0)
+                (color.l >= 0.30 || color.chroma >= 0.10) &&
+                (grayscale || color.hueSeparationDegrees(dominant) >= 32.0)
     }
     if (eligible.isEmpty()) return emptyList()
 
@@ -196,6 +208,7 @@ private fun List<Sample>.vibrantArtworkAccents(dominant: Lab, grayscale: Boolean
         val strength = (sample.color.chroma / baselineChroma).coerceAtMost(5.0)
         return (sample.population / total) * strength * strength * strength
     }
+
     val hueRadius = 22.0
     val ranked = eligible.map { center ->
         var population = 0.0
@@ -216,7 +229,7 @@ private fun List<Sample>.vibrantArtworkAccents(dominant: Lab, grayscale: Boolean
         // Several tiny red-letter swatches together count as a real patch,
         // but not as the dominant color of the artwork.
         val color = if (support > 0.0) Lab(l / support, a / support, b / support)
-            else center.color
+        else center.color
         val separation = if (grayscale) 1.0 else
             (color.hueSeparationDegrees(dominant) / 70.0).coerceIn(0.35, 1.0)
         Triple(color, support * sqrt(separation), population)
@@ -244,7 +257,7 @@ private fun List<Sample>.monochromeRestraint(): Double {
         val chroma = cluster.color.chroma
         if (chroma < 0.018) continue
         val weight = cluster.population / total *
-            ((chroma - 0.018) / 0.075).coerceIn(0.0, 1.0)
+                ((chroma - 0.018) / 0.075).coerceIn(0.0, 1.0)
         colorWeight += weight
         hueX += cos(cluster.color.hue) * weight
         hueY += sin(cluster.color.hue) * weight
@@ -272,25 +285,28 @@ private fun primaryNearContainer(
 ): Lab {
     val displayed = container.toLab()
     val hue = if (displayed.chroma >= 0.02) displayed.hue else main.hue
-    val chroma = max(main.chroma * 1.18, displayed.chroma * 1.25 + 0.015)
-        .coerceIn(0.13, 0.23)
+    val chroma = max(main.chroma * 1.30, displayed.chroma * 1.35 + 0.025)
+        .coerceIn(0.16, 0.27)
     return Lab(displayed.l, cos(hue) * chroma, sin(hue) * chroma)
 }
 
-/** Light-mode primaries should be distinct colors, not just darker versions
- * of the container. Evaluate the *displayed* sRGB results: gamut clipping can
- * otherwise make highly saturated greens, cyans and yellows look almost alike.
- * Prefer a bright, colorful nearby hue over simply lowering lightness. */
-private fun primaryDistinctFromContainer(source: Lab, container: Color, restraint: Double = 0.0): Color {
+/** Light-mode primary should look brighter and more vivid than an ordinary
+ * darkened container. Evaluate displayed sRGB: saturated yellows, greens and
+ * cyans often hit the gamut boundary before they look sufficiently distinct. */
+private fun primaryDistinctFromContainer(
+    source: Lab,
+    container: Color,
+    restraint: Double = 0.0
+): Color {
     val displayedContainer = container.toLab()
-    var best = source.tone(0.74).toColor()
+    var best = source.tone(0.77).toColor()
     var bestScore = Double.MAX_VALUE
     val rotations = listOf(0.0, -10.0, 10.0, -20.0, 20.0, -30.0, 30.0, -40.0, 40.0)
     for (rotation in rotations) {
         // Monochrome covers get tonal distinction without fabricated hues.
-        val tint = source.withHueOffset(rotation * (1.0 - restraint * 0.85), source.chroma * 1.15)
-        for (step in 0..24) {
-            val tone = 0.78 - step * 0.01
+        val tint = source.withHueOffset(rotation * (1.0 - restraint * 0.85), source.chroma * 1.30)
+        for (step in 0..21) {
+            val tone = 0.86 - step * 0.01
             val candidate = tint.tone(tone).toColor()
             // Preserve dark onPrimary text in light mode, regardless of hue.
             if (Color.Black.contrastWith(candidate) < 4.5) continue
@@ -299,11 +315,11 @@ private fun primaryDistinctFromContainer(source: Lab, container: Color, restrain
             val distance = displayedCandidate.distance(displayedContainer)
             val chroma = displayedCandidate.chroma
             val score =
-                (TARGET_PRIMARY_CONTAINER_CONTRAST - contrast).coerceAtLeast(0.0) * 8.0 +
-                (0.145 - distance).coerceAtLeast(0.0) * 12.0 +
-                abs(tone - 0.73) * 1.8 +
-                abs(rotation) * 0.0025 -
-                chroma * 0.45
+                (TARGET_PRIMARY_CONTAINER_CONTRAST - contrast).coerceAtLeast(0.0) * 10.0 +
+                        (0.17 - distance).coerceAtLeast(0.0) * 12.0 +
+                        abs(tone - 0.78) * 1.8 +
+                        abs(rotation) * 0.0025 -
+                        chroma * 1.1
             if (score < bestScore) {
                 bestScore = score
                 best = candidate
@@ -334,7 +350,8 @@ private fun tintedForeground(
     minimumContrast: Double = 4.5,
     preferredTone: Double? = null,
 ): Color {
-    val darkText = preferDark ?: (Color.Black.contrastWith(background) >= Color.White.contrastWith(background))
+    val darkText =
+        preferDark ?: (Color.Black.contrastWith(background) >= Color.White.contrastWith(background))
     val tint = source.foregroundTint(darkText)
     val startTone = preferredTone ?: if (darkText) 0.28 else 0.89
     val step = if (darkText) -0.01 else 0.005
@@ -348,34 +365,49 @@ private fun tintedForeground(
     return tint.tone(startTone + count * step).toColor()
 }
 
-private data class Role(val color: Color, val onColor: Color, val container: Color, val onContainer: Color)
+private data class Role(
+    val color: Color,
+    val onColor: Color,
+    val container: Color,
+    val onContainer: Color
+)
 
 // Tuning points for the three artwork-derived color roles. Contrast targets
 // guide candidate selection; the tertiary foreground minimum is mandatory.
-private const val TARGET_PRIMARY_CONTAINER_CONTRAST = 1.65
+private const val TARGET_PRIMARY_CONTAINER_CONTRAST = 1.9
 private const val TARGET_SECONDARY_PRIMARY_CONTRAST = 1.4
 private const val TARGET_TERTIARY_PRIMARY_CONTRAST = 1.8
-private const val MINIMUM_TERTIARY_BLACK_CONTRAST = 3.5
+private const val MINIMUM_TERTIARY_FOREGROUND_CONTRAST = 3.0
+private const val TERTIARY_MINIMUM_TONE = 0.82
+private const val TERTIARY_CHROMA_SCALE = 0.90
+private const val TERTIARY_MAX_CHROMA = 0.13
 
 /** Primary keeps the dominant hue while staying legible against its
  * container. In light mode it also avoids looking like a darker overlay. */
-private fun primaryRole(source: Lab, container: Color, hue: Lab, dark: Boolean, restraint: Double): Role {
+private fun primaryRole(
+    source: Lab,
+    container: Color,
+    hue: Lab,
+    dark: Boolean,
+    restraint: Double
+): Role {
     val chosen = if (!dark) {
         primaryDistinctFromContainer(source, container, restraint)
     } else {
-        // Preserve the established ~5.2:1 primary-to-container target.
-        var best = source.tone(0.77).toColor()
+        // Brighten the dark-mode primary and push it further from the container.
+        val vivid = source.withHueOffset(0.0, source.chroma * 1.18)
+        var best = vivid.tone(0.84).toColor()
         var bestScore = Double.MAX_VALUE
-        for (step in 0..96) {
-            val tone = 0.49 + step * 0.005
-            val candidate = source.tone(tone).toColor()
+        for (step in 0..76) {
+            val tone = 0.60 + step * 0.005
+            val candidate = vivid.tone(tone).toColor()
             val contrast = candidate.contrastWith(container)
             val penalty = when {
                 contrast < 3.0 -> (3.0 - contrast) * 8.0
-                contrast > 6.2 -> (contrast - 6.2) * 5.0
+                contrast > 7.0 -> (contrast - 7.0) * 5.0
                 else -> 0.0
             }
-            val score = abs(contrast - 5.2) + abs(tone - 0.77) * 0.40 + penalty
+            val score = abs(contrast - 6.0) + abs(tone - 0.84) * 0.40 + penalty
             if (score < bestScore) {
                 bestScore = score
                 best = candidate
@@ -391,16 +423,41 @@ private fun primaryRole(source: Lab, container: Color, hue: Lab, dark: Boolean, 
     )
 }
 
-/** Tertiary's hue and color are already selected by the artwork accent search.
- * Only its container and contrasting on-container color remain to generate. */
-private fun tertiaryRole(source: Lab, color: Color, dark: Boolean): Role {
-    val container = source.tone(if (dark) 0.30 else 0.79, 1.14).toColor()
-    return Role(
-        color,
-        tintedForeground(color, source, preferDark = true, minimumContrast = MINIMUM_TERTIARY_BLACK_CONTRAST),
-        container,
-        tintedForeground(container, source, preferDark = !dark, minimumContrast = 5.0),
+/** Keep the extracted accent hue, but use a soft pastel for tertiary and its
+ * container/fixed variants rather than displaying the vivid swatch unchanged. */
+private fun tertiaryRole(source: Lab, color: Color, dark: Boolean): Pair<Lab, Role> {
+    val softened = source.withHueOffset(
+        0.0,
+        (source.chroma * TERTIARY_CHROMA_SCALE).coerceAtMost(TERTIARY_MAX_CHROMA),
     )
+    val container = softened.tone(if (dark) 0.30 else 0.79, 1.14).toColor()
+    val adjusted = color.brightenForDarkForeground(softened, MINIMUM_TERTIARY_FOREGROUND_CONTRAST)
+    return softened to Role(
+        adjusted,
+        tintedForeground(
+            adjusted, softened, preferDark = true,
+            minimumContrast = MINIMUM_TERTIARY_FOREGROUND_CONTRAST
+        ),
+        container,
+        tintedForeground(container, softened, preferDark = !dark, minimumContrast = 5.0),
+    )
+}
+
+/** Use a light tertiary tone, raising it further only when required for
+ * contrast with the artwork-tinted dark foreground. */
+private fun Color.brightenForDarkForeground(source: Lab, minimumContrast: Double): Color {
+    val originalTone = toLab().l
+    val startTone = max(originalTone, TERTIARY_MINIMUM_TONE)
+    for (step in 0..100) {
+        val tone = (startTone + step * 0.01).coerceAtMost(0.99)
+        val candidate = source.tone(tone).toColor()
+        val foreground = tintedForeground(
+            candidate, source, preferDark = true,
+            minimumContrast = minimumContrast
+        )
+        if (candidate.contrastWith(foreground) >= minimumContrast) return candidate
+    }
+    return source.tone(0.99).toColor()
 }
 
 /** Preserve a small artwork accent's actual hue and chroma. Only use the
@@ -416,7 +473,7 @@ private fun contrastingTertiary(
     val seed = artworkSeed.toLong() and 0xFFFFFFFFL
     // Prefer an actually contrasting hue; if nothing is that far away, still
     // allow nearby genuine colors to contrast through tone rather than seed
-    // an unrelated color (e.g. the warm red/brown against Illmatic's gold).
+    // an unrelated color.
     val separatedHints = hints.filter {
         displayedPrimary.chroma < 0.015 || it.hueSeparationDegrees(displayedPrimary) >= 42.0
     }
@@ -434,8 +491,7 @@ private fun contrastingTertiary(
     var best: Pair<Lab, Color>? = null
     var bestScore = Double.MAX_VALUE
     for ((index, hint) in colors.withIndex()) {
-        // A vivid red from the image should remain red. Forcing every accent
-        // to a high lightness turned Ready to Die's small red type into pink.
+        // A vivid red from the image should remain red.
         val chroma = if (hints.isEmpty()) 0.18 else hint.chroma.coerceIn(0.075, 0.22)
         for (rotation in listOf(0.0, -4.0, 4.0, -8.0, 8.0)) {
             val tint = hint.withHueOffset(rotation, chroma)
@@ -447,19 +503,16 @@ private fun contrastingTertiary(
                 val distance = displayed.distance(displayedPrimary)
                 val hueGap = displayed.hueSeparationDegrees(displayedPrimary)
                 val contrast = color.contrastWith(primary.color)
-                // onTertiary stays dark and artwork-tinted, with the same
-                // minimum contrast as the previous pure-black foreground.
-                if (Color.Black.contrastWith(color) < MINIMUM_TERTIARY_BLACK_CONTRAST) continue
-                // Fast precheck at the darkest allowed ink tone; do not run
-                // the full foreground tone search for every accent candidate.
-                if (tint.foregroundTint(darkText = true).tone(0.04).toColor().contrastWith(color) <
-                    MINIMUM_TERTIARY_BLACK_CONTRAST) continue
+                // Contrast with tinted onTertiary is enforced after selecting
+                // the best artwork hue, by brightening the tertiary itself.
                 val score =
                     (TARGET_TERTIARY_PRIMARY_CONTRAST - contrast).coerceAtLeast(0.0) * 25.0 +
-                    (0.20 - distance).coerceAtLeast(0.0) * 16.0 +
-                    (if (hints.isEmpty()) (80.0 - hueGap).coerceAtLeast(0.0) * 0.04 else 0.0) +
-                    index * 1.1 + abs(rotation) * 0.035 +
-                    abs(tone - hint.l.coerceIn(0.48, 0.75)) * 2.2
+                            (0.20 - distance).coerceAtLeast(0.0) * 16.0 +
+                            (MINIMUM_TERTIARY_FOREGROUND_CONTRAST -
+                                    color.contrastWith(Color.Black)).coerceAtLeast(0.0) * 3.0 +
+                            (if (hints.isEmpty()) (80.0 - hueGap).coerceAtLeast(0.0) * 0.04 else 0.0) +
+                            index * 1.1 + abs(rotation) * 0.035 +
+                            abs(tone - hint.l.coerceIn(0.48, 0.75)) * 2.2
                 if (score < bestScore) {
                     bestScore = score
                     best = tint to color
@@ -468,10 +521,10 @@ private fun contrastingTertiary(
         }
     }
     return best?.let { (tint, chosen) ->
-        tint to tertiaryRole(tint, chosen, dark)
+        tertiaryRole(tint, chosen, dark)
     } ?: run {
         val fallback = colors.first().withChroma(0.16)
-        fallback to tertiaryRole(fallback, fallback.tone(0.90).toColor(), dark)
+        tertiaryRole(fallback, fallback.tone(0.90).toColor(), dark)
     }
 }
 
@@ -489,7 +542,7 @@ private fun mutedDominantSecondary(dominant: Lab, primary: Color, dark: Boolean)
         if (Color.Black.contrastWith(candidate) < 4.5) continue
         val separation = candidate.contrastWith(primary)
         val score = (TARGET_SECONDARY_PRIMARY_CONTRAST - separation).coerceAtLeast(0.0) * 18.0 +
-            abs(tone - (if (dark) 0.88 else 0.90)) * 1.8
+                abs(tone - (if (dark) 0.88 else 0.90)) * 1.8
         if (score < bestScore) {
             chosen = candidate
             bestScore = score
@@ -508,56 +561,80 @@ private fun Color.contrastWith(other: Color): Double {
     val b = other.luminance().toDouble()
     return (max(a, b) + 0.05) / (min(a, b) + 0.05)
 }
-private fun Color.readableText(): Color =
-    if (Color.Black.contrastWith(this) >= Color.White.contrastWith(this)) Color.Black else Color.White
 
-internal data class FavouriteButtonPalette(
-    val container: Color,
-    val content: Color,
-    val checkedContainer: Color,
-    val checkedContent: Color,
-)
-
-/** Give the heart a consistent rose hue, tempered by the artwork's actual
- * primary container so it doesn't look like an unrelated bright red sticker. */
-internal fun Color.favouriteButtonPalette(dark: Boolean): FavouriteButtonPalette {
-    val source = toLab()
-    val rose = Color(0xFFE47796).toLab().blend(source, 0.18)
-
-    // An unselected heart should retain just a hint of rose, even on highly
-    // colorful album art. The checked fill is warmer and more saturated.
-    val subtleRose = rose.withChroma(0.045, 0.065)
-    val subtleTone = (source.l + if (dark) 0.065 else -0.035)
-        .coerceIn(if (dark) 0.30 else 0.72, if (dark) 0.42 else 0.84)
-    val unchecked = subtleRose.tone(subtleTone).toColor()
-    val iconRose = rose.withChroma(0.09, 0.12)
-    var uncheckedIcon = unchecked.readableText()
-    for (step in 0..40) {
-        val tone = (if (dark) 0.73 + step * 0.006 else 0.42 - step * 0.006)
-            .coerceIn(0.16, 0.97)
-        val candidate = iconRose.tone(tone).toColor()
-        if (candidate.contrastWith(unchecked) >= 4.5) {
-            uncheckedIcon = candidate
-            break
+/** A warm, per-cover accent independent of tertiary. Use real red/pink/orange
+ * swatches when present; otherwise map the cover's stable seed onto that range.
+ * Nearby warm swatches vote as a family, so one stray pixel cannot win. */
+internal fun Palette?.favouriteArtworkAccent(artworkSeed: Int): Color {
+    val samples = samples()
+    val total = samples.sumOf { it.population }.toDouble().coerceAtLeast(1.0)
+    val warm = samples.filter { sample ->
+        val hue = (sample.color.hue * 180.0 / PI + 360.0) % 360.0
+        sample.color.chroma >= 0.045 && sample.color.l in 0.26..0.93 &&
+                (hue >= 318.0 || hue <= 55.0)
+    }
+    val ranked = warm.map { candidate ->
+        val support = warm.sumOf { sample ->
+            val hueDistance = candidate.color.hueSeparationDegrees(sample.color)
+            val similarity = (1.0 - hueDistance / 25.0).coerceAtLeast(0.0)
+            (sample.population / total) * similarity * (sample.color.chroma / 0.10).coerceIn(
+                0.5,
+                2.0
+            )
         }
+        candidate.color to support
+    }.sortedByDescending { it.second }
+    val families = mutableListOf<Lab>()
+    val minimumSupport = max(0.001, (ranked.firstOrNull()?.second ?: 0.0) * 0.25)
+    for ((color, support) in ranked) {
+        if (support < minimumSupport) break
+        if (families.none { it.hueSeparationDegrees(color) < 19.0 }) families += color
+        if (families.size == 3) break
     }
 
-    val strongRose = rose.withChroma(0.105, 0.145)
-    var checkedTone = if (dark) 0.60 else 0.71
-    var checked = strongRose.tone(checkedTone).toColor()
-    // Make the selected state distinguishable from the primary container,
-    // without compromising the contrast of the icon on the rose fill.
-    repeat(16) {
-        if (checked.contrastWith(this) >= 1.5) return@repeat
-        checkedTone += if (dark) 0.01 else -0.01
-        checked = strongRose.tone(checkedTone).toColor()
+    val seed = artworkSeed.toLong() and 0xFFFFFFFFL
+    val preferredHue = families.getOrNull((seed % families.size.coerceAtLeast(1)).toInt())?.hue
+        ?: (listOf(333.0, 348.0, 5.0, 19.0, 34.0, 47.0)[(seed % 6L).toInt()] * PI / 180.0)
+    // The small rotation gives similarly colored albums different warm accents,
+    // without pushing them out of the red-to-orange/pink family.
+    val rotation = ((seed / 7L % 13L).toDouble() - 6.0) * PI / 180.0
+    val hue = preferredHue + rotation
+    val chroma = 0.15 + (seed / 37L % 6L) * 0.008
+    return Lab(0.69, cos(hue) * chroma, sin(hue) * chroma).toColor()
+}
+
+/** Button fills are in the artwork's warm accent family rather than fixed rose.
+ * Keep the unchecked fill visibly separate from primaryContainer (3:1), with
+ * a more saturated fill for the checked state. Both heart icons remain legible. */
+internal fun Color.favouriteButtonPalette(dark: Boolean, artworkAccent: Color): Pair<Color, Color> {
+    val warm = artworkAccent.toLab()
+    fun fill(source: Lab, preferredTone: Double, minimumContrast: Double): Color {
+        val preferred = source.tone(preferredTone).toColor()
+        if (preferred.contrastWith(this) >= minimumContrast) return preferred
+
+        val limit = if (dark) 0.96 else 0.12
+        val strongest = source.tone(limit).toColor()
+        if (strongest.contrastWith(this) < minimumContrast) return strongest
+
+        // Find the closest readable tone without dragging the warm accent
+        // unnecessarily toward white or near-black.
+        var low = min(preferredTone, limit)
+        var high = max(preferredTone, limit)
+        repeat(12) {
+            val tone = (low + high) / 2.0
+            val candidate = source.tone(tone).toColor()
+            if (candidate.contrastWith(this) >= minimumContrast) {
+                if (dark) high = tone else low = tone
+            } else {
+                if (dark) low = tone else high = tone
+            }
+        }
+        return source.tone(if (dark) high else low).toColor()
     }
-    return FavouriteButtonPalette(
-        container = unchecked,
-        content = uncheckedIcon,
-        checkedContainer = checked,
-        checkedContent = checked.readableText(),
-    )
+
+    val checkedTint = warm.withChroma(0.15, 0.21)
+    val checked = fill(checkedTint, if (dark) 0.72 else 0.65, 2.0)
+    return Pair(checked, tintedForeground(checked, warm))
 }
 
 /** Artwork palette rules:
@@ -569,13 +646,16 @@ internal fun Color.favouriteButtonPalette(dark: Boolean): FavouriteButtonPalette
  * This only changes the player; the outer app theme is untouched. */
 internal fun Palette?.artworkColorScheme(dark: Boolean, artworkSeed: Int = 0): ColorScheme {
     val samples = samples()
-    val grayscale = samples.isNotEmpty() && samples.isMostlyGrayscale()
+    val nearBlack = samples.dominantNearBlack()
+    val grayscale = nearBlack != null || (samples.isNotEmpty() && samples.isMostlyGrayscale())
     val restraint = if (samples.isEmpty()) 0.0 else samples.monochromeRestraint()
     val overall = samples.averageColor() ?: Primary.toLab()
-    // Favor the largest *hue family*, not an average of unrelated hues.
-    val mainSeed = samples.dominantColorFamily() ?: overall
+    // Use the whole dark-neutral family when it dominates the cover, even if
+    // compression gives those nearly black pixels a slight blue hue. For
+    // other covers, preserve the most populous visible colored hue family.
+    val mainSeed = nearBlack ?: samples.dominantColorFamily() ?: overall
     val hueReference = if (mainSeed.chroma >= 0.02) mainSeed
-        else if (overall.chroma >= 0.02) overall else Primary.toLab()
+    else if (overall.chroma >= 0.02) overall else Primary.toLab()
     // Mostly black-and-white artwork must remain grayscale. Only tertiary
     // is allowed to introduce a new color; even a vivid foreground element
     // should not tint the entire player's primary container.
@@ -587,23 +667,30 @@ internal fun Palette?.artworkColorScheme(dark: Boolean, artworkSeed: Int = 0): C
         .coerceIn(if (dark) 0.24 else 0.78, if (dark) 0.31 else 0.85)
     val mainContainer = mainColor.tone(mainTone, if (dark) 1.05 else 1.5).toColor()
 
-    val primaryLab = if (grayscale) mainColor else primaryNearContainer(mainColor, mainContainer).blend(
-        mainColor.withChroma(0.06, 0.11), restraint
-    )
+    val primaryLab =
+        if (grayscale) mainColor else primaryNearContainer(mainColor, mainContainer).blend(
+            mainColor.withChroma(0.06, 0.11), restraint
+        )
     val primary = primaryRole(primaryLab, mainContainer, mainColor, dark, restraint)
     // Secondary stays in the dominant color family; tertiary is an independent
     // small accent, seeded only when the artwork has no eligible accent.
     val secondaryLab = mainColor.muted(0.62)
     val secondary = mutedDominantSecondary(mainColor, primary.color, dark)
     val tertiaryHints = samples.vibrantArtworkAccents(mainSeed, grayscale)
-    val (tertiaryLab, tertiary) = contrastingTertiary(primary, primaryLab, tertiaryHints, dark, artworkSeed)
+    val (tertiaryLab, tertiary) = contrastingTertiary(
+        primary,
+        primaryLab,
+        tertiaryHints,
+        dark,
+        artworkSeed
+    )
 
     // Keep the displayed primary container's hue in every neutral. Dark
     // surfaces sit below the container, while light surfaces stay nearly white
     // with only a subtle tint. Preserve a wider gap to surfaceVariant.
     val containerLab = primary.container.toLab()
     val neutral = if (grayscale) containerLab else if (dark) containerLab.muted(0.60)
-        else containerLab.withChroma(0.055, 0.085).blend(containerLab.muted(0.65), restraint)
+    else containerLab.withChroma(0.055, 0.085).blend(containerLab.muted(0.65), restraint)
     val neutralStartTone = if (dark) {
         (containerLab.l - 0.11).coerceIn(0.15, 0.19)
     } else {
@@ -620,9 +707,11 @@ internal fun Palette?.artworkColorScheme(dark: Boolean, artworkSeed: Int = 0): C
     val neutralEndTone = if (dark) {
         (containerLab.l + 0.035).coerceIn(0.29, 0.34)
     } else darkestLightTone
+
     fun surface(level: Double) = neutral.tone(
         neutralStartTone + (neutralEndTone - neutralStartTone) * level
     ).toColor()
+
     val background = surface(if (dark) 0.10 else 0.06)
     val surface = surface(if (dark) 0.18 else 0.16)
     // Push the variant toward the opposite end of the neutral ramp, making it
@@ -670,18 +759,24 @@ internal fun Palette?.artworkColorScheme(dark: Boolean, artworkSeed: Int = 0): C
         primaryFixed = primaryFixed,
         primaryFixedDim = primaryLab.tone(0.78, 0.88).toColor(),
         onPrimaryFixed = tintedForeground(primaryFixed, primaryLab, preferDark = true),
-        onPrimaryFixedVariant = tintedForeground(primaryFixed, primaryLab,
-            preferDark = true, preferredTone = 0.33),
+        onPrimaryFixedVariant = tintedForeground(
+            primaryFixed, primaryLab,
+            preferDark = true, preferredTone = 0.33
+        ),
         secondaryFixed = secondaryFixed,
         secondaryFixedDim = secondaryLab.tone(0.78, 0.88).toColor(),
         onSecondaryFixed = tintedForeground(secondaryFixed, secondaryLab, preferDark = true),
-        onSecondaryFixedVariant = tintedForeground(secondaryFixed, secondaryLab,
-            preferDark = true, preferredTone = 0.33),
+        onSecondaryFixedVariant = tintedForeground(
+            secondaryFixed, secondaryLab,
+            preferDark = true, preferredTone = 0.33
+        ),
         tertiaryFixed = tertiaryFixed,
         tertiaryFixedDim = tertiaryLab.tone(0.78, 0.88).toColor(),
         onTertiaryFixed = tintedForeground(tertiaryFixed, tertiaryLab, preferDark = true),
-        onTertiaryFixedVariant = tintedForeground(tertiaryFixed, tertiaryLab,
-            preferDark = true, preferredTone = 0.33),
+        onTertiaryFixedVariant = tintedForeground(
+            tertiaryFixed, tertiaryLab,
+            preferDark = true, preferredTone = 0.33
+        ),
         onError = tintedForeground(defaults.error, defaults.error.toLab()),
         onErrorContainer = tintedForeground(defaults.errorContainer, defaults.error.toLab()),
     )

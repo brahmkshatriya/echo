@@ -328,8 +328,8 @@ private fun FullTimedLyrics(
         val itemGapPx = with(density) { FullLyricsItemGap.toPx() }
         val fallbackHeightPx = with(density) { FullLyricsFallbackHeight.toPx() }
         val gapIndicatorHeightPx = with(density) { FullLyricsGapIndicatorHeight.toPx() }
-        val topFadePx = with(density) { 130.dp.toPx() }
-        val bottomFadePx = with(density) { 160.dp.toPx() }
+        val topFadePx = with(density) { FullLyricsTopFadeHeight.toPx() }
+        val bottomFadePx = with(density) { FullLyricsBottomFadeHeight.toPx() }
         val heightSnapshot = itemHeights.toMap()
         val absolutePositions = remember(
             displayItems,

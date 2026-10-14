@@ -1,57 +1,51 @@
 package dev.brahmkshatriya.echo.app.ui.main
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.material3.MaterialExpressiveTheme
+import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
-import dev.brahmkshatriya.echo.app.ui.components.blurFadePagerTransition
-import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerItems
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.dp
+import com.materialkolor.ktx.animateColorScheme
+import dev.brahmkshatriya.echo.app.ui.player.LocalNowPlayingControls
+import dev.brahmkshatriya.echo.app.ui.player.song.LocalPlayerItems
 import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerSheet
-import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerSkipNavigator
-import dev.brahmkshatriya.echo.app.ui.player.PlayerItem
-import dev.brahmkshatriya.echo.app.ui.player.PlayerControlsState
-import dev.brahmkshatriya.echo.app.ui.player.ProvidePlayerControls
-import dev.brahmkshatriya.echo.app.ui.player.animatedSkipEntrance
+import dev.brahmkshatriya.echo.app.ui.player.song.KineticShapesBackground
+import dev.brahmkshatriya.echo.app.ui.player.song.LocalPlayerFavouriteAccent
+import dev.brahmkshatriya.echo.app.ui.player.song.artworkColorScheme
+import dev.brahmkshatriya.echo.app.ui.player.song.cachedPlayerArtworkPalette
+import dev.brahmkshatriya.echo.app.ui.player.song.favouriteArtworkAccent
 
+/** Full-page physics playground, using the same rounded page frame as Test(). */
 @Composable
 fun Library() {
-    val artWorks = LocalPlayerItems.current
-    val controls = remember(artWorks.size) { PlayerControlsState(artWorks.size) }
-    val sheet = LocalPlayerSheet.current
-    val pagerState = rememberPagerState(2, pageCount = { artWorks.size })
-    LaunchedEffect(pagerState, controls) {
-        snapshotFlow { pagerState.currentPage }.collect { page ->
-            controls.currentSong = controls.songAt(page)
-        }
+    val playerExpanded = LocalPlayerSheet.current?.isExpandedState?.value == true
+    val currentSong = LocalNowPlayingControls.current?.currentSong ?: 0
+    val artwork = LocalPlayerItems.current.getOrNull(currentSong)
+    val palette = artwork?.let(::cachedPlayerArtworkPalette)
+    val seed = artwork?.hashCode() ?: 0
+    val dark = isSystemInDarkTheme()
+    val scheme = remember(palette, dark, seed) {
+        palette.artworkColorScheme(dark, seed)
     }
-    val pageScrolledToTop = remember { mutableStateMapOf<Int, Boolean>() }
-    val pagerUserScrollEnabled by remember {
-        derivedStateOf {
-            pageScrolledToTop[controls.songAt(pagerState.currentPage)] != false
-        }
-    }
-    ProvidePlayerControls(pagerState, controls) {
-        val skipNavigator = LocalPlayerSkipNavigator.current
-        HorizontalPager(
-            state = pagerState,
-            userScrollEnabled = pagerUserScrollEnabled,
-            key = { controls.songAt(it) },
-        ) { page ->
-            val song = controls.songAt(page)
-            Box(Modifier.fillMaxSize().blurFadePagerTransition(pagerState, page) {
-                sheet?.progressState?.floatValue?.coerceIn(0f, 1f) ?: 1f
-            }.animatedSkipEntrance(skipNavigator, song)) {
-                PlayerItem(song, onScrolledToTopChanged = { scrolledToTop ->
-                    pageScrolledToTop[song] = scrolledToTop
-                })
+    val favouriteAccent = remember(palette, seed) { palette.favouriteArtworkAccent(seed) }
+
+    CompositionLocalProvider(LocalPlayerFavouriteAccent provides favouriteAccent) {
+        MaterialExpressiveTheme(animateColorScheme(scheme)) {
+            Box(
+                Modifier.fillMaxSize()
+                    .safeDrawingPadding()
+                    .padding(8.dp)
+                    .clip(shapes.large),
+            ) {
+                KineticShapesBackground(artworkKey = artwork.orEmpty(), active = !playerExpanded)
             }
         }
     }
