@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -69,6 +70,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -92,6 +94,9 @@ import dev.brahmkshatriya.echo.app.ui.player.RepeatButton
 import dev.brahmkshatriya.echo.app.ui.player.ShuffleButton
 import dev.brahmkshatriya.echo.app.ui.player.TimelineWithVolume
 import dev.brahmkshatriya.echo.app.ui.player.collapsedHorizontalPadding
+import dev.brahmkshatriya.echo.app.ui.player.defaultIconButtonColors
+import dev.brahmkshatriya.echo.app.ui.player.exampleSong
+import dev.brahmkshatriya.echo.app.ui.player.favouriteButtonColors
 import dev.brahmkshatriya.echo.app.ui.player.playerBottomBarControlSize
 import dev.brahmkshatriya.echo.app.ui.player.song.lyrics.Lyrics
 import dev.brahmkshatriya.echo.app.ui.player.song.lyrics.LyricsPanel
@@ -353,7 +358,7 @@ fun CoverArt(
     // The large artwork has 8.dp corners; its 48.dp collapsed form has 4.dp.
     val visibleCornerRadius = 4.dp + 4.dp * progress
     PlayerArtwork(
-        contentDescription = "Song $i",
+        contentDescription = "${exampleSong(i)?.album ?: "Album"} cover art",
         outlineWidth = with(density) { (1f / coverScale).toDp() },
         outlineRadius = visibleCornerRadius / coverScale,
         modifier = Modifier
@@ -399,32 +404,40 @@ fun TopBar(
     val sheetState = playerSheet?.sheetState
     val scope = rememberCoroutineScope()
     Row(
-        modifier.padding(horizontal = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
+        modifier.padding(horizontal = 8.dp).padding(top = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
+        Spacer(Modifier.width(4.dp))
         IconButton(
             onClick = {
                 scope.launch { sheetState?.show() }
             },
             modifier = Modifier.width(32.dp),
-            shapes = IconButtonDefaults.shapes()
+            shapes = IconButtonDefaults.shapes(),
         ) {
             Icon(
                 painterResource(Res.drawable.ic_keyboard_arrow_down),
                 contentDescription = "Minimize Player"
             )
         }
+        Spacer(Modifier.width(8.dp))
         Column(
-            Modifier.padding(start = 8.dp, top = 8.dp).weight(1f),
+            Modifier.weight(1f),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             val mergedStyle = LocalTextStyle.current.merge(typography.labelLarge)
             Text("Playing From", fontWeight = FontWeight.Normal, style = mergedStyle)
-            Text("Album $index", fontWeight = FontWeight.Bold, style = mergedStyle)
+            Text(
+                exampleSong(index)?.album ?: "Unknown album",
+                fontWeight = FontWeight.Bold,
+                style = mergedStyle,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
         }
         IconButton(
             onClick = { },
-            modifier = Modifier.padding(top = 8.dp),
+            modifier = Modifier.size(44.dp),
             shapes = IconButtonDefaults.shapes()
         ) {
             BetterImage(
@@ -501,10 +514,10 @@ private fun LyricsToggle(
         ),
         interactionSource = interactionSource,
         colors = IconButtonDefaults.filledTonalIconToggleButtonColors(
-            colorScheme.primary,
-            colorScheme.onPrimary,
-            checkedContainerColor = colorScheme.secondary,
-            checkedContentColor = colorScheme.onSecondary,
+            colorScheme.secondary,
+            colorScheme.onSecondary,
+            checkedContainerColor = colorScheme.tertiary,
+            checkedContentColor = colorScheme.onTertiary,
         ),
     ) {
         PolygonIconRipple(interactionSource) {
@@ -552,7 +565,7 @@ private fun LyricsBottomBar(
                 .graphicsLayer { alpha = if (lyricsSelectorActive) 0f else 1f }
                 .clip(RoundedCornerShape(playerBottomBarControlSize / 2f))
                 .background(
-                    color = colorScheme.primary.copy(0.1f),
+                    color = colorScheme.onPrimaryContainer.copy(0.1f),
                     shape = RoundedCornerShape(playerBottomBarControlSize / 2f),
                 )
                 .clickable(
@@ -590,10 +603,10 @@ private fun LyricsBottomBar(
             ),
             interactionSource = queueInteractionSource,
             colors = IconButtonDefaults.iconButtonColors(
-                colorScheme.tertiary,
-                colorScheme.onTertiary,
+                colorScheme.secondary,
+                colorScheme.onSecondary,
 
-            ),
+                ),
             modifier = Modifier
                 .onGloballyPositioned { onQueueButtonBoundsChanged(it) }
                 .graphicsLayer { alpha = if (queueButtonHidden) 0f else 1f },
@@ -622,7 +635,7 @@ private fun StickyMiniPlayer(
         modifier = Modifier.fillMaxWidth(),
         leadingContent = {
             PlayerArtwork(
-                contentDescription = "Song $index",
+                contentDescription = "${exampleSong(index)?.album ?: "Album"} cover art",
                 modifier = Modifier
                     .padding(start = 4.dp)
                     .size(48.dp)
@@ -635,7 +648,8 @@ private fun StickyMiniPlayer(
             IconButton(
                 onClick = { scope.launch { sheetState?.show() } },
                 interactionSource = interactionSource,
-                shapes = IconButtonDefaults.shapes()
+                shapes = IconButtonDefaults.shapes(),
+                colors = defaultIconButtonColors()
             ) {
                 Icon(
                     painterResource(Res.drawable.ic_keyboard_arrow_down),
@@ -680,7 +694,7 @@ fun CollapsedPlayer(
                     exit = fadeOut(tween(LyricsModeTransitionDurationMs)),
                 ) {
                     PlayerArtwork(
-                        contentDescription = "Song $i artwork",
+                        contentDescription = "${exampleSong(i)?.album ?: "Album"} artwork",
                         modifier = Modifier
                             .fillMaxSize()
                             .clip(RoundedCornerShape(4.dp))
@@ -714,6 +728,7 @@ private fun CollapsedPlayerContent(
     leadingContent: @Composable () -> Unit,
     trailingContent: @Composable () -> Unit,
 ) {
+    val song = exampleSong(i)
     ResponsiveRow(
         modifier = modifier,
         spacing = 8.dp,
@@ -725,8 +740,14 @@ private fun CollapsedPlayerContent(
         item(priority = 80, key = "metadata") {
             Column(Modifier.width(128.dp)) {
                 val mergedStyle = LocalTextStyle.current.merge(typography.labelLarge)
-                Text("Song $i", fontWeight = FontWeight.Bold, style = mergedStyle)
-                Text("Artist $i", fontWeight = FontWeight.Normal, style = mergedStyle)
+                Text(
+                    song?.title ?: "Unknown track", fontWeight = FontWeight.Bold, style = mergedStyle,
+                    maxLines = 1, overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    song?.artist ?: "Unknown artist", fontWeight = FontWeight.Normal, style = mergedStyle,
+                    maxLines = 1, overflow = TextOverflow.Ellipsis,
+                )
             }
         }
 
@@ -742,21 +763,16 @@ private fun CollapsedPlayerContent(
             FilledTonalIconToggleButton(
                 checked = favourite,
                 onCheckedChange = { favourite = it },
-                modifier = Modifier.size(40.dp),
+                modifier = Modifier.size(44.dp),
                 shapes = IconButtonDefaults.toggleableShapes(
                     checkedShape = RoundedCornerShape(100)
                 ),
                 interactionSource = interactionSource,
-                colors = IconButtonDefaults.filledTonalIconToggleButtonColors(
-                    colorScheme.onSecondaryContainer,
-                    colorScheme.secondaryContainer,
-                    checkedContentColor = colorScheme.tertiaryContainer,
-                    checkedContainerColor = colorScheme.onTertiaryContainer
-                ),
+                colors = favouriteButtonColors(),
             ) {
                 SwitchingIcon(
                     icon = if (favourite) Res.drawable.ic_favorite_filled
-                        else Res.drawable.ic_favorite,
+                    else Res.drawable.ic_favorite,
                     contentDescription = if (favourite) "Favourite" else "Unfavourite"
                 )
             }

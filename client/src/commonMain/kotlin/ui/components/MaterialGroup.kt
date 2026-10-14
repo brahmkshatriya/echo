@@ -120,7 +120,7 @@ class MaterialGroupScope(
                         )
                         .clipToRoundedViewport(
                             lazyListState = lazyListState,
-                            params = params,
+                            itemKey = params.key,
                             clipPadding = clipPaddingPx,
                             radius = radius,
                             itemKeys = itemKeys,
@@ -159,17 +159,19 @@ private data class MaterialGroupClipPadding(
 
 private fun materialGroupClipInfo(
     lazyListState: LazyListState,
-    params: CardParams,
+    itemKey: Any,
     clipPadding: MaterialGroupClipPadding,
     itemKeys: Set<Any>,
     firstKey: Any,
     lastKey: Any,
     reverseLayout: Boolean,
-    ignoredStickyHeaderKeys: Set<Any>
-): Pair<Int?, Int?> {
+    ignoredStickyHeaderKeys: Set<Any>,
+    itemTranslationY: Float = 0f,
+    clipToGroupBounds: Boolean = true,
+): Pair<Float?, Float?> {
     val layoutInfo = lazyListState.layoutInfo
     val visibleItems = layoutInfo.visibleItemsInfo
-    val currentItem = visibleItems.firstOrNull { it.key == params.key }
+    val currentItem = visibleItems.firstOrNull { it.key == itemKey }
         ?: return null to null
 
     fun physicalOffset(itemOffset: Int, itemSize: Int): Int =
@@ -206,15 +208,15 @@ private fun materialGroupClipInfo(
     val groupBottom = bottomGroupItem?.let {
         physicalOffset(it.offset, it.size) + it.size
     }
-    val visibleGroupTop = maxOf(
+    val visibleGroupTop = if (clipToGroupBounds) maxOf(
         if (reverseLayout) viewportStart else stickyHeaderEnd ?: viewportStart,
         groupTop ?: viewportStart,
-    )
-    val visibleGroupBottom = minOf(
+    ) else viewportStart
+    val visibleGroupBottom = if (clipToGroupBounds) minOf(
         if (reverseLayout) stickyHeaderStart ?: viewportEnd else viewportEnd,
         groupBottom ?: viewportEnd,
-    )
-    val currentItemOffset = physicalOffset(currentItem.offset, currentItem.size)
+    ) else viewportEnd
+    val currentItemOffset = physicalOffset(currentItem.offset, currentItem.size) + itemTranslationY
     val top =
         visibleGroupTop - currentItemOffset + clipPadding.top
     val bottom =
@@ -222,35 +224,64 @@ private fun materialGroupClipInfo(
     return top to bottom
 }
 
+internal fun Modifier.clipToMaterialGroupViewport(
+    lazyListState: LazyListState,
+    itemKey: Any,
+    itemKeys: Set<Any>,
+    firstKey: Any,
+    lastKey: Any,
+    radius: Dp,
+    itemTranslationY: Float = 0f,
+    clipToGroupBounds: Boolean = true,
+): Modifier = clipToRoundedViewport(
+    lazyListState = lazyListState,
+    itemKey = itemKey,
+    clipPadding = MaterialGroupClipPadding(0, 0, 0, 0),
+    radius = radius,
+    itemKeys = itemKeys,
+    firstKey = firstKey,
+    lastKey = lastKey,
+    reverseLayout = false,
+    ignoredStickyHeaderKeys = emptySet(),
+    itemTranslationY = itemTranslationY,
+    clipToGroupBounds = clipToGroupBounds,
+    consumeClippedPointers = false,
+)
+
 private fun Modifier.clipToRoundedViewport(
     lazyListState: LazyListState,
-    params: CardParams,
+    itemKey: Any,
     clipPadding: MaterialGroupClipPadding,
     radius: Dp,
     itemKeys: Set<Any>,
     firstKey: Any,
     lastKey: Any,
     reverseLayout: Boolean,
-    ignoredStickyHeaderKeys: Set<Any>
+    ignoredStickyHeaderKeys: Set<Any>,
+    itemTranslationY: Float = 0f,
+    clipToGroupBounds: Boolean = true,
+    consumeClippedPointers: Boolean = true,
 ): Modifier = drawWithCache {
     val path = Path()
     onDrawWithContent {
         val (topBoundary, bottomBoundary) = materialGroupClipInfo(
             lazyListState = lazyListState,
-            params = params,
+            itemKey = itemKey,
             clipPadding = clipPadding,
             itemKeys = itemKeys,
             firstKey = firstKey,
             lastKey = lastKey,
             reverseLayout = reverseLayout,
-            ignoredStickyHeaderKeys = ignoredStickyHeaderKeys
+            ignoredStickyHeaderKeys = ignoredStickyHeaderKeys,
+            itemTranslationY = itemTranslationY,
+            clipToGroupBounds = clipToGroupBounds,
         )
         val hasNoBoundaries = topBoundary == null && bottomBoundary == null
         if (hasNoBoundaries) return@onDrawWithContent drawContent()
 
         val radiusPx = radius.toPx()
-        val top = topBoundary?.toFloat() ?: (-radiusPx)
-        val bottom = bottomBoundary?.toFloat() ?: (size.height + radiusPx)
+        val top = topBoundary ?: (-radiusPx)
+        val bottom = bottomBoundary ?: (size.height + radiusPx)
         if (top >= bottom) return@onDrawWithContent
 
         val doesNotAffectItem = top <= -radiusPx && bottom >= size.height + radiusPx
@@ -280,19 +311,21 @@ private fun Modifier.clipToRoundedViewport(
             this@onDrawWithContent.drawContent()
         }
     }
-}.pointerInput(Unit) {
+}.then(if (consumeClippedPointers) Modifier.pointerInput(Unit) {
     awaitPointerEventScope {
         while (true) {
             val event = awaitPointerEvent(PointerEventPass.Initial)
             val (topBoundary, bottomBoundary) = materialGroupClipInfo(
                 lazyListState = lazyListState,
-                params = params,
+                itemKey = itemKey,
                 clipPadding = clipPadding,
                 itemKeys = itemKeys,
                 firstKey = firstKey,
                 lastKey = lastKey,
                 reverseLayout = reverseLayout,
-                ignoredStickyHeaderKeys = ignoredStickyHeaderKeys
+                ignoredStickyHeaderKeys = ignoredStickyHeaderKeys,
+                itemTranslationY = itemTranslationY,
+                clipToGroupBounds = clipToGroupBounds,
             )
             val isOutOfBounds = event.changes.any {
                 val isAbove = topBoundary?.let { top -> it.position.y < top } == true
@@ -302,4 +335,4 @@ private fun Modifier.clipToRoundedViewport(
             if (isOutOfBounds) event.changes.forEach { it.consume() }
         }
     }
-}
+} else Modifier)

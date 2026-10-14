@@ -30,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -38,7 +39,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -67,8 +67,8 @@ import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import dev.brahmkshatriya.echo.app.ui.Media
 import dev.brahmkshatriya.echo.app.ui.components.FastScrollbar
-import dev.brahmkshatriya.echo.app.ui.components.clover6Sided
 import dev.brahmkshatriya.echo.app.ui.components.LocalMainBackStack
+import dev.brahmkshatriya.echo.app.ui.components.clover6Sided
 import dev.brahmkshatriya.echo.app.ui.components.materialGroup
 import dev.brahmkshatriya.echo.app.ui.components.paddingMask
 import dev.brahmkshatriya.echo.app.ui.main.Header
@@ -79,16 +79,15 @@ import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerLyricsVisible
 import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerPagerState
 import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerQueueTransition
 import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerSheet
+import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerSkipNavigator
 import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerTimelineState
 import dev.brahmkshatriya.echo.app.ui.player.PlayerBottomBarContentType
 import dev.brahmkshatriya.echo.app.ui.player.PlayerScrollbarItemSizes
 import dev.brahmkshatriya.echo.app.ui.player.QueuePage
 import dev.brahmkshatriya.echo.app.ui.player.RepeatMode
 import dev.brahmkshatriya.echo.app.ui.player.blockDescendantBringIntoView
-import dev.brahmkshatriya.echo.app.ui.player.hasNext
 import dev.brahmkshatriya.echo.app.ui.player.clipHeaderTop
 import dev.brahmkshatriya.echo.app.ui.player.expandedListItemTransform
-import dev.brahmkshatriya.echo.app.ui.player.playNext
 import dev.brahmkshatriya.echo.app.ui.player.playerBottomBarHeight
 import dev.brahmkshatriya.echo.app.ui.player.rememberPlayerScrollbarState
 import dev.brahmkshatriya.echo.app.ui.player.rememberPlayerScrollbarThumbMover
@@ -120,33 +119,30 @@ fun SongPlayerItem(
     onScrolledToTopChanged: (Boolean) -> Unit = {},
     onLyricsSelectorOpenChanged: (Boolean) -> Unit = {},
 ) = CompositionLocalProvider(
-    LocalContentColor provides colorScheme.onPrimaryContainer
+    LocalContentColor provides colorScheme.onSurface
 ) {
     val controls = LocalPlayerControls.current
     val pagerState = LocalPlayerPagerState.current
+    val skipNavigator = LocalPlayerSkipNavigator.current
     val scope = rememberCoroutineScope()
-    val isCurrentItem = pagerState == null || controls?.songAt(pagerState.currentPage) == i
+    val isCurrentItem = pagerState == null || controls?.currentSong == i
     val lyricsSelections = rememberLyricsSelections()
     val timelineState = rememberPlayerTimelineState(
         key = i,
         durationMs = 220_000f,
         running = isCurrentItem && controls?.isPlaying != false,
         onFinished = {
-            if (controls?.repeatMode != RepeatMode.One && pagerState != null) {
-                val repeatMode = controls?.repeatMode ?: RepeatMode.Off
-                if (pagerState.hasNext(repeatMode)) {
-                    scope.launch {
-                        if (controls?.radioEnabled == true) controls.selectRadioNext(i)
-                        pagerState.playNext(repeatMode)
-                    }
+            if (controls != null && controls.queueFor(i)?.repeatMode != RepeatMode.One && skipNavigator != null) {
+                if (skipNavigator.canGoNext) {
+                    if (controls.radioEnabled) controls.selectRadioNext(i)
+                    skipNavigator.next()
                 } else {
-                    controls?.isPlaying = false
+                    controls.isPlaying = false
                 }
                 true
             } else false
         },
     )
-    // Lyrics remains local to this song; queue state is shared by the pager.
     val lyricsTransition = rememberPlayerPillTransition("lyrics")
     val queueTransition = LocalPlayerQueueTransition.current ?: rememberPlayerPillTransition("queue")
     var playerCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
@@ -720,7 +716,7 @@ fun SongPlayerItem(
                     transition = lyricsTransition,
                     viewport = Size(constraints.maxWidth.toFloat(), constraints.maxHeight.toFloat()),
                     isCurrentPage = isCurrentItem,
-                    pillColor = colorScheme.primary.copy(alpha = 0.1f),
+                    pillColor = colorScheme.onPrimaryContainer.copy(alpha = 0.1f),
                     openInfo = LyricsSelectorPageInfo,
                     closedInfo = LyricsSelectorPlayerInfo,
                     currentSource = { localPillBounds(lyricsPillCoordinates) },
@@ -768,7 +764,7 @@ internal fun SharedPlayerQueueOverlay(
         transition = transition,
         viewport = viewport,
         isCurrentPage = true,
-        pillColor = colorScheme.tertiary,
+        pillColor = colorScheme.secondary,
         collapsedCornerRadius = 12.dp,
         collapsedPolygon = clover6Sided(),
         openInfo = QueueOverlayPageInfo,

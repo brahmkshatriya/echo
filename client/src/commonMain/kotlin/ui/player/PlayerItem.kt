@@ -1,6 +1,8 @@
 package dev.brahmkshatriya.echo.app.ui.player
 
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -17,6 +19,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
@@ -29,35 +32,36 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.RoundRect
+import androidx.compose.ui.graphics.BlurEffect
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathFillType
+import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.kmpalette.color
+import com.kmpalette.generatePalette
 import com.kmpalette.palette.graphics.Palette
-import com.materialkolor.PaletteStyle
-import com.materialkolor.dynamiccolor.ColorSpec
 import com.materialkolor.ktx.animateColorScheme
-import com.materialkolor.rememberDynamicMaterialThemeState
-import com.skydoves.landscapist.components.rememberImageComponent
 import com.skydoves.landscapist.image.LandscapistImage
 import com.skydoves.landscapist.image.convertToImageBitmap
-import com.skydoves.landscapist.palette.PalettePlugin
 import dev.brahmkshatriya.echo.app.ui.components.ScrollbarState
 import dev.brahmkshatriya.echo.app.ui.components.scrollbarStateValue
 import dev.brahmkshatriya.echo.app.ui.player.song.SongPlayerItem
 import dev.brahmkshatriya.echo.app.ui.player.song.maxSongCoverSize
-import dev.brahmkshatriya.echo.app.ui.theme.Primary
-import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
 
 private data class PlayerArtworkCacheEntry(
@@ -67,7 +71,12 @@ private data class PlayerArtworkCacheEntry(
 
 private object PlayerArtworkMemoryCache {
     private const val MAX_ENTRIES = 12
+    private const val MAX_PALETTE_ENTRIES = 48
     private val entries = LinkedHashMap<String, PlayerArtworkCacheEntry>()
+    // Invalidate adjacent pager pages as soon as their palettes are prefetched.
+    private val palettes = mutableStateMapOf<String, Palette>()
+
+    fun getPalette(model: String): Palette? = palettes[model] ?: entries[model]?.palette
 
     fun get(model: String): PlayerArtworkCacheEntry? {
         val entry = entries.remove(model) ?: return null
@@ -80,6 +89,10 @@ private object PlayerArtworkMemoryCache {
     }
 
     fun putPalette(model: String, palette: Palette) {
+        palettes[model] = palette
+        while (palettes.size > MAX_PALETTE_ENTRIES) {
+            palettes.remove(palettes.keys.first())
+        }
         put(model, (entries[model] ?: PlayerArtworkCacheEntry()).copy(palette = palette))
     }
 
@@ -91,6 +104,26 @@ private object PlayerArtworkMemoryCache {
             entries.remove(oldestKey)
         }
     }
+}
+
+/** Precompute the same 64-swatch palette that a player page would create.
+ * Separate palette storage keeps it available after bitmap LRU eviction. */
+internal suspend fun prefetchPlayerArtworkPalette(model: String, artwork: ImageBitmap) {
+    if (PlayerArtworkMemoryCache.getPalette(model) != null) return
+    val palette = withContext(Dispatchers.Default) {
+        artwork.generatePalette {
+            maximumColorCount(64)
+            clearFilters()
+        }
+    }
+    PlayerArtworkMemoryCache.putPalette(model, palette)
+}
+
+internal fun cachedPlayerArtworkPalette(model: String): Palette? =
+    PlayerArtworkMemoryCache.getPalette(model)
+
+internal fun cachePlayerArtwork(model: String, artwork: ImageBitmap) {
+    PlayerArtworkMemoryCache.putArtwork(model, artwork)
 }
 
 @Composable
@@ -123,13 +156,18 @@ internal fun PlayerItemHost(
         artworkModel?.let(PlayerArtworkMemoryCache::get)
     }
     var artwork by remember(artworkModel) { mutableStateOf(cachedArtwork?.artwork) }
-    var palette by remember(artworkModel) { mutableStateOf(cachedArtwork?.palette) }
-    val paletteUpdates = remember(artworkModel) { Channel<Palette>(Channel.CONFLATED) }
-    LaunchedEffect(artworkModel, paletteUpdates) {
-        for (loadedPalette in paletteUpdates) {
-            palette = loadedPalette
-            if (artworkModel != null) {
-                PlayerArtworkMemoryCache.putPalette(artworkModel, loadedPalette)
+    var locallyLoadedPalette by remember(artworkModel) { mutableStateOf(cachedArtwork?.palette) }
+    // Prefetch may finish after an offscreen pager page was first composed.
+    // Observe cache updates so that page uses the prefetched scheme immediately.
+    val prefetchedPalette = artworkModel?.let(PlayerArtworkMemoryCache::getPalette)
+    val palette = prefetchedPalette ?: locallyLoadedPalette
+    LaunchedEffect(artworkModel, artwork, palette == null) {
+        if (artworkModel != null && palette == null) {
+            artwork?.let { bitmap ->
+                // More swatches retain small, subdued cover details (for
+                // example, greens amid Led Zeppelin IV's pale yellows).
+                prefetchPlayerArtworkPalette(artworkModel, bitmap)
+                locallyLoadedPalette = PlayerArtworkMemoryCache.getPalette(artworkModel)
             }
         }
     }
@@ -146,16 +184,6 @@ internal fun PlayerItemHost(
             imageModel = { artworkModel },
             modifier = Modifier.size(0.dp),
             requestBuilder = { size(artworkRequestSize, artworkRequestSize) },
-            component = rememberImageComponent {
-                add(
-                    PalettePlugin(
-                        imageModel = artworkModel,
-                        paletteLoadedListener = { loadedPalette ->
-                            paletteUpdates.trySend(loadedPalette)
-                        },
-                    )
-                )
-            },
             success = { state, _ ->
                 val loadedArtwork = remember(state.data) {
                     state.data?.let { convertToImageBitmap(it) }
@@ -173,17 +201,10 @@ internal fun PlayerItemHost(
         )
     }
 
-    val color = palette?.let {
-        (it.vibrantSwatch ?: it.dominantSwatch ?: it.lightVibrantSwatch)?.color
-    } ?: Primary
-    val scheme = rememberDynamicMaterialThemeState(
-        isDark = isSystemInDarkTheme(),
-        style = PaletteStyle.Rainbow,
-        specVersion = ColorSpec.SpecVersion.SPEC_2021,
-        seedColor = color,
-        neutral = color,
-        neutralVariant = color,
-    ).colorScheme
+    val isDark = isSystemInDarkTheme()
+    val scheme = remember(palette, isDark, artworkModel) {
+        palette.artworkColorScheme(isDark, artworkModel?.hashCode() ?: 0)
+    }
     CompositionLocalProvider(LocalPlayerArtwork provides artwork) {
         MaterialExpressiveTheme(animateColorScheme(scheme)) {
             Box(Modifier.playerBackground(coloredBackground)) { content() }
@@ -273,8 +294,6 @@ internal fun Modifier.brightenedCoverOutline(
         )
     }
 
-    // Redraw only the cover's edge with RGB channels multiplied, preserving
-    // each pixel's hue instead of replacing it with a translucent white tint.
     drawContext.canvas.saveLayer(
         Rect(Offset.Zero, size),
         Paint().apply { colorFilter = CoverBrightnessFilter },
@@ -313,17 +332,89 @@ internal fun PlayerArtwork(
     }
 }
 
-internal suspend fun PagerState.playPrevious() {
-    if (pageCount <= 0) return
-    animateScrollToPage((currentPage - 1 + pageCount) % pageCount)
+/** Page-local buttons stay in place during skips: select the target instantly,
+ * then animate the new page's visibility instead of sliding its click targets. */
+@Stable
+internal class PlayerSkipNavigator(
+    private val pagerState: PagerState,
+    private val controls: PlayerControlsState,
+    private val scope: CoroutineScope,
+) {
+    private var pendingSong by mutableStateOf<Int?>(null)
+    private var navigationJob: Job? = null
+    private var requestId = 0
+    private val entryAnimation = Animatable(1f)
+    var enteringSong by mutableStateOf<Int?>(null)
+        private set
+    val entryProgress: Float get() = entryAnimation.value
+
+    val isNavigating: Boolean get() = pendingSong != null
+    private fun originSong(): Int = pendingSong ?: controls.songAt(pagerState.targetPage)
+    val canGoNext: Boolean get() = controls.nextSong(originSong()) != null
+
+    fun next() = navigate(controls.nextSong(originSong()))
+    fun previous() = navigate(controls.previousSong(originSong()))
+
+    private fun navigate(song: Int?) {
+        val destination = song?.let(controls::pageOf) ?: return
+        if (destination !in 0 until pagerState.pageCount) return
+        val id = ++requestId
+        val willChangePage = pagerState.currentPage != destination
+        pendingSong = song
+        controls.currentSong = song
+        enteringSong = if (willChangePage) song else null
+        navigationJob?.cancel()
+        navigationJob = scope.launch {
+            try {
+                if (willChangePage) {
+                    entryAnimation.snapTo(0f)
+                }
+                pagerState.scrollToPage(destination)
+                if (willChangePage) {
+                    entryAnimation.animateTo(
+                        1f,
+                        animationSpec = tween(220, easing = FastOutSlowInEasing),
+                    )
+                }
+            } finally {
+                if (requestId == id) {
+                    pendingSong = null
+                    enteringSong = null
+                    navigationJob = null
+                }
+            }
+        }
+    }
+
+    /** Selecting from the queue takes priority over any skip in progress. */
+    fun selectSong(song: Int) {
+        val page = controls.pageOf(song)
+        if (page < 0) return
+        requestId++
+        pendingSong = null
+        enteringSong = null
+        navigationJob?.cancel()
+        navigationJob = null
+        controls.currentSong = song
+        pagerState.requestScrollToPage(page)
+    }
 }
 
-internal fun PagerState.hasNext(repeatMode: RepeatMode): Boolean =
-    pageCount > 0 && (currentPage < pageCount - 1 || repeatMode != RepeatMode.Off)
-
-internal suspend fun PagerState.playNext(repeatMode: RepeatMode) {
-    if (!hasNext(repeatMode)) return
-    animateScrollToPage((currentPage + 1) % pageCount)
+/** Only fades and blurs pixels, never translates the page's pointer targets.
+ * Manual horizontal swipes still use the normal pager slide transition. */
+internal fun Modifier.animatedSkipEntrance(
+    navigator: PlayerSkipNavigator?,
+    song: Int,
+): Modifier = graphicsLayer {
+    if (navigator?.enteringSong == song) {
+        val remaining = (1f - navigator.entryProgress).coerceIn(0f, 1f)
+        alpha = 1f - remaining * 0.28f
+        val blur = 18.dp.toPx() * remaining
+        renderEffect = if (blur > 0.5f) BlurEffect(blur, blur, TileMode.Decal) else null
+    } else {
+        alpha = 1f
+        renderEffect = null
+    }
 }
 
 @Stable

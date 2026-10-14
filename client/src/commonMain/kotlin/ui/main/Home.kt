@@ -103,7 +103,7 @@ fun Header(i: String) {
                     it,
                     colors = IconButtonDefaults.filledIconButtonColors(
                         containerColor = colorScheme.secondary.copy(alpha = 0.25f),
-                        contentColor = colorScheme.secondary,
+                        contentColor = colorScheme.onSurface,
                     )
                 )
             },
@@ -124,7 +124,7 @@ fun Header(i: String) {
                         contentPadding = PaddingValues(vertical = 8.dp),
                         colors = FilledTonalToggleButtonDefaults.colors(
                             containerColor = colorScheme.secondary.copy(alpha = 0.25f),
-                            contentColor = colorScheme.secondary,
+                            contentColor = colorScheme.onSurface,
                             checkedContainerColor = colorScheme.secondary,
                             checkedContentColor = colorScheme.onSecondary,
                         ),

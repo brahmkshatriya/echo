@@ -127,14 +127,14 @@ internal fun LyricsSelectionPillContent(
             Crossfade(
                 targetState = if (chromeCollapsed) "Lyrics By" else "Selected Lyrics",
                 modifier = Modifier.fillMaxWidth(),
-                animationSpec = motionScheme.fastEffectsSpec<Float>(),
+                animationSpec = motionScheme.fastEffectsSpec(),
                 label = "Lyrics pill label",
             ) { label ->
                 Text(
                     text = label,
                     modifier = Modifier.fillMaxWidth(),
                     style = typography.labelSmall,
-                    color = colorScheme.primary,
+                    color = colorScheme.onPrimaryContainer.copy(0.66f),
                     textAlign = TextAlign.Center,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -317,7 +317,7 @@ private fun LyricsSelectionRow(
                 painter = painterResource(Res.drawable.ic_check_circle),
                 contentDescription = "Selected lyrics",
                 modifier = Modifier.size(24.dp),
-                tint = colorScheme.primary,
+                tint = colorScheme.tertiary,
             )
         }
     }
@@ -446,7 +446,7 @@ private fun LyricsSelectionSearchBar(
                 .height(playerBottomBarControlSize)
                 .weight(1f)
                 .clip(RoundedCornerShape(playerBottomBarControlSize / 2))
-                .background(colorScheme.primary.copy(alpha = 0.08f))
+                .background(colorScheme.onSurface.copy(alpha = 0.08f))
                 .padding(horizontal = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -585,8 +585,8 @@ private fun LyricsSelectionSearchBar(
                     ),
                     interactionSource = backInteractionSource,
                     colors = IconButtonDefaults.iconButtonColors(
-                        colorScheme.tertiary,
-                        colorScheme.onTertiary
+                        colorScheme.secondary,
+                        colorScheme.onSecondary
                     ),
                 ) {
                     PolygonIconRipple(backInteractionSource) {

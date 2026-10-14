@@ -8,12 +8,15 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -46,9 +49,9 @@ import androidx.compose.material3.MaterialTheme.motionScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableFloatStateOf
@@ -58,16 +61,21 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.LocalPinnableContainer
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -75,6 +83,7 @@ import dev.brahmkshatriya.echo.app.ui.components.BetterImage
 import dev.brahmkshatriya.echo.app.ui.components.PolygonIconRipple
 import dev.brahmkshatriya.echo.app.ui.components.SwitchingIcon
 import dev.brahmkshatriya.echo.app.ui.components.animatedPolygonIconShape
+import dev.brahmkshatriya.echo.app.ui.components.clipToMaterialGroupViewport
 import echo.client.generated.resources.Res
 import echo.client.generated.resources.ic_back
 import echo.client.generated.resources.ic_drag_indicator
@@ -96,6 +105,7 @@ private data class QueueDrag(
     val from: Int,
     val to: Int,
     val distance: Float = 0f,
+    val pointerY: Float? = null,
     val settling: Boolean = false,
 )
 
@@ -109,20 +119,89 @@ internal fun QueuePage(
     modifier: Modifier = Modifier,
 ) {
     val controls = LocalPlayerControls.current
-    // Physical item order remains unchanged until the gesture finishes. Songs
-    // retain their keys (and their loaded artwork) throughout the reorder.
     var heldOrder by remember { mutableStateOf<List<Int>?>(null) }
     val songsInOrder = heldOrder ?: controls?.playbackOrder ?: (0 until songCount).toList()
+    val queueGroups = controls?.queues ?: listOf(PlayerQueue(0, "Sample Playlist", songsInOrder))
     val listState = rememberLazyListState()
     var drag by remember { mutableStateOf<QueueDrag?>(null) }
+    var listCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
     val settleJob = remember { mutableStateOf<Job?>(null) }
     val scope = rememberCoroutineScope()
     val fallbackStride = with(LocalDensity.current) { 75.dp.toPx() }
+    val edgeZonePx = with(LocalDensity.current) { 80.dp.toPx() }
+    val stickyHeaderPx = with(LocalDensity.current) { 64.dp.toPx() }
+    val maxAutoScrollPxPerSecond = with(LocalDensity.current) { 680.dp.toPx() }
     var stridePx by remember { mutableFloatStateOf(fallbackStride) }
     val movementSpring = motionScheme.defaultSpatialSpec<Float>()
-    val cornerSpring = remember { spring<Dp>(dampingRatio = 0.4f, stiffness = Spring.StiffnessMedium) }
+    val cornerSpring =
+        remember { spring<Dp>(dampingRatio = 0.4f, stiffness = Spring.StiffnessMedium) }
     val cardColors = CardDefaults.cardColors(containerColor = colorScheme.surface)
     val safeDrawing = WindowInsets.safeDrawing.asPaddingValues()
+    LaunchedEffect(drag?.song, drag?.settling, interactive) {
+        if (!interactive || drag?.settling != false) return@LaunchedEffect
+        var previousFrame = withFrameNanos { it }
+        while (true) {
+            val frame = withFrameNanos { it }
+            val elapsedSeconds = ((frame - previousFrame) / 1_000_000_000f)
+                .coerceIn(0f, 0.05f)
+            previousFrame = frame
+            val active = drag ?: break
+            if (active.settling) break
+            val pointerY = active.pointerY ?: continue
+            val viewportHeight = listState.layoutInfo.viewportSize.height.toFloat()
+            if (viewportHeight <= 0f) continue
+            val upperEdge = stickyHeaderPx + edgeZonePx
+            val lowerEdge = viewportHeight - edgeZonePx
+            val speedFraction = when {
+                pointerY < upperEdge -> -((upperEdge - pointerY) / edgeZonePx).coerceIn(0f, 1f)
+                pointerY > lowerEdge -> ((pointerY - lowerEdge) / edgeZonePx).coerceIn(0f, 1f)
+                else -> 0f
+            }
+            if (speedFraction == 0f) continue
+            val groupIndex = queueGroups.indexOfFirst { active.song in it.songs }
+            if (groupIndex < 0) continue
+            val group = queueGroups[groupIndex]
+            val headerIndex = 1 + queueGroups.take(groupIndex).sumOf { it.songs.size + 1 }
+            val lastSongIndex = headerIndex + group.songs.size
+            val layoutInfo = listState.layoutInfo
+            val requestedScroll = speedFraction * maxAutoScrollPxPerSecond * elapsedSeconds
+            val boundedScroll = if (requestedScroll < 0f) {
+                when {
+                    listState.firstVisibleItemIndex < headerIndex -> 0f
+                    listState.firstVisibleItemIndex == headerIndex -> requestedScroll.coerceAtLeast(
+                        -listState.firstVisibleItemScrollOffset.toFloat()
+                    )
+                    else -> requestedScroll
+                }
+            } else {
+                val lastItem = layoutInfo.visibleItemsInfo.firstOrNull {
+                    it.key == "queue-song-${group.songs.last()}"
+                }
+                when {
+                    lastItem != null -> requestedScroll.coerceAtMost(
+                        (lastItem.offset + lastItem.size - layoutInfo.viewportEndOffset)
+                            .coerceAtLeast(0).toFloat()
+                    )
+                    layoutInfo.visibleItemsInfo.any { it.index > lastSongIndex } -> 0f
+                    else -> requestedScroll
+                }
+            }
+            if (boundedScroll == 0f) continue
+            val scrolled = listState.scrollBy(boundedScroll)
+            val currentDrag = drag
+            if (scrolled != 0f && currentDrag?.song == active.song && !currentDrag.settling) {
+                val distance = currentDrag.distance + scrolled
+                val queueStart =
+                    queueGroups.takeWhile { active.song !in it.songs }.sumOf { it.songs.size }
+                val queueEnd =
+                    queueStart + (queueGroups.firstOrNull { active.song in it.songs }?.songs?.size
+                        ?: 1) - 1
+                val destination = (active.from + (distance / stridePx).roundToInt())
+                    .coerceIn(queueStart, queueEnd)
+                drag = currentDrag.copy(distance = distance, to = destination)
+            }
+        }
+    }
     Scaffold(
         modifier = modifier,
         containerColor = Color.Transparent,
@@ -134,151 +213,222 @@ internal fun QueuePage(
                 safeDrawing.calculateBottomPadding()
             )
         },
-    ) {
-        LazyColumn(
-            state = listState,
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 8.dp),
-            userScrollEnabled = interactive && drag == null,
-        ) {
-            stickyHeader("queue-header") {
-                TopAppBar(
-                    title = { Text("Queue (${songCount + 1})") },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color.Transparent,
-                        scrolledContainerColor = Color.Transparent,
-                    ),
-                )
-            }
-            itemsIndexed(
-                items = songsInOrder,
-                key = { _, song -> "queue-song-$song" },
-                contentType = { _, _ -> "queue-song" },
-            ) { index, song ->
-                val active = drag
-                val neighborOffset = when {
-                    active == null || song == active.song -> 0f
-                    active.to > active.from && index in (active.from + 1)..active.to -> -stridePx
-                    active.to < active.from && index in active.to until active.from -> stridePx
-                    else -> 0f
+    ) { padding ->
+        BoxWithConstraints(Modifier.fillMaxSize().padding(padding)) {
+            val thumbSpacerHeight = (maxHeight * 0.6f - 64.dp - 68.dp - 37.5.dp).coerceAtLeast(0.dp)
+            LazyColumn(
+                state = listState,
+                modifier = Modifier.fillMaxSize().onGloballyPositioned { listCoordinates = it },
+                userScrollEnabled = interactive && drag == null,
+            ) {
+                item(key = "queue-thumb-spacer", contentType = "queue-spacer") {
+                    Spacer(Modifier.fillMaxWidth().height(thumbSpacerHeight))
                 }
-                val neighborY by key(active?.song) {
-                    animateFloatAsState(
-                        targetValue = neighborOffset,
-                        animationSpec = movementSpring,
-                        label = "Queue neighbor",
-                    )
-                }
-                val landingOrder = if (active?.settling == true) {
-                    songsInOrder.toMutableList().apply {
-                        add(active.to, removeAt(active.from))
-                    }
-                } else null
-                val topEdge = (landingOrder ?: songsInOrder).firstOrNull() == song
-                val bottomEdge = (landingOrder ?: songsInOrder).lastOrNull() == song
-                val topCorner by animateDpAsState(
-                    targetValue = if ((active == null || active.settling) && topEdge) 20.dp else 6.dp,
-                    animationSpec = cornerSpring,
-                    label = "Queue top corner",
-                )
-                val bottomCorner by animateDpAsState(
-                    targetValue = if ((active == null || active.settling) && bottomEdge) 20.dp else 6.dp,
-                    animationSpec = cornerSpring,
-                    label = "Queue bottom corner",
-                )
-                Card(
-                    modifier = Modifier
-                        .padding(horizontal = 12.dp)
-                        .zIndex(if (active?.song == song) 1f else 0f)
-                        .graphicsLayer {
-                            translationY = if (active?.song == song) active.distance else neighborY
+
+                queueGroups.forEachIndexed { groupIndex, group ->
+                    val groupStart = queueGroups.take(groupIndex).sumOf { it.songs.size }
+                    val groupEnd = groupStart + group.songs.size
+                    val groupSongs = songsInOrder.subList(groupStart, groupEnd)
+                    val groupKeys = groupSongs.mapTo(mutableSetOf<String>()) { "queue-song-$it" }
+                    val firstSongKey = groupSongs.firstOrNull()?.let { "queue-song-$it" } ?: ""
+                    val lastSongKey = groupSongs.lastOrNull()?.let { "queue-song-$it" } ?: ""
+                    stickyHeader(key = "queue-group-${group.id}", contentType = "queue-group") {
+                        Column(
+                            modifier = Modifier.fillMaxWidth()
+                                .padding(horizontal = 20.dp, vertical = 12.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp),
+                        ) {
+                            Text(group.title, style = typography.titleMedium)
+                            Text(
+                                buildString {
+                                    append("${group.songs.size} songs")
+                                    if (currentSong in group.songs) append(" · Playing")
+                                    if (group.shuffleEnabled) append(" · Shuffled")
+                                    if (group.repeatMode != RepeatMode.Off) append(" · Repeat ${group.repeatMode.name}")
+                                },
+                                style = typography.labelMedium,
+                                color = colorScheme.onSurfaceVariant,
+                            )
                         }
-                        .padding(bottom = 3.dp),
-                    colors = cardColors,
-                    shape = RoundedCornerShape(
-                        topStart = topCorner, topEnd = topCorner,
-                        bottomStart = bottomCorner, bottomEnd = bottomCorner,
-                    ),
-                ) {
-                    QueueSongRow(
-                        index = song,
-                        playing = song == currentSong,
-                        enabled = interactive,
-                        onClick = { if (song != currentSong) onSongSelected(song) },
-                        onDragStart = {
-                            val previous = drag
-                            if (previous == null || previous.settling) {
-                                val previousOrder = heldOrder ?: songsInOrder
-                                val completingMove = previous?.settling == true && previous.to != previous.from
-                                val nextOrder = if (completingMove) {
-                                    previousOrder.toMutableList().apply {
-                                        add(previous.to, removeAt(previous.from))
-                                    }
-                                } else previousOrder
-                                val nextIndex = nextOrder.indexOf(song)
-                                val item = listState.layoutInfo.visibleItemsInfo
-                                    .firstOrNull { it.key == "queue-song-$song" }
-                                if (nextIndex >= 0) {
-                                    val visibleIndex = listState.firstVisibleItemIndex
-                                    val visibleOffset = listState.firstVisibleItemScrollOffset
-                                    settleJob.value?.cancel()
-                                    settleJob.value = null
-                                    Snapshot.withMutableSnapshot {
-                                        if (completingMove) controls?.moveQueueSong(previous.song, previous.to)
-                                        stridePx = item?.size?.toFloat()?.coerceAtLeast(1f) ?: fallbackStride
-                                        heldOrder = nextOrder
-                                        drag = QueueDrag(song = song, from = nextIndex, to = nextIndex)
-                                    }
-                                    if (completingMove) {
-                                        listState.requestScrollToItem(visibleIndex, visibleOffset)
-                                    }
+                    }
+                    itemsIndexed(
+                        items = groupSongs,
+                        key = { _, song -> "queue-song-$song" },
+                        contentType = { _, _ -> "queue-song" },
+                    ) { localIndex, song ->
+                        val index = groupStart + localIndex
+                        val active = drag
+                        val pinnableContainer = LocalPinnableContainer.current
+                        DisposableEffect(active?.song == song, pinnableContainer) {
+                            val pin = if (active?.song == song) pinnableContainer?.pin() else null
+                            onDispose { pin?.release() }
+                        }
+                        val neighborOffset = when {
+                            active == null || song == active.song -> 0f
+                            active.to > active.from && index in (active.from + 1)..active.to -> -stridePx
+                            active.to < active.from && index in active.to until active.from -> stridePx
+                            else -> 0f
+                        }
+                        val neighborY by key(active?.song) {
+                            animateFloatAsState(
+                                targetValue = neighborOffset,
+                                animationSpec = movementSpring,
+                                label = "Queue neighbor",
+                            )
+                        }
+                        val landingOrder =
+                            if (active?.settling == true && active.from in groupStart until groupEnd) {
+                                songsInOrder.toMutableList().apply {
+                                    add(active.to, removeAt(active.from))
                                 }
-                            }
-                        },
-                        onDrag = { delta ->
-                            val gesture = drag
-                            if (gesture?.song == song && !gesture.settling) {
-                                val distance = gesture.distance + delta
-                                val destination = (gesture.from + (distance / stridePx).roundToInt())
-                                    .coerceIn(0, songsInOrder.lastIndex)
-                                drag = gesture.copy(distance = distance, to = destination)
-                            }
-                        },
-                        onDragEnd = {
-                            val gesture = drag
-                            if (gesture?.song == song && !gesture.settling) {
-                                if (gesture.distance == 0f && gesture.to == gesture.from) {
-                                    // A tap has nothing to settle.
-                                    drag = null
-                                    heldOrder = null
-                                } else {
-                                    drag = gesture.copy(settling = true)
-                                    settleJob.value = scope.launch {
-                                        // The same settle animation handles both moves to
-                                        // a new index and returns to the original index.
-                                        // Do not clear the drag until this spring completes.
-                                        val destination = (gesture.to - gesture.from) * stridePx
-                                        Animatable(gesture.distance).animateTo(destination, movementSpring) {
-                                            if (drag?.song == song && drag?.settling == true) {
-                                                drag = drag?.copy(distance = value)
+                            } else null
+                        val topEdge = (landingOrder ?: songsInOrder).getOrNull(groupStart) == song
+                        val bottomEdge =
+                            (landingOrder ?: songsInOrder).getOrNull(groupEnd - 1) == song
+                        val topCorner by animateDpAsState(
+                            targetValue = if ((active == null || active.settling) && topEdge) 20.dp else 6.dp,
+                            animationSpec = cornerSpring,
+                            label = "Queue top corner",
+                        )
+                        val bottomCorner by animateDpAsState(
+                            targetValue = if ((active == null || active.settling) && bottomEdge) 20.dp else 6.dp,
+                            animationSpec = cornerSpring,
+                            label = "Queue bottom corner",
+                        )
+                        val rowTranslationY =
+                            if (active?.song == song) active.distance else neighborY
+                        Card(
+                            modifier = Modifier
+                                .padding(horizontal = 12.dp)
+                                .zIndex(if (active?.song == song) 1f else 0f)
+                                .graphicsLayer {
+                                    translationY = rowTranslationY
+                                }
+                                .padding(bottom = 3.dp)
+                                .clipToMaterialGroupViewport(
+                                    lazyListState = listState,
+                                    itemKey = "queue-song-$song",
+                                    itemKeys = groupKeys,
+                                    firstKey = firstSongKey,
+                                    lastKey = lastSongKey,
+                                    radius = 20.dp,
+                                    itemTranslationY = rowTranslationY,
+                                    clipToGroupBounds = active?.song != song,
+                                ),
+                            colors = cardColors,
+                            shape = RoundedCornerShape(
+                                topStart = topCorner, topEnd = topCorner,
+                                bottomStart = bottomCorner, bottomEnd = bottomCorner,
+                            ),
+                        ) {
+                            QueueSongRow(
+                                index = song,
+                                listCoordinates = listCoordinates,
+                                playing = song == currentSong,
+                                enabled = interactive,
+                                onClick = { if (song != currentSong) onSongSelected(song) },
+                                onDragStart = {
+                                    val previous = drag
+                                    if (previous == null || previous.settling) {
+                                        val previousOrder = heldOrder ?: songsInOrder
+                                        val completingMove =
+                                            previous?.settling == true && previous.to != previous.from
+                                        val nextOrder = if (completingMove) {
+                                            previousOrder.toMutableList().apply {
+                                                add(previous.to, removeAt(previous.from))
                                             }
-                                        }
-                                        if (drag?.song == song && drag?.settling == true) {
-                                            val moved = gesture.to != gesture.from
+                                        } else previousOrder
+                                        val nextIndex = nextOrder.indexOf(song)
+                                        val item = listState.layoutInfo.visibleItemsInfo
+                                            .firstOrNull { it.key == "queue-song-$song" }
+                                        if (nextIndex >= 0) {
                                             val visibleIndex = listState.firstVisibleItemIndex
-                                            val scrollOffset = listState.firstVisibleItemScrollOffset
+                                            val visibleOffset =
+                                                listState.firstVisibleItemScrollOffset
+                                            settleJob.value?.cancel()
+                                            settleJob.value = null
                                             Snapshot.withMutableSnapshot {
-                                                if (moved) controls?.moveQueueSong(song, gesture.to)
-                                                drag = null
-                                                heldOrder = null
+                                                if (completingMove) controls?.moveQueueSong(
+                                                    previous.song,
+                                                    previous.to
+                                                )
+                                                stridePx = item?.size?.toFloat()?.coerceAtLeast(1f)
+                                                    ?: fallbackStride
+                                                heldOrder = nextOrder
+                                                drag = QueueDrag(
+                                                    song = song,
+                                                    from = nextIndex,
+                                                    to = nextIndex
+                                                )
                                             }
-                                            if (moved) listState.requestScrollToItem(visibleIndex, scrollOffset)
+                                            if (completingMove) {
+                                                listState.requestScrollToItem(
+                                                    visibleIndex,
+                                                    visibleOffset
+                                                )
+                                            }
                                         }
                                     }
-                                }
-                            }
-                        },
-                    )
+                                },
+                                onDrag = { delta, pointerY ->
+                                    val gesture = drag
+                                    if (gesture?.song == song && !gesture.settling) {
+                                        val distance = gesture.distance + delta
+                                        val destination =
+                                            (gesture.from + (distance / stridePx).roundToInt())
+                                                .coerceIn(groupStart, groupEnd - 1)
+                                        drag = gesture.copy(
+                                            distance = distance,
+                                            to = destination,
+                                            pointerY = pointerY
+                                        )
+                                    }
+                                },
+                                onDragEnd = {
+                                    val gesture = drag
+                                    if (gesture?.song == song && !gesture.settling) {
+                                        if (gesture.distance == 0f && gesture.to == gesture.from) {
+                                            drag = null
+                                            heldOrder = null
+                                        } else {
+                                            drag = gesture.copy(settling = true)
+                                            settleJob.value = scope.launch {
+                                                val destination =
+                                                    (gesture.to - gesture.from) * stridePx
+                                                Animatable(gesture.distance).animateTo(
+                                                    destination,
+                                                    movementSpring
+                                                ) {
+                                                    if (drag?.song == song && drag?.settling == true) {
+                                                        drag = drag?.copy(distance = value)
+                                                    }
+                                                }
+                                                if (drag?.song == song && drag?.settling == true) {
+                                                    val moved = gesture.to != gesture.from
+                                                    val visibleIndex =
+                                                        listState.firstVisibleItemIndex
+                                                    val scrollOffset =
+                                                        listState.firstVisibleItemScrollOffset
+                                                    Snapshot.withMutableSnapshot {
+                                                        if (moved) controls?.moveQueueSong(
+                                                            song,
+                                                            gesture.to
+                                                        )
+                                                        drag = null
+                                                        heldOrder = null
+                                                    }
+                                                    if (moved) listState.requestScrollToItem(
+                                                        visibleIndex,
+                                                        scrollOffset
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -311,10 +461,10 @@ private fun QueueActionBar(
                 isEditMode.value = it
             },
             colors = IconButtonDefaults.filledIconToggleButtonColors(
-                containerColor = colorScheme.secondary,
-                contentColor = colorScheme.onSecondary,
-                checkedContainerColor = colorScheme.primary,
-                checkedContentColor = colorScheme.onPrimary
+                colorScheme.secondaryContainer,
+                colorScheme.onSecondaryContainer,
+                checkedContainerColor = colorScheme.secondary,
+                checkedContentColor = colorScheme.onSecondary,
             ),
             shape = animatedPolygonIconShape(
                 shape = MaterialShapes.Pill,
@@ -392,7 +542,7 @@ private fun QueueActionBar(
                             else -> PaddingValues(0.dp)
                         },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = colorScheme.primary.copy(0.1f),
+                            containerColor = colorScheme.primaryContainer,
                             contentColor = colorScheme.onPrimaryContainer
                         )
                     ) {
@@ -418,8 +568,8 @@ private fun QueueActionBar(
             ),
             interactionSource = backInteractionSource,
             colors = IconButtonDefaults.iconButtonColors(
-                colorScheme.tertiary,
-                colorScheme.onTertiary
+                colorScheme.secondary,
+                colorScheme.onSecondary
             ),
         ) {
             PolygonIconRipple(backInteractionSource) {
@@ -432,18 +582,22 @@ private fun QueueActionBar(
 @Composable
 private fun QueueSongRow(
     index: Int,
+    listCoordinates: LayoutCoordinates?,
     playing: Boolean,
     enabled: Boolean,
     onClick: () -> Unit,
     onDragStart: () -> Unit = {},
-    onDrag: (Float) -> Unit = {},
+    onDrag: (Float, Float?) -> Unit = { _, _ -> },
     onDragEnd: () -> Unit = {},
 ) {
     val coverUrl = LocalPlayerItems.current.getOrNull(index)
+    val song = exampleSong(index)
     val coverModel = remember(coverUrl) { { coverUrl } }
     val latestDragStart by rememberUpdatedState(onDragStart)
     val latestDrag by rememberUpdatedState(onDrag)
     val latestDragEnd by rememberUpdatedState(onDragEnd)
+    val latestListCoordinates by rememberUpdatedState(listCoordinates)
+    var handleCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
     Row(
         modifier = Modifier.fillMaxWidth()
             .clickable(enabled = enabled && !playing, onClick = onClick)
@@ -466,25 +620,31 @@ private fun QueueSongRow(
             if (coverUrl != null) {
                 BetterImage(
                     model = coverModel,
-                    contentDescription = "Song $index cover art",
+                    contentDescription = "${song?.album ?: "Album"} cover art",
                     modifier = Modifier.fillMaxSize(),
                 )
             }
         }
         Column(Modifier.weight(1f)) {
             val mergedStyle = LocalTextStyle.current.merge(typography.labelLarge)
-            Text("Song $index", fontWeight = FontWeight.Bold, style = mergedStyle)
             Text(
-                if (playing) "Artist $index · Playing now" else "Artist $index",
+                song?.title ?: "Unknown track", fontWeight = FontWeight.Bold, style = mergedStyle,
+                maxLines = 1, overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                (song?.artist ?: "Unknown artist") + if (playing) " · Playing now" else "",
                 color = LocalContentColor.current.copy(0.66f),
                 fontWeight = FontWeight.Normal,
-                style = mergedStyle
+                style = mergedStyle,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
         }
         Box(
             modifier = Modifier
                 .height(48.dp).width(32.dp)
-                .semantics { contentDescription = "Drag to reorder Song $index" }
+                .semantics { contentDescription = "Drag to reorder ${song?.title ?: "track"}" }
+                .onGloballyPositioned { handleCoordinates = it }
                 .pointerInput(index, enabled) {
                     if (enabled) {
                         detectDragGestures(
@@ -495,7 +655,13 @@ private fun QueueSongRow(
                             onDragCancel = { latestDragEnd() },
                             onDrag = { change, amount ->
                                 change.consume()
-                                latestDrag(amount.y)
+                                val list = latestListCoordinates
+                                val handle = handleCoordinates
+                                val pointerY =
+                                    if (list?.isAttached == true && handle?.isAttached == true) {
+                                        list.localPositionOf(handle, change.position).y
+                                    } else null
+                                latestDrag(amount.y, pointerY)
                             },
                         )
                     }
@@ -505,7 +671,7 @@ private fun QueueSongRow(
             Icon(
                 painter = painterResource(Res.drawable.ic_drag_indicator),
                 contentDescription = null,
-                tint = colorScheme.primary.copy(0.5f)
+                tint = colorScheme.onSurfaceVariant.copy(0.5f)
             )
         }
     }

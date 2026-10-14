@@ -13,12 +13,15 @@ import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -28,10 +31,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FilledTonalIconToggleButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.IconButtonShapes
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.motionScheme
@@ -45,7 +50,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -54,12 +58,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
@@ -89,9 +95,28 @@ import echo.client.generated.resources.ic_skip_previous
 import echo.client.generated.resources.ic_skip_previous_32
 import echo.client.generated.resources.ic_volume_off
 import echo.client.generated.resources.ic_volume_up
-import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import kotlin.math.roundToInt
+
+@Composable
+fun defaultIconButtonColors() = IconButtonDefaults.iconButtonColors(
+    contentColor = colorScheme.onPrimaryContainer,
+    containerColor = colorScheme.onPrimaryContainer.copy(0.1f),
+    disabledContainerColor = colorScheme.onPrimaryContainer.copy(0.05f),
+    disabledContentColor = colorScheme.onPrimaryContainer.copy(0.5f)
+)
+
+@Composable
+internal fun favouriteButtonColors() = colorScheme.primaryContainer
+    .favouriteButtonPalette(dark = colorScheme.background.luminance() < 0.20f)
+    .let { palette ->
+        IconButtonDefaults.filledTonalIconToggleButtonColors(
+            palette.container,
+            palette.content,
+            checkedContainerColor = palette.checkedContainer,
+            checkedContentColor = palette.checkedContent,
+        )
+    }
 
 @Composable
 internal fun RepeatButton(modifier: Modifier = Modifier) {
@@ -129,23 +154,34 @@ internal fun RepeatButton(modifier: Modifier = Modifier) {
 }
 
 @Composable
-internal fun PreviousButton(modifier: Modifier = Modifier, large: Boolean = false) {
+internal fun PreviousButton(
+    modifier: Modifier = Modifier,
+    large: Boolean = false,
+    interactionSource: MutableInteractionSource? = null,
+    shapes: IconButtonShapes? = null,
+) {
     val timelineState = LocalPlayerTimelineState.current
-    val pagerState = LocalPlayerPagerState.current
-    val scope = rememberCoroutineScope()
+    val navigator = LocalPlayerSkipNavigator.current
     IconButton(
         onClick = {
             val timeline = timelineState ?: return@IconButton
-            if (timeline.positionMs > 3_000f) {
+            if (timeline.positionMs > 3_000f && navigator?.isNavigating != true) {
                 timeline.positionMs = 0f
             } else {
                 timeline.positionMs = 0f
-                scope.launch { pagerState?.playPrevious() }
+                navigator?.previous()
             }
         },
         enabled = timelineState != null,
         modifier = modifier,
-        shapes = IconButtonDefaults.shapes()
+        colors = IconButtonDefaults.iconButtonColors(
+            contentColor = colorScheme.onTertiary,
+            containerColor = colorScheme.tertiary,
+            disabledContainerColor = colorScheme.tertiary.copy(0.33f),
+            disabledContentColor = colorScheme.onTertiary.copy(0.5f)
+        ),
+        shapes = shapes ?: IconButtonDefaults.shapes(),
+        interactionSource = interactionSource,
     ) {
         SwitchingIcon(
             icon = if (large) Res.drawable.ic_skip_previous_32
@@ -159,6 +195,8 @@ internal fun PreviousButton(modifier: Modifier = Modifier, large: Boolean = fals
 internal fun PlayPauseButton(
     modifier: Modifier = Modifier,
     large: Boolean = false,
+    interactionSource: MutableInteractionSource? = null,
+    shapes: IconButtonShapes? = null,
 ) {
     val controls = LocalPlayerControls.current
     val isPlaying = controls?.isPlaying == true
@@ -166,6 +204,15 @@ internal fun PlayPauseButton(
         onClick = { controls?.isPlaying = !isPlaying },
         enabled = controls != null,
         modifier = modifier,
+        shapes = shapes ?: IconButtonDefaults.shapes(
+            shape = IconButtonDefaults.filledShape,
+            pressedShape = IconButtonDefaults.filledShape,
+        ),
+        interactionSource = interactionSource,
+        colors = IconButtonDefaults.filledIconButtonColors(
+            colorScheme.primary,
+            colorScheme.onPrimary
+        )
     ) {
         SwitchingIcon(
             icon = when {
@@ -189,45 +236,50 @@ internal fun CompactPlayPauseButton(modifier: Modifier = Modifier) {
     } else {
         (timelineState.positionMs / timelineState.durationMs).coerceIn(0f, 1f)
     }
-    val progressColor = colorScheme.primary
-    val backgroundColor = colorScheme.primary.copy(alpha = 0.33f)
-    val buttonColors = IconButtonDefaults.filledIconButtonColors()
     val enabled = controls != null
     MorphingProgressIconButton(
         progress = progress,
         onClick = { controls?.isPlaying = !isPlaying },
         enabled = enabled,
-        backgroundColor = backgroundColor,
-        progressColor = progressColor,
-        buttonColor = if (enabled) buttonColors.containerColor else buttonColors.disabledContainerColor,
+        backgroundColor = colorScheme.onPrimaryContainer.copy(alpha = 0.1f),
+        progressColor = colorScheme.primary,
+        buttonColor = if (enabled) colorScheme.primary else colorScheme.onSurface.copy(0.1f),
         modifier = modifier,
     ) {
         SwitchingIcon(
             icon = if (isPlaying) Res.drawable.ic_pause else Res.drawable.ic_play_arrow,
             contentDescription = if (isPlaying) "Pause" else "Play",
-            tint = if (enabled) buttonColors.contentColor else buttonColors.disabledContentColor,
+            tint = if (enabled) colorScheme.onPrimary else colorScheme.onSurface.copy(0.38f),
         )
     }
 }
 
 @Composable
-internal fun NextButton(modifier: Modifier = Modifier, large: Boolean = false) {
+internal fun NextButton(
+    modifier: Modifier = Modifier,
+    large: Boolean = false,
+    interactionSource: MutableInteractionSource? = null,
+    shapes: IconButtonShapes? = null,
+) {
     val timelineState = LocalPlayerTimelineState.current
-    val pagerState = LocalPlayerPagerState.current
-    val repeatMode = LocalPlayerControls.current?.repeatMode ?: RepeatMode.Off
-    val canGoNext = pagerState?.hasNext(repeatMode) == true
-    val scope = rememberCoroutineScope()
-    IconButton(
+    val navigator = LocalPlayerSkipNavigator.current
+    val canGoNext = navigator?.canGoNext == true
+    FilledTonalIconButton(
         onClick = {
-            if (!canGoNext) return@IconButton
+            if (!canGoNext) return@FilledTonalIconButton
             timelineState?.positionMs = 0f
-            scope.launch {
-                pagerState.playNext(repeatMode)
-            }
+            navigator.next()
         },
         enabled = timelineState != null && canGoNext,
         modifier = modifier,
-        shapes = IconButtonDefaults.shapes()
+        shapes = shapes ?: IconButtonDefaults.shapes(),
+        interactionSource = interactionSource,
+        colors = IconButtonDefaults.iconButtonColors(
+            contentColor = colorScheme.onTertiary,
+            containerColor = colorScheme.tertiary,
+            disabledContainerColor = colorScheme.tertiary.copy(0.33f),
+            disabledContentColor = colorScheme.onTertiary.copy(0.5f)
+        )
     ) {
         SwitchingIcon(
             icon = if (large) Res.drawable.ic_skip_next_32 else Res.drawable.ic_skip_next,
@@ -244,7 +296,7 @@ internal fun ShuffleButton(modifier: Modifier = Modifier) {
     IconButton(
         onClick = {
             if (controls != null && pagerState != null) {
-                controls.setShuffle(!enabled, controls.songAt(pagerState.currentPage))
+                controls.setShuffle(!enabled, controls.currentSong)
             }
         },
         enabled = controls != null,
@@ -263,17 +315,76 @@ internal fun ShuffleButton(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun Controller() {
+fun Controller() = BoxWithConstraints(Modifier.fillMaxWidth()) {
+    val expandedShapes = IconButtonDefaults.shapes(
+        shape = RoundedCornerShape(50),
+        pressedShape = RoundedCornerShape(16.dp),
+    )
+    val previousSource = remember { MutableInteractionSource() }
+    val playSource = remember { MutableInteractionSource() }
+    val nextSource = remember { MutableInteractionSource() }
+    val previousPressed by previousSource.collectIsPressedAsState()
+    val playPressed by playSource.collectIsPressedAsState()
+    val nextPressed by nextSource.collectIsPressedAsState()
+    val pressedButton = when {
+        previousPressed -> 0
+        playPressed -> 1
+        nextPressed -> 2
+        else -> -1
+    }
+    val playWidth = (maxWidth - 32.dp - 56.dp * 2 - 8.dp * 2)
+        .coerceIn(64.dp, 256.dp)
+    val previousWidth by animateDpAsState(
+        targetValue = when (pressedButton) {
+            0 -> 64.dp
+            1 -> 48.dp
+            else -> 56.dp
+        },
+        animationSpec = motionScheme.fastSpatialSpec(),
+        label = "Previous button width",
+    )
+    val centerWidth by animateDpAsState(
+        targetValue = when (pressedButton) {
+            0, 2 -> playWidth - 8.dp
+            1 -> playWidth + 16.dp
+            else -> playWidth
+        },
+        animationSpec = motionScheme.fastSpatialSpec(),
+        label = "Play button width",
+    )
+    val nextWidth by animateDpAsState(
+        targetValue = when (pressedButton) {
+            2 -> 64.dp
+            1 -> 48.dp
+            else -> 56.dp
+        },
+        animationSpec = motionScheme.fastSpatialSpec(),
+        label = "Next button width",
+    )
     Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = Modifier.fillMaxWidth().padding(8.dp).padding(bottom = 8.dp)
+        modifier = Modifier.align(Alignment.Center)
+            .padding(horizontal = 16.dp).padding(top = 8.dp, bottom = 4.dp)
     ) {
-        ShuffleButton(Modifier.size(48.dp))
-        PreviousButton(Modifier.size(56.dp), large = true)
-        PlayPauseButton(Modifier.size(56.dp), large = true)
-        NextButton(Modifier.size(56.dp), large = true)
-        RepeatButton(Modifier.size(48.dp))
+        PreviousButton(
+            modifier = Modifier.width(previousWidth).height(64.dp),
+            large = true,
+            interactionSource = previousSource,
+            shapes = expandedShapes,
+        )
+        PlayPauseButton(
+            modifier = Modifier.width(centerWidth).height(64.dp),
+            large = true,
+            interactionSource = playSource,
+            shapes = expandedShapes,
+        )
+        NextButton(
+            modifier = Modifier.width(nextWidth).height(64.dp),
+            large = true,
+            interactionSource = nextSource,
+            shapes = expandedShapes,
+        )
     }
 }
 
@@ -286,6 +397,7 @@ fun ExpandedTimeline(
     onArtworkClick: () -> Unit = {},
 ) {
     val timelineState = LocalPlayerTimelineState.current ?: return
+    val song = exampleSong(i)
     val maxRange = timelineState.durationMs
     var showRemainingTime by remember { mutableStateOf(false) }
     val currentTimeLabel by remember {
@@ -304,28 +416,25 @@ fun ExpandedTimeline(
     val collapseProgress = rowsCollapseProgress.coerceIn(0f, 1f)
     val secondaryRowsAlpha = 1f - collapseProgress
     val compactPlayPauseVisible = lyricsVisible && collapseProgress >= 0.5f
-    val inlineCoverSlideSpec = motionScheme.defaultSpatialSpec<IntOffset>()
-    val inlineCoverWidthSpec = motionScheme.defaultSpatialSpec<IntSize>()
+    val coverSlideSpec = motionScheme.defaultSpatialSpec<IntOffset>()
+    val coverWidthSpec = motionScheme.defaultSpatialSpec<IntSize>()
 
     SubcomposeLayout(Modifier.fillMaxWidth().clipToBounds()) { constraints ->
         val looseConstraints = constraints.copy(minHeight = 0)
         val metadata = subcompose("metadata") {
             Row(
-                Modifier.fillMaxWidth(),
+                Modifier.fillMaxWidth().defaultMinSize(minHeight = 48.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 AnimatedVisibility(
                     visible = lyricsVisible || showCompactArtwork,
-                    enter = slideInHorizontally(inlineCoverSlideSpec) { -it } +
-                            expandHorizontally(inlineCoverWidthSpec, expandFrom = Alignment.Start),
-                    exit = slideOutHorizontally(inlineCoverSlideSpec) { -it } +
-                            shrinkHorizontally(
-                                inlineCoverWidthSpec,
-                                shrinkTowards = Alignment.Start
-                            ),
+                    enter = slideInHorizontally(coverSlideSpec) { -it } +
+                            expandHorizontally(coverWidthSpec, expandFrom = Alignment.Start),
+                    exit = slideOutHorizontally(coverSlideSpec) { -it } +
+                            shrinkHorizontally(coverWidthSpec, shrinkTowards = Alignment.Start),
                 ) {
                     PlayerArtwork(
-                        contentDescription = "Song $i artwork",
+                        contentDescription = "${song?.album ?: "Album"} artwork",
                         modifier = Modifier
                             .padding(start = 16.dp, end = 8.dp)
                             .size(48.dp)
@@ -336,26 +445,31 @@ fun ExpandedTimeline(
                 }
                 AnimatedVisibility(
                     visible = !lyricsVisible && !showCompactArtwork,
-                    enter = expandHorizontally(inlineCoverWidthSpec),
-                    exit = shrinkHorizontally(inlineCoverWidthSpec),
+                    enter = expandHorizontally(coverWidthSpec),
+                    exit = shrinkHorizontally(coverWidthSpec),
                 ) {
                     Spacer(Modifier.width(16.dp))
                 }
                 Column(Modifier.weight(1f)) {
-                    Text("Song $i")
-                    Text("Artist $i", color = colorScheme.primary)
+                    Text(song?.title ?: "Unknown track", maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(
+                        song?.artist ?: "Unknown artist",
+                        color = colorScheme.onPrimaryContainer.copy(0.66f),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
                 }
-                Spacer(Modifier.width(8.dp))
+                Spacer(Modifier.width(4.dp))
                 LikeToggle()
                 AnimatedVisibility(compactPlayPauseVisible) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Spacer(Modifier.width(8.dp))
+                        Spacer(Modifier.width(4.dp))
                         CompactPlayPauseButton()
                     }
                 }
-                Spacer(Modifier.width(8.dp))
+                Spacer(Modifier.width(4.dp))
                 MoreButton()
-                Spacer(Modifier.width(8.dp))
+                Spacer(Modifier.width(16.dp))
             }
         }.single().measure(looseConstraints)
 
@@ -365,7 +479,7 @@ fun ExpandedTimeline(
                 modifier = Modifier.fillMaxWidth(),
                 content = {
                     Row(
-                        Modifier.fillMaxWidth().padding(horizontal = 8.dp)
+                        Modifier.fillMaxWidth().padding(horizontal = 12.dp)
                     ) {
                         Text(
                             text = currentTimeLabel,
@@ -395,7 +509,7 @@ fun ExpandedTimeline(
                         modifier = Modifier
                             .padding(bottom = 4.dp)
                             .clip(RoundedCornerShape(100))
-                            .background(colorScheme.primary.copy(0.1f))
+                            .background(colorScheme.onPrimaryContainer.copy(0.1f))
                             .clickable {}
                             .padding(12.dp, 4.dp),
                     )
@@ -457,8 +571,9 @@ fun ExpandedTimeline(
 fun MoreButton() {
     IconButton(
         onClick = { },
-        modifier = Modifier.height(48.dp).width(32.dp),
-        shapes = IconButtonDefaults.shapes()
+        modifier = Modifier.height(44.dp).width(32.dp),
+        shapes = IconButtonDefaults.shapes(),
+        colors = defaultIconButtonColors()
     ) {
         Icon(
             painterResource(Res.drawable.ic_more_vert),
@@ -479,17 +594,13 @@ fun LikeToggle() {
             checkedShape = RoundedCornerShape(100)
         ),
         interactionSource = interactionSource,
-        colors = IconButtonDefaults.filledTonalIconToggleButtonColors(
-            Color.Transparent,
-            colorScheme.onPrimaryContainer,
-            checkedContentColor = colorScheme.tertiaryContainer,
-            checkedContainerColor = colorScheme.onTertiaryContainer
-        ),
+        colors = favouriteButtonColors(),
     ) {
         SwitchingIcon(
             icon = if (favourite.value) Res.drawable.ic_favorite_filled
             else Res.drawable.ic_favorite,
-            contentDescription = if (favourite.value) "Favourite" else "Unfavourite"
+            contentDescription = if (favourite.value) "Favourite" else "Unfavourite",
+            modifier = Modifier.padding(top = 2.dp)
         )
     }
 }
@@ -643,7 +754,7 @@ private fun PlayerSlider(
         stopIndicatorSize = 3.dp,
         thumbSize = DpSize(4.dp, 24.dp),
         activeColor = colorScheme.primary,
-        inactiveColor = colorScheme.primary.copy(alpha = 0.25f),
+        inactiveColor = colorScheme.onPrimaryContainer.copy(alpha = 0.05f),
     )
 }
 

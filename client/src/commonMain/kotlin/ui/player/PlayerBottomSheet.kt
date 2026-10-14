@@ -27,6 +27,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -44,7 +45,9 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.skydoves.landscapist.core.ImageRequest
+import com.skydoves.landscapist.core.model.ImageResult
 import com.skydoves.landscapist.core.scheduler.DecodePriority
+import com.skydoves.landscapist.image.convertToImageBitmap
 import com.skydoves.landscapist.image.getLandscapist
 import dev.brahmkshatriya.echo.app.ui.components.BetterSheet
 import dev.brahmkshatriya.echo.app.ui.components.BetterSheetScaffold
@@ -65,61 +68,121 @@ val LocalPlayerPadding = compositionLocalOf { PaddingValues.Zero }
 val LocalPlayerSheet = staticCompositionLocalOf<BetterSheet?> { null }
 val LocalInitialPlayerSheetValue = staticCompositionLocalOf { SheetValue.PartiallyExpanded }
 
+data class PlayerQueue(
+    val id: Int,
+    val title: String,
+    val songs: List<Int>,
+    val unshuffledOrder: List<Int> = songs,
+    val shuffleEnabled: Boolean = false,
+    val repeatMode: RepeatMode = RepeatMode.Off,
+)
+
 @Stable
 class PlayerControlsState(songCount: Int) {
     var isPlaying by mutableStateOf(false)
-    var repeatMode by mutableStateOf(RepeatMode.Off)
-    var shuffleEnabled by mutableStateOf(false)
-        private set
     var radioEnabled by mutableStateOf(false)
+    var currentSong by mutableIntStateOf(0)
 
-    // Song IDs stay stable while their positions in the pager/playback list change.
-    private var unshuffledOrder by mutableStateOf((0 until songCount).toList())
-    var playbackOrder by mutableStateOf(unshuffledOrder)
+    // Fixed demo groups and playback order: no per-launch queue generation.
+    private val initialGroups = if (songCount == exampleSongs.size) {
+        exampleQueueGroups
+    } else listOf(ExampleQueueGroup("Sample Playlist", songCount))
+    var queues by mutableStateOf(buildList {
+        var nextSong = 0
+        initialGroups.forEachIndexed { index, group ->
+            val songs = (nextSong until nextSong + group.size).toList()
+            add(PlayerQueue(index, group.title, songs))
+            nextSong += group.size
+        }
+    })
         private set
 
+    val playbackOrder: List<Int> get() = queues.flatMap { it.songs }
     fun songAt(page: Int): Int = playbackOrder.getOrElse(page) { -1 }
-
     fun pageOf(song: Int): Int = playbackOrder.indexOf(song)
+    fun queueFor(song: Int): PlayerQueue? = queues.firstOrNull { song in it.songs }
 
-    fun setShuffle(enabled: Boolean, currentSong: Int) {
-        if (enabled == shuffleEnabled) return
-        shuffleEnabled = enabled
-        playbackOrder = if (enabled) {
-            // Keep the track that is playing, and shuffle the rest once. Navigation
-            // and the queue now both follow this same, persistent order.
-            val remaining = unshuffledOrder.filterNot { it == currentSong }
-            val shuffled = remaining.shuffled()
-            val next = if (remaining.size > 1 && shuffled == remaining) shuffled.reversed() else shuffled
-            listOf(currentSong).filter { it in unshuffledOrder } + next
-        } else {
-            unshuffledOrder
+    val shuffleEnabled: Boolean get() = queueFor(currentSong)?.shuffleEnabled == true
+    var repeatMode: RepeatMode
+        get() = queueFor(currentSong)?.repeatMode ?: RepeatMode.Off
+        set(value) {
+            updateQueue(currentSong) { it.copy(repeatMode = value) }
+        }
+
+    private fun updateQueue(song: Int, transform: (PlayerQueue) -> PlayerQueue) {
+        queues = queues.map { queue ->
+            if (song in queue.songs) transform(queue) else queue
         }
     }
 
-    /** Radio can still choose a new next song, but the queue reflects that choice. */
-    fun selectRadioNext(currentSong: Int) {
-        val currentPage = pageOf(currentSong)
-        if (currentPage < 0 || playbackOrder.size <= 2) return
-        val nextPage = (currentPage + 1) % playbackOrder.size
-        val candidate = playbackOrder.filterNot { it == currentSong }.random()
-        val candidatePage = pageOf(candidate)
-        if (candidatePage == nextPage) return
-        val songs = playbackOrder.toMutableList()
-        songs[candidatePage] = songs[nextPage]
-        songs[nextPage] = candidate
-        playbackOrder = songs
-        if (!shuffleEnabled) unshuffledOrder = songs
+    fun setShuffle(enabled: Boolean, currentSong: Int) {
+        updateQueue(currentSong) { queue ->
+            if (queue.shuffleEnabled == enabled) queue else {
+                val reordered = if (enabled) {
+                    val remaining = queue.unshuffledOrder.filterNot { it == currentSong }
+                    val shuffled = remaining.shuffled()
+                    val next = if (remaining.size > 1 && shuffled == remaining) shuffled.reversed() else shuffled
+                    listOf(currentSong) + next
+                } else queue.unshuffledOrder
+                queue.copy(songs = reordered, shuffleEnabled = enabled)
+            }
+        }
     }
 
-    /** Move any queue entry, including the playing song, keeping its stable song ID. */
+    /** Radio only changes the upcoming song within the playing queue. */
+    fun selectRadioNext(song: Int) {
+        updateQueue(song) { queue ->
+            val position = queue.songs.indexOf(song)
+            if (position < 0 || queue.songs.size <= 2) return@updateQueue queue
+            val nextIndex = if (position == queue.songs.lastIndex) {
+                if (queue.repeatMode == RepeatMode.Off) return@updateQueue queue else 0
+            } else position + 1
+            // Rotate a subsequent song into the next slot predictably. Radio
+            // should not randomly reshuffle the sample queue on every run.
+            val candidateIndex = (nextIndex + 1) % queue.songs.size
+            if (candidateIndex == position || candidateIndex == nextIndex) queue else {
+                val songs = queue.songs.toMutableList()
+                songs[candidateIndex] = songs[nextIndex]
+                songs[nextIndex] = queue.songs[candidateIndex]
+                queue.copy(songs = songs, unshuffledOrder = if (queue.shuffleEnabled) queue.unshuffledOrder else songs)
+            }
+        }
+    }
+
+    /** The target is a global playback index, but it must belong to the same queue. */
     fun moveQueueSong(fromSong: Int, toIndex: Int) {
-        val songs = playbackOrder.toMutableList()
-        val from = songs.indexOf(fromSong)
-        if (from == -1 || toIndex !in songs.indices || from == toIndex) return
-        songs.add(toIndex, songs.removeAt(from))
-        playbackOrder = songs
-        if (!shuffleEnabled) unshuffledOrder = songs
+        val target = songAt(toIndex)
+        val fromQueue = queueFor(fromSong) ?: return
+        if (queueFor(target)?.id != fromQueue.id) return
+        updateQueue(fromSong) { queue ->
+            val from = queue.songs.indexOf(fromSong)
+            val to = queue.songs.indexOf(target)
+            if (from < 0 || to < 0 || from == to) queue else {
+                val songs = queue.songs.toMutableList().apply { add(to, removeAt(from)) }
+                queue.copy(songs = songs, unshuffledOrder = if (queue.shuffleEnabled) queue.unshuffledOrder else songs)
+            }
+        }
+    }
+
+    /** Repeat is local to a queue. Only repeat-off can advance into the next queue. */
+    fun nextSong(song: Int = currentSong): Int? {
+        val queueIndex = queues.indexOfFirst { song in it.songs }
+        if (queueIndex < 0) return null
+        val queue = queues[queueIndex]
+        val position = queue.songs.indexOf(song)
+        if (position < queue.songs.lastIndex) return queue.songs[position + 1]
+        if (queue.repeatMode != RepeatMode.Off) return queue.songs.firstOrNull()
+        return queues.getOrNull(queueIndex + 1)?.songs?.firstOrNull()
+    }
+
+    fun previousSong(song: Int = currentSong): Int? {
+        val queueIndex = queues.indexOfFirst { song in it.songs }
+        if (queueIndex < 0) return null
+        val queue = queues[queueIndex]
+        val position = queue.songs.indexOf(song)
+        if (position > 0) return queue.songs[position - 1]
+        if (queue.repeatMode != RepeatMode.Off) return queue.songs.lastOrNull()
+        return queues.getOrNull(queueIndex - 1)?.songs?.lastOrNull()
     }
 }
 
@@ -127,6 +190,7 @@ enum class RepeatMode { Off, All, One }
 
 val LocalPlayerPagerState = staticCompositionLocalOf<PagerState?> { null }
 val LocalPlayerControls = staticCompositionLocalOf<PlayerControlsState?> { null }
+internal val LocalPlayerSkipNavigator = staticCompositionLocalOf<PlayerSkipNavigator?> { null }
 internal val LocalPlayerQueueTransition = staticCompositionLocalOf<PlayerPillTransition?> { null }
 val LocalPlayerLyricsVisible =
     staticCompositionLocalOf<androidx.compose.runtime.MutableState<Boolean>?> { null }
@@ -141,12 +205,17 @@ fun ProvidePlayerControls(
 ) {
     val lyricsVisible = rememberSaveable { mutableStateOf(false) }
     val lyricsChromeCollapsed = rememberSaveable { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    val skipNavigator = remember(pagerState, controls) {
+        PlayerSkipNavigator(pagerState, controls, scope)
+    }
     // A queue opened on one song remains the same overlay on every pager page.
     val queueTransition = rememberPlayerPillTransition("queue")
     PreloadAdjacentPlayerArtwork(pagerState, controls)
     CompositionLocalProvider(
         LocalPlayerPagerState provides pagerState,
         LocalPlayerControls provides controls,
+        LocalPlayerSkipNavigator provides skipNavigator,
         LocalPlayerQueueTransition provides queueTransition,
         LocalPlayerLyricsVisible provides lyricsVisible,
         LocalPlayerLyricsChromeCollapsed provides lyricsChromeCollapsed,
@@ -154,15 +223,8 @@ fun ProvidePlayerControls(
     )
 }
 
-val LocalPlayerItems = staticCompositionLocalOf {
-    listOf(
-        "https://i1.sndcdn.com/artworks-f5P5EvBt5Qu57jLk-UNArNA-t1080x1080.jpg",
-        "https://i1.sndcdn.com/artworks-mJmURREt59PyaXxx-nhowNw-t1080x1080.png",
-        "https://i1.sndcdn.com/artworks-GzqTFOMbFiXRz5LL-G1R9uA-t1080x1080.jpg",
-        "https://i1.sndcdn.com/artworks-UbVxfud5u7hzFUPc-pxSyCg-t1080x1080.png",
-        "https://i1.sndcdn.com/artworks-7C8GJbswfVyxJ0z6-r5FPkQ-t1080x1080.png"
-    )
-}
+// Preserve the artwork URL list type used by the pager and image preloader.
+val LocalPlayerItems = staticCompositionLocalOf { exampleSongs.map { it.artworkUrl } }
 
 @Composable
 private fun PreloadAdjacentPlayerArtwork(pagerState: PagerState, controls: PlayerControlsState) {
@@ -172,7 +234,7 @@ private fun PreloadAdjacentPlayerArtwork(pagerState: PagerState, controls: Playe
         maxSongCoverSize.dp.roundToPx().coerceAtLeast(1)
     }
 
-    LaunchedEffect(pagerState, artworks, landscapist, requestSize) {
+    LaunchedEffect(pagerState, controls, artworks, landscapist, requestSize) {
         snapshotFlow { pagerState.currentPage to controls.playbackOrder }.collectLatest { (currentPage, order) ->
             val adjacentPages = listOf(currentPage - 1, currentPage + 1)
                 .mapNotNull { order.getOrNull(it) }
@@ -181,13 +243,26 @@ private fun PreloadAdjacentPlayerArtwork(pagerState: PagerState, controls: Playe
             coroutineScope {
                 adjacentPages.forEach { page ->
                     launch {
+                        val artworkModel = artworks[page]
                         landscapist.load(
                             ImageRequest.builder()
-                                .model(artworks[page])
+                                .model(artworkModel)
                                 .size(requestSize, requestSize)
                                 .priority(DecodePriority.LOW)
                                 .build()
-                        ).collect { }
+                        ).collect { result ->
+                            if (result is ImageResult.Success && result.isFinal) {
+                                val artwork = convertToImageBitmap(result.data) ?: return@collect
+                                cachePlayerArtwork(artworkModel, artwork)
+                                // Loading an image alone didn't help the first
+                                // frame: the palette was generated only when
+                                // the next pager page was composed. Generate
+                                // it here, before Next/Previous is tapped.
+                                if (cachedPlayerArtworkPalette(artworkModel) == null) {
+                                    prefetchPlayerArtworkPalette(artworkModel, artwork)
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -275,13 +350,11 @@ fun PlayerBottomSheet(
     ) {
         val artWorks = LocalPlayerItems.current
         val controls = remember(artWorks.size) { PlayerControlsState(artWorks.size) }
-        val pagerState = rememberPagerState(2, pageCount = { artWorks.size })
-        var currentSong by remember(controls) {
-            mutableIntStateOf(controls.songAt(pagerState.currentPage))
-        }
+        val pagerState = rememberPagerState(0, pageCount = { artWorks.size })
+        val currentSong = controls.currentSong
         LaunchedEffect(pagerState, controls) {
             snapshotFlow { pagerState.currentPage }.collect { page ->
-                currentSong = controls.songAt(page)
+                controls.currentSong = controls.songAt(page)
             }
         }
         val pageScrolledToTop = remember { mutableStateMapOf<Int, Boolean>() }
@@ -334,6 +407,7 @@ fun PlayerBottomSheet(
                     val queueViewport = Size(constraints.maxWidth.toFloat(), constraints.maxHeight.toFloat())
                     ProvidePlayerControls(pagerState, controls) {
                         val queueTransition = LocalPlayerQueueTransition.current
+                        val skipNavigator = LocalPlayerSkipNavigator.current
                         Box(Modifier.fillMaxSize()) {
                           HorizontalPager(
                             pagerState,
@@ -350,7 +424,7 @@ fun PlayerBottomSheet(
                             Box(Modifier.fillMaxSize().blurFadePagerTransition(pagerState, page) {
                                 if (betterSheet.backProgressState.floatValue > 0f) 0f
                                 else betterSheet.progressState.floatValue.coerceIn(0f, 1f)
-                            }) {
+                            }.animatedSkipEntrance(skipNavigator, song)) {
                                 PlayerItem(
                                     i = song,
                                     onScrolledToTopChanged = { scrolledToTop ->
@@ -373,11 +447,7 @@ fun PlayerBottomSheet(
                                     viewport = queueViewport,
                                     currentSong = currentSong,
                                     onSongSelected = { song ->
-                                        val page = controls.pageOf(song)
-                                        if (page >= 0) {
-                                            currentSong = song
-                                            pagerState.requestScrollToPage(page)
-                                        }
+                                        skipNavigator?.selectSong(song)
                                     },
                                 )
                             }
