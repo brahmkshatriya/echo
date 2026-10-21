@@ -26,6 +26,11 @@ android {
     }
 
     buildTypes {
+        debug {
+            // Separate app ID so this build installs alongside the official Echo.
+            applicationIdSuffix = ".fix"
+            resValue("string", "app_name", "Echo Fix")
+        }
         release {
             isMinifyEnabled = true
             isShrinkResources = true

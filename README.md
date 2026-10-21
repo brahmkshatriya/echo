@@ -1,3 +1,5 @@
+> **Fork note:** this fork by [@allworkdone](https://github.com/allworkdone) removes the storage-not-low condition on downloads, which kept downloads stuck on some phones. Debug builds install as **Echo Fix** alongside the official app.
+
 # Echo: Music Player
 
 <p>

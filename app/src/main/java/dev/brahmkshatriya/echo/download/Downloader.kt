@@ -93,7 +93,9 @@ class Downloader(
     private val workManager by lazy { WorkManager.getInstance(app.context) }
     private fun ensureWorker() {
         val request = OneTimeWorkRequestBuilder<DownloadWorker>()
-            .setConstraints(Constraints(NetworkType.CONNECTED, requiresStorageNotLow = true))
+            // Storage-not-low removed: some phones report "low" with GBs free,
+            // which kept the download job waiting forever with no error shown.
+            .setConstraints(Constraints(NetworkType.CONNECTED))
             .addTag(TAG)
             .build()
         workManager.enqueueUniqueWork(TAG, ExistingWorkPolicy.KEEP, request)
