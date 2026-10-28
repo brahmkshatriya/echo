@@ -2,7 +2,9 @@ package dev.brahmkshatriya.echo.app.ui.main
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -28,6 +30,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialShapes.Companion.Circle
 import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.material3.MaterialTheme.motionScheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -47,7 +50,7 @@ import androidx.compose.material3.rememberTooltipState
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableFloatState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -82,7 +85,7 @@ fun MainSideNavigation(
     isVisible: Boolean,
     wasVisible: Boolean,
     showNavigationBar: Boolean,
-    sheetProgress: MutableFloatState,
+    sheetProgress: State<Float>,
     selected: MainRoute?,
     onSelected: (MainRoute) -> Unit,
 ) {
@@ -116,7 +119,7 @@ fun MainSideNavigation(
                     .padding(horizontal = 8.dp)
                     .graphicsLayer {
                         compositingStrategy = CompositingStrategy.ModulateAlpha
-                        val positiveProgress = sheetProgress.floatValue.coerceAtLeast(0f)
+                        val positiveProgress = sheetProgress.value.coerceAtLeast(0f)
                         val transitionValue = maxOf(positiveProgress, animated.value)
                         alpha = 1 - transitionValue * 1.15f
                         translationY = size.height * transitionValue
@@ -142,7 +145,7 @@ fun MainSideNavigation(
                             indicatorColor = colorScheme.primaryFixedDim
                         ),
                         modifier = Modifier.graphicsLayer {
-                            val positiveProgress = sheetProgress.floatValue.coerceAtLeast(0f)
+                            val positiveProgress = sheetProgress.value.coerceAtLeast(0f)
                             val transitionValue = maxOf(positiveProgress, animated.value)
                             translationY = transitionValue * size.height * i / 2
                         }
@@ -159,7 +162,7 @@ fun MainSideNavigation(
                 Modifier.padding(top = 8.dp)
                     .graphicsLayer {
                         compositingStrategy = CompositingStrategy.ModulateAlpha
-                        val positiveProgress = sheetProgress.floatValue.coerceAtLeast(0f)
+                        val positiveProgress = sheetProgress.value.coerceAtLeast(0f)
                         val transitionValue = maxOf(positiveProgress, animated.value)
                         alpha = 1 - transitionValue * 1.15f
                         translationX = -size.width * transitionValue
@@ -185,7 +188,7 @@ fun MainSideNavigation(
                             indicatorColor = colorScheme.primaryFixedDim
                         ),
                         modifier = Modifier.graphicsLayer {
-                            val positiveProgress = sheetProgress.floatValue.coerceAtLeast(0f)
+                            val positiveProgress = sheetProgress.value.coerceAtLeast(0f)
                             val transitionValue = maxOf(positiveProgress, animated.value)
                             translationX = transitionValue * -size.width * i / 2
                         }
@@ -210,6 +213,14 @@ fun ExtensionSelectorFABMenu(
     }
     val selected = items[1]
     var fabMenuExpanded by rememberSaveable { mutableStateOf(false) }
+    // Keep items through their exit animation, then detach them. Invisible
+    // Material menu items still read layout rulers whenever this page moves.
+    val menuTransition = updateTransition(fabMenuExpanded, label = "Extensions menu items")
+    menuTransition.animateFloat(
+        transitionSpec = { motionScheme.slowEffectsSpec() },
+        label = "Retain exiting menu items",
+    ) { expanded -> if (expanded) 1f else 0f }
+    val itemsMounted = menuTransition.currentState || menuTransition.targetState
     FloatingActionButtonMenu(
         expanded = fabMenuExpanded,
         modifier = Modifier.align(Alignment.BottomEnd),
@@ -259,6 +270,7 @@ fun ExtensionSelectorFABMenu(
             }
         },
     ) {
+        if (!itemsMounted) return@FloatingActionButtonMenu
         items.forEachIndexed { _, item ->
             FloatingActionButtonMenuItem(
                 containerColor = if (item == selected) colorScheme.tertiary

@@ -40,6 +40,7 @@ private fun variableTextUniformFontKey(weight: Int, width: Int): Int =
 
 @Composable
 internal actual fun VariableText(
+    modifier: Modifier,
     text: String,
     peakPosition: () -> Float?,
     glyphXPositions: FloatArray,
@@ -49,6 +50,7 @@ internal actual fun VariableText(
     horizontalRevealPosition: (() -> Float?)?,
     bloom: (() -> LyricsBloom?)?,
     horizontalRevealFeather: Float,
+    unrevealedAlpha: () -> Float,
     offsetX: Float,
     offsetY: Float,
     color: Color,
@@ -59,8 +61,13 @@ internal actual fun VariableText(
     scaleFromBottom: Boolean,
     uniformLines: (() -> List<String>)?,
     lineHeight: TextUnit,
-    modifier: Modifier,
 ) {
+    if (remember(text) { text.any { it.code > 0x7f } }) {
+        ShapedVariableText(text, peakPosition, glyphXPositions, glyphBaselines, glyphPeakPositions,
+            horizontalRevealPosition, bloom, unrevealedAlpha, offsetX, offsetY, color, fontSize,
+            uniformWeight, uniformWidth, fontScale, scaleFromBottom, uniformLines, lineHeight, modifier)
+        return
+    }
     val assets = LocalContext.current.assets
     val density = LocalDensity.current
     val fontSizePx = with(density) {
@@ -72,6 +79,9 @@ internal actual fun VariableText(
     val glyphTexts = remember(text) { text.map { it.toString() } }
     val cache = remember(assets, fontSizePx) {
         VariableLyricsAndroidFontCache(assets, fontSizePx)
+    }
+    val frameFonts = remember(text, cache) {
+        arrayOfNulls<VariableLyricsAndroidFont>(text.length)
     }
 
     Canvas(modifier) {
@@ -115,14 +125,17 @@ internal actual fun VariableText(
         val peakPosition = peakPosition()
         val revealPosition = horizontalRevealPosition?.invoke()
         if (peakPosition != null && revealPosition != null) {
+            frameFonts.fill(null)
             fun peakPositionFor(index: Int) =
                 glyphPeakPositions?.getOrNull(index) ?: index.toFloat()
 
-            fun fontFor(index: Int) = cache.fontFor(
+            // The base, reveal and halo all draw the same glyph shape. Resolve
+            // its animated font once per frame, including every halo ring.
+            fun fontFor(index: Int) = frameFonts[index] ?: cache.fontFor(
                 position = peakPositionFor(index),
                 peakPosition = peakPosition,
                 lastPosition = lastPosition,
-            )
+            ).also { frameFonts[index] = it }
 
             fun drawGlyph(index: Int, alpha: Float) {
                 cache.drawPaint.typeface = fontFor(index).typeface
@@ -186,8 +199,9 @@ internal actual fun VariableText(
 
             drawBloom()
             cache.drawPaint.shader = null
+            val baseAlpha = unrevealedAlpha().coerceIn(0f, 1f)
             glyphTexts.indices.forEach { index ->
-                drawGlyph(index, LyricsMinAlpha)
+                drawGlyph(index, baseAlpha)
             }
 
             val clampedReveal = revealPosition.coerceIn(0f, glyphTexts.size.toFloat())
@@ -290,9 +304,7 @@ private class VariableLyricsAndroidFontCache(
         textSize = fontSize
         isSubpixelText = true
         isLinearText = true
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-            hinting = Paint.HINTING_OFF
-        }
+        hinting = Paint.HINTING_OFF
     }
 
     fun uniformTypeface(weight: Int, width: Int): Typeface =

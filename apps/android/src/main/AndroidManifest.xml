@@ -40,6 +40,14 @@
         android:theme="@style/Base.Theme.Echo"
         android:usesCleartextTraffic="true"
         tools:ignore="UnusedAttribute">
+        <service
+            android:name="dev.brahmkshatriya.echo.app.playback.EchoPlaybackService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback">
+            <intent-filter>
+                <action android:name="androidx.media3.session.MediaSessionService" />
+            </intent-filter>
+        </service>
         <activity
             android:name="dev.brahmkshatriya.echo.MainActivity"
             android:exported="true"

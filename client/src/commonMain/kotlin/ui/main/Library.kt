@@ -10,32 +10,40 @@ import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.materialkolor.ktx.animateColorScheme
-import dev.brahmkshatriya.echo.app.ui.player.LocalNowPlayingControls
-import dev.brahmkshatriya.echo.app.ui.player.song.LocalPlayerItems
+import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerControls
 import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerSheet
+import dev.brahmkshatriya.echo.app.ui.player.artwork.LocalPlayerFavouriteAccent
+import dev.brahmkshatriya.echo.app.ui.player.artwork.artworkColorScheme
+import dev.brahmkshatriya.echo.app.ui.player.artwork.cachedPlayerArtworkPalette
+import dev.brahmkshatriya.echo.app.ui.player.artwork.favouriteArtworkAccent
 import dev.brahmkshatriya.echo.app.ui.player.song.KineticShapesBackground
-import dev.brahmkshatriya.echo.app.ui.player.song.LocalPlayerFavouriteAccent
-import dev.brahmkshatriya.echo.app.ui.player.song.artworkColorScheme
-import dev.brahmkshatriya.echo.app.ui.player.song.cachedPlayerArtworkPalette
-import dev.brahmkshatriya.echo.app.ui.player.song.favouriteArtworkAccent
+import dev.brahmkshatriya.echo.app.ui.player.song.lyrics.MotionLyrics
+import dev.brahmkshatriya.echo.app.ui.player.song.lyrics.rememberLyricsSelections
+import dev.brahmkshatriya.echo.app.ui.player.song.lyrics.rememberMotionLyricsPosition
 
 /** Full-page physics playground, using the same rounded page frame as Test(). */
 @Composable
 fun Library() {
     val playerExpanded = LocalPlayerSheet.current?.isExpandedState?.value == true
-    val currentSong = LocalNowPlayingControls.current?.currentSong ?: 0
-    val artwork = LocalPlayerItems.current.getOrNull(currentSong)
+    val currentEntryId = LocalPlayerControls.current.currentEntryId
+    val artwork = LocalPlayerControls.current.mediaFor(currentEntryId)?.artworkUri
     val palette = artwork?.let(::cachedPlayerArtworkPalette)
-    val seed = artwork?.hashCode() ?: 0
+    val seed = artwork.hashCode()
     val dark = isSystemInDarkTheme()
     val scheme = remember(palette, dark, seed) {
         palette.artworkColorScheme(dark, seed)
     }
     val favouriteAccent = remember(palette, seed) { palette.favouriteArtworkAccent(seed) }
+    val lyricsSelections = rememberLyricsSelections()
+    val selectedIndex = dev.brahmkshatriya.echo.app.ui.player.LocalPlayerPresentation.current
+        .lyricsSource(LocalPlayerControls.current.mediaFor(currentEntryId)?.id)
+    val lyrics = selectedIndex?.let(lyricsSelections::getOrNull)?.lyrics
+    val positionMs = rememberMotionLyricsPosition(currentEntryId, active = !playerExpanded)
 
     CompositionLocalProvider(LocalPlayerFavouriteAccent provides favouriteAccent) {
         MaterialExpressiveTheme(animateColorScheme(scheme)) {
@@ -46,6 +54,11 @@ fun Library() {
                     .clip(shapes.large),
             ) {
                 KineticShapesBackground(artworkKey = artwork.orEmpty(), active = !playerExpanded)
+                MotionLyrics(
+                    lyrics = lyrics,
+                    positionMs = positionMs,
+                    modifier = Modifier.align(Alignment.Center).fillMaxSize().padding(24.dp),
+                )
             }
         }
     }

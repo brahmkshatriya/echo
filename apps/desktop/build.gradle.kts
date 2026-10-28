@@ -12,24 +12,6 @@ kotlin {
     desktopNative {
         binaries.executable {
             entryPoint = "dev.brahmkshatriya.echo.main"
-            when {
-                System.getProperty("os.name").startsWith("Mac", ignoreCase = true) -> {
-                    val sdlLibraryDir = providers.environmentVariable("SDL3_LIBRARY_DIR").orNull
-                    if (sdlLibraryDir != null) linkerOpts("-L$sdlLibraryDir")
-                    linkerOpts("-lSDL3")
-                }
-
-                System.getProperty("os.name").startsWith("Linux", ignoreCase = true) -> {
-                    val libraryDirs =
-                        providers.environmentVariable("LINUX_NATIVE_LIBRARY_DIRS").orNull
-                            ?.split(':')
-                            ?.filter(String::isNotBlank)
-                            .orEmpty()
-                            .ifEmpty { listOf("/usr/lib") }
-                    libraryDirs.forEach { linkerOpts("-L$it") }
-                    linkerOpts("-lEGL")
-                }
-            }
         }
     }
 
@@ -55,8 +37,4 @@ composeNativeApplication {
     categories.set(listOf("AudioVideo", "Audio", "Player"))
     startupWmClass.set("Echo")
     iconFile.set(rootProject.layout.projectDirectory.file("apps/android/src/main/ic_launcher-playstore.png"))
-
-    providers.environmentVariable("LINUX_ARM64_RUNTIME_DIR").orNull?.let {
-        linuxArm64RuntimeFiles.from(file(it))
-    }
 }

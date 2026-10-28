@@ -13,7 +13,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -37,7 +36,6 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -112,9 +110,9 @@ internal val LyricsPosition.textAlign: TextAlign
 
 @Composable
 internal fun LyricsSelectionPillContent(
+    modifier: Modifier = Modifier,
     selectedLyrics: LyricsSelectionItem?,
     chromeCollapsed: Boolean = false,
-    modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier
@@ -155,7 +153,6 @@ internal fun LyricsSelectionPillContent(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun LyricsSelectionPage(
     selectedLyrics: LyricsSelectionItem?,
@@ -323,7 +320,6 @@ private fun LyricsSelectionRow(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun LyricsSelectionSearchBar(
     modifier: Modifier = Modifier,

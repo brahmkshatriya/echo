@@ -68,6 +68,7 @@ internal fun lyricsRoundnessAt(
 @Suppress("KotlinNoActualForExpect")
 @Composable
 internal expect fun VariableText(
+    modifier: Modifier = Modifier,
     text: String,
     peakPosition: () -> Float?,
     glyphXPositions: FloatArray,
@@ -77,6 +78,7 @@ internal expect fun VariableText(
     horizontalRevealPosition: (() -> Float?)? = null,
     bloom: (() -> LyricsBloom?)? = null,
     horizontalRevealFeather: Float = 0.45f,
+    unrevealedAlpha: () -> Float = { LyricsMinAlpha },
     offsetX: Float = 0f,
     offsetY: Float = 0f,
     color: Color,
@@ -87,5 +89,4 @@ internal expect fun VariableText(
     scaleFromBottom: Boolean = false,
     uniformLines: (() -> List<String>)? = null,
     lineHeight: TextUnit = TextUnit.Unspecified,
-    modifier: Modifier = Modifier,
 )

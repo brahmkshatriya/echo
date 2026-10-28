@@ -8,6 +8,8 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.ClipEntry
+import androidx.compose.ui.platform.Clipboard
 
 private object WasmPlatform : Platform {
     override val name: String = "WebAssembly"
@@ -86,3 +88,7 @@ private fun acquireScreenWakeLock(): () -> Unit = js(
         };
     })()"""
 )
+
+internal actual suspend fun Clipboard.setPlainText(text: String) {
+    setClipEntry(ClipEntry.withPlainText(text))
+}

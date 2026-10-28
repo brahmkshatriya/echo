@@ -11,7 +11,6 @@ import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -23,35 +22,33 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
-import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.withSaveLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.rememberTextMeasurer
-import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import dev.brahmkshatriya.echo.app.platform.LyricsMinAlpha
 import dev.brahmkshatriya.echo.app.platform.VariableText
-import dev.brahmkshatriya.echo.app.ui.player.PlayerTimelineState
-import dev.brahmkshatriya.echo.app.ui.theme.googleSansFontFamily
+import dev.brahmkshatriya.echo.app.playback.PlayerTimelineState
 
 // Timed lyrics and the kinetic-shapes view share one viewport fade geometry.
 internal val FullLyricsTopFadeHeight = 130.dp
 internal val FullLyricsBottomFadeHeight = 160.dp
+
+private enum class LyricsLinePeakRegion { Before, Within, After }
 
 @Composable
 internal fun FullLyricsGapIndicator(
@@ -75,10 +72,11 @@ internal fun FullLyricsGapIndicator(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(FullLyricsGapIndicatorHeight * expansion.value)
-            .padding(top = 16.dp * expansion.value)
+            .height(FullLyricsGapIndicatorHeight)
+            .padding(top = 16.dp)
             .graphicsLayer {
                 this.alpha = alpha.value
+                scaleY = expansion.value
                 clip = true
             },
         contentAlignment = Alignment.Center,
@@ -93,20 +91,20 @@ internal fun FullLyricsGapIndicator(
 @Composable
 internal fun FullLyricsTimelineGapIndicator(
     waitingGap: LyricsWaitingGap,
-    timelineState: PlayerTimelineState,
+    positionMs: State<Long>,
     isPlaying: Boolean,
     autoScrollSuppressed: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    val visible by remember(waitingGap, timelineState, autoScrollSuppressed) {
+    val visible by remember(waitingGap, positionMs, autoScrollSuppressed) {
         derivedStateOf {
             !autoScrollSuppressed &&
-                    waitingGap.isVisibleInFullLyrics(timelineState.positionMs.toLong())
+                    waitingGap.isVisibleInFullLyrics(positionMs.value)
         }
     }
-    val animated by remember(waitingGap, timelineState, isPlaying) {
+    val animated by remember(waitingGap, positionMs, isPlaying) {
         derivedStateOf {
-            isPlaying && waitingGap.contains(timelineState.positionMs.toLong())
+            isPlaying && waitingGap.contains(positionMs.value)
         }
     }
     FullLyricsGapIndicator(
@@ -119,113 +117,68 @@ internal fun FullLyricsTimelineGapIndicator(
 internal fun Modifier.lyricsEdgeFade(
     topFadeHeight: Dp = 64.dp,
     bottomFadeHeight: Dp = topFadeHeight,
-): Modifier = graphicsLayer {
-    compositingStrategy = CompositingStrategy.Offscreen
-}.drawWithCache {
-    val top = topFadeHeight.toPx().coerceIn(0f, size.height)
-    val bottom = bottomFadeHeight.toPx().coerceIn(0f, size.height)
-    val topMask = if (top > 0f) {
-        Brush.verticalGradient(
-            colors = listOf(Color.Transparent, Color.Black),
-            startY = 0f,
-            endY = top,
-        )
-    } else null
-    val bottomMask = if (bottom > 0f) {
-        Brush.verticalGradient(
-            colors = listOf(Color.Black, Color.Transparent),
-            startY = size.height - bottom,
-            endY = size.height,
-        )
-    } else null
-
-    onDrawWithContent {
-        drawContent()
-
-        if (top > 0f) {
-            drawRect(
-                brush = topMask!!,
-                size = Size(size.width, top),
-                blendMode = BlendMode.DstIn,
+    viewportHeightPx: (() -> Float)? = null,
+    backgroundColor: Color = Color.Unspecified,
+): Modifier {
+    val masked = backgroundColor == Color.Unspecified
+    val layer = if (masked) graphicsLayer {
+        compositingStrategy = CompositingStrategy.Offscreen
+    } else this
+    return layer.drawWithCache {
+        val top = topFadeHeight.toPx().coerceIn(0f, size.height)
+        val bottom = bottomFadeHeight.toPx().coerceIn(0f, size.height)
+        val blendMode = if (masked) BlendMode.DstIn else BlendMode.SrcOver
+        val edgeStart = if (masked) Color.Transparent else backgroundColor
+        val edgeEnd = if (masked) Color.Black else backgroundColor.copy(alpha = 0f)
+        val topMask = if (top > 0f) {
+            Brush.verticalGradient(
+                colors = listOf(edgeStart, edgeEnd),
+                startY = 0f,
+                endY = top,
             )
-        }
-
-        if (bottom > 0f) {
-            val topY = size.height - bottom
-            drawRect(
-                brush = bottomMask!!,
-                topLeft = Offset(0f, topY),
-                size = Size(size.width, bottom),
-                blendMode = BlendMode.DstIn,
+        } else null
+        val bottomMask = if (bottom > 0f) {
+            Brush.verticalGradient(
+                colors = listOf(edgeEnd, edgeStart),
+                startY = 0f,
+                endY = bottom,
             )
+        } else null
+
+        onDrawWithContent {
+            drawContent()
+
+            if (top > 0f) {
+                drawRect(
+                    brush = topMask!!,
+                    size = Size(size.width, top),
+                    blendMode = blendMode,
+                )
+            }
+
+            if (bottom > 0f) {
+                val height = (viewportHeightPx?.invoke() ?: size.height).coerceIn(0f, size.height)
+                translate(top = height - bottom) {
+                    drawRect(
+                        brush = bottomMask!!,
+                        size = Size(size.width, bottom),
+                        blendMode = blendMode,
+                    )
+                }
+            }
         }
     }
 }
 
-internal fun Modifier.lyricsItemEdgeFade(
+/** Cull buffered rows without creating an offscreen layer for each edge row. */
+internal fun Modifier.lyricsItemViewport(
     itemTopPx: () -> Float,
     viewportHeightPx: () -> Float,
-    topFadePx: Float,
-    bottomFadePx: Float,
 ): Modifier = drawWithCache {
-    val layerBounds = Rect(Offset.Zero, size)
-    val layerPaint = Paint()
-
     onDrawWithContent {
         val itemTop = itemTopPx()
         val viewportHeight = viewportHeightPx().coerceAtLeast(0f)
-        val itemBottom = itemTop + size.height
-        val bottomFadeStart = viewportHeight - bottomFadePx
-        val intersectsTop = topFadePx > 0f && itemTop < topFadePx && itemBottom > 0f
-        val intersectsBottom = bottomFadePx > 0f &&
-                itemTop < viewportHeight && itemBottom > bottomFadeStart
-
-        if (!intersectsTop && !intersectsBottom) {
-            drawContent()
-            return@onDrawWithContent
-        }
-
-        drawContext.canvas.withSaveLayer(layerBounds, layerPaint) {
-            drawContent()
-
-            if (intersectsTop) {
-                val gradientStart = -itemTop
-                val gradientEnd = topFadePx - itemTop
-                val localStart = gradientStart.coerceAtLeast(0f)
-                val localEnd = gradientEnd.coerceAtMost(size.height)
-                if (localEnd > localStart) {
-                    drawRect(
-                        brush = Brush.verticalGradient(
-                            colors = listOf(Color.Transparent, Color.Black),
-                            startY = gradientStart,
-                            endY = gradientEnd,
-                        ),
-                        topLeft = Offset(0f, localStart),
-                        size = Size(size.width, localEnd - localStart),
-                        blendMode = BlendMode.DstIn,
-                    )
-                }
-            }
-
-            if (intersectsBottom) {
-                val gradientStart = bottomFadeStart - itemTop
-                val gradientEnd = viewportHeight - itemTop
-                val localStart = gradientStart.coerceAtLeast(0f)
-                val localEnd = gradientEnd.coerceAtMost(size.height)
-                if (localEnd > localStart) {
-                    drawRect(
-                        brush = Brush.verticalGradient(
-                            colors = listOf(Color.Black, Color.Transparent),
-                            startY = gradientStart,
-                            endY = gradientEnd,
-                        ),
-                        topLeft = Offset(0f, localStart),
-                        size = Size(size.width, localEnd - localStart),
-                        blendMode = BlendMode.DstIn,
-                    )
-                }
-            }
-        }
+        if (itemTop + size.height > 0f && itemTop < viewportHeight) drawContent()
     }
 }
 
@@ -233,18 +186,20 @@ internal fun Modifier.lyricsItemEdgeFade(
 internal fun FullTimedLyricsLine(
     timingIndex: LyricsTimingIndex,
     lineTiming: WordLineTiming,
+    lineLayout: FullLyricsLineLayout,
     timelineState: PlayerTimelineState,
+    positionMs: State<Long>,
     isActive: Boolean,
     isPast: Boolean,
-    isLatestCompleted: Boolean,
     onClick: () -> Unit,
 ) {
     val line = lineTiming.line
-    val lineAlpha by animateFloatAsState(
-        targetValue = if (isActive || isPast) 1f else 0.32f,
+    val bloomStrength = rememberLyricsBloomStrength()
+    val lineEmphasis = animateFloatAsState(
+        targetValue = if (isActive || isPast) 1f else 0f,
         animationSpec = tween(360, easing = FastOutSlowInEasing)
     )
-    val lyricColor = colorScheme.onPrimaryContainer
+    val lyricColor = colorScheme.onSurface
     val interactionSource = remember(line) { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -259,94 +214,87 @@ internal fun FullTimedLyricsLine(
     val lineText = lineTiming.text
     val textAlign = line.position.textAlign
 
+    val rowHeight = with(LocalDensity.current) { lineLayout.heightPx.toDp() }
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .height(rowHeight)
             .background(
                 lyricColor.copy(alpha = interactionAlpha),
                 RoundedCornerShape(8.dp)
             ).graphicsLayer {
-                alpha = lineAlpha
+                alpha = 0.32f + 0.68f * lineEmphasis.value
             }.clickable(
                 interactionSource = interactionSource,
                 indication = null,
                 onClick = onClick
             )
-            .padding(horizontal = 8.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+            .padding(FullLyricsLinePadding),
+        verticalArrangement = Arrangement.spacedBy(FullLyricsAuxiliaryGap)
     ) {
-        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        Box(modifier = Modifier.fillMaxWidth()) {
             val density = LocalDensity.current
-            val maxWidthPx = with(density) { maxWidth.roundToPx() }
-            val referenceFontFamily = googleSansFontFamily()
-            val textMeasurer = rememberTextMeasurer()
-            val referenceStyle = typography.headlineMedium.copy(
-                fontFamily = referenceFontFamily,
-                fontWeight = FontWeight.Normal,
-                fontFeatureSettings = "liga 0, kern 1",
-                lineHeight = typography.headlineLarge.lineHeight,
-                textAlign = textAlign,
-            )
-            val referenceLayout = remember(
-                lineText,
-                maxWidthPx,
-                referenceStyle,
-                textMeasurer,
-            ) {
-                textMeasurer.measure(
-                    text = lineText,
-                    style = referenceStyle,
-                    softWrap = true,
-                    maxLines = Int.MAX_VALUE,
-                    constraints = Constraints(
-                        minWidth = maxWidthPx,
-                        maxWidth = maxWidthPx,
-                    ),
-                )
-            }
+            val referenceLayout = lineLayout.textLayout
+            val referenceStyle = referenceLayout.layoutInput.style
             val textHeight = with(density) { referenceLayout.size.height.toDp() }
 
-            if ((isActive || isPast) && lineText.isNotEmpty()) {
-                val peakPosition = remember(
-                    timingIndex,
-                    timelineState,
-                    isPast,
-                    isLatestCompleted,
-                ) {
-                    if (isPast && !isLatestCompleted) {
-                        { null }
-                    } else {
-                        {
-                            timingIndex.peakPositionAt(
-                                timelineState.positionMs.toLong(),
-                                timelineState.durationMs.toLong(),
-                            )
+            if (lineText.isNotEmpty()) {
+                // The peak spans line boundaries. Upcoming and completed rows
+                // must use the same variable font to show both sides of its trail.
+                val peakBounds = remember(lineTiming) {
+                    val radius = lineText.lastIndex / 4f
+                    val positions = lineTiming.globalGlyphPositions
+                    (positions.minOrNull()!! - radius)..(positions.maxOrNull()!! + radius)
+                }
+                val peakRegion by rememberLyricsStructure(timingIndex, timelineState, positionMs, peakBounds) {
+                    val peak = timingIndex.peakPositionAt(
+                        positionMs.value,
+                        timelineState.durationMs.toLong(),
+                    ) ?: 0f
+                    when {
+                        peak < peakBounds.start -> LyricsLinePeakRegion.Before
+                        peak > peakBounds.endInclusive -> LyricsLinePeakRegion.After
+                        else -> LyricsLinePeakRegion.Within
+                    }
+                }
+                val peakPosition = remember(timingIndex, timelineState, positionMs, peakBounds, peakRegion) {
+                    when (peakRegion) {
+                        // Fixed positions beyond the wave preserve the same
+                        // weight/roundness without redrawing distant lines each frame.
+                        LyricsLinePeakRegion.Before -> { { peakBounds.start - 1f } }
+                        LyricsLinePeakRegion.After -> { { peakBounds.endInclusive + 1f } }
+                        LyricsLinePeakRegion.Within -> {
+                            {
+                                timingIndex.peakPositionAt(
+                                    positionMs.value,
+                                    timelineState.durationMs.toLong(),
+                                )
+                            }
                         }
                     }
                 }
-                val horizontalRevealPosition = remember(
+                val revealPosition = remember(
                     lineTiming,
-                    timelineState,
-                    isActive,
+                    positionMs,
                     isPast,
-                    isLatestCompleted,
                     lineText,
                 ) {
-                    when {
-                        isActive && !isPast -> {
-                            { lineTiming.revealPositionAt(timelineState.positionMs.toLong()) }
-                        }
-
-                        isPast && isLatestCompleted -> {
-                            { lineText.length.toFloat() }
-                        }
-
-                        else -> null
+                    derivedStateOf {
+                        // Before the first word this is already zero, so the
+                        // reveal never jumps backward when the row activates.
+                        if (isPast) lineText.length.toFloat()
+                        else lineTiming.revealPositionAt(positionMs.value)
                     }
                 }
-                val bloom = remember(lineTiming, timelineState, isActive, isPast) {
+                val horizontalRevealPosition = remember(revealPosition) { { revealPosition.value } }
+                val bloom = remember(lineTiming, positionMs, isActive, isPast, bloomStrength) {
                     if (isActive && !isPast) {
-                        { lineTiming.bloomAt(timelineState.positionMs.toLong()) }
+                        {
+                            val strength = bloomStrength.value
+                            if (strength <= 0.001f) null
+                            else lineTiming.bloomAt(positionMs.value)
+                                ?.let { it.copy(strength = it.strength * strength) }
+                        }
                     } else {
                         null
                     }
@@ -373,19 +321,24 @@ internal fun FullTimedLyricsLine(
                 }
 
                 VariableText(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(textHeight),
                     text = lineText,
                     peakPosition = peakPosition,
                     glyphXPositions = glyphXPositions,
                     glyphBaselines = glyphBaselines,
                     glyphPeakPositions = lineTiming.globalGlyphPositions,
                     glyphRightPositions = glyphRightPositions,
+                    // Use the same progress for both fades: the upcoming base
+                    // stays at 32%, then brightens continuously as words reveal.
                     horizontalRevealPosition = horizontalRevealPosition,
                     bloom = bloom,
+                    unrevealedAlpha = {
+                        1f - (1f - LyricsMinAlpha) * lineEmphasis.value
+                    },
                     color = lyricColor,
                     fontSize = typography.headlineMedium.fontSize,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(textHeight),
                 )
             } else {
                 Text(
@@ -424,6 +377,7 @@ internal fun FullTimedLyricsLine(
 @Composable
 internal fun FullLineLyricsLine(
     lineTiming: LineTiming,
+    lineLayout: FullLyricsLineLayout,
     isActive: Boolean,
     isPast: Boolean,
     onClick: () -> Unit,
@@ -434,7 +388,7 @@ internal fun FullLineLyricsLine(
         targetValue = if (isActive || isPast) 1f else 0.32f,
         animationSpec = tween(360, easing = FastOutSlowInEasing),
     )
-    val lyricColor = colorScheme.onPrimaryContainer
+    val lyricColor = colorScheme.onSurface
     val interactionSource = remember(line) { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -447,9 +401,11 @@ internal fun FullLineLyricsLine(
         animationSpec = tween(120),
     )
 
+    val rowHeight = with(LocalDensity.current) { lineLayout.heightPx.toDp() }
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .height(rowHeight)
             .background(
                 lyricColor.copy(alpha = interactionAlpha),
                 RoundedCornerShape(8.dp),
@@ -460,8 +416,8 @@ internal fun FullLineLyricsLine(
                 indication = null,
                 onClick = onClick,
             )
-            .padding(horizontal = 8.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
+            .padding(FullLyricsLinePadding),
+        verticalArrangement = Arrangement.spacedBy(FullLyricsAuxiliaryGap),
     ) {
         Text(
             text = lineTiming.text,

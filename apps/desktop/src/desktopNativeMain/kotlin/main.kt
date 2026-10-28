@@ -8,6 +8,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -34,14 +35,17 @@ import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import com.materialkolor.PaletteStyle
 import com.materialkolor.dynamicColorScheme
 import com.materialkolor.dynamiccolor.ColorSpec
+import dev.brahmkshatriya.echo.app.playback.createPlaybackComponent
 import dev.brahmkshatriya.echo.app.ui.App
 import dev.brahmkshatriya.echo.app.ui.theme.LocalCustomTheme
 import dev.brahmkshatriya.echo.app.ui.theme.LocalDensityMultiplier
 import echo.client.generated.resources.Res
 import echo.client.generated.resources.app_name
 import echo.client.generated.resources.compose_multiplatform
+import kotlinx.coroutines.CoroutineDispatcher
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import kotlin.coroutines.ContinuationInterceptor
 
 private const val InitialDensityMultiplier = 1f
 private const val DensityScrollStep = 0.005f
@@ -49,6 +53,11 @@ private const val MinDensityMultiplier = 0.5f
 private const val MaxDensityMultiplier = 2f
 
 fun main() = application {
+    val applicationScope = rememberCoroutineScope()
+    val playback = remember {
+        createPlaybackComponent(applicationScope.coroutineContext[ContinuationInterceptor] as CoroutineDispatcher)
+    }
+    DisposableEffect(playback) { onDispose { playback.close() } }
     val escapeNavigationInput = remember { EscapeNavigationInput() }
     var densityMultiplier by remember { mutableFloatStateOf(InitialDensityMultiplier) }
     val isDarkTheme = isSystemInDarkTheme()
@@ -60,7 +69,9 @@ fun main() = application {
         )
     )
     Window(
-        onCloseRequest = ::exitApplication,
+        onCloseRequest = {
+            exitApplication()
+        },
         state = windowState,
         title = stringResource(Res.string.app_name),
         icon = painterResource(Res.drawable.compose_multiplatform),
@@ -99,7 +110,7 @@ fun main() = application {
                             .coerceIn(MinDensityMultiplier, MaxDensityMultiplier)
                     }
             ) {
-                App()
+                App(playback)
             }
         }
     }

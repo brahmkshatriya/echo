@@ -13,9 +13,14 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.Wallpapers
+import dev.brahmkshatriya.echo.app.playback.PlaybackComponentOwner
+import dev.brahmkshatriya.echo.app.playback.PlaybackComponent
+import dev.brahmkshatriya.echo.app.playback.createPlaybackComponent
 import dev.brahmkshatriya.echo.app.ui.App
 import dev.brahmkshatriya.echo.app.ui.theme.LocalCustomTheme
 
@@ -31,18 +36,21 @@ class MainActivity : ComponentActivity() {
             SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
         }
         enableEdgeToEdge(navigationBarStyle = transparentNavigationBar)
-        setContent { AppContent() }
+        val playback = (application as PlaybackComponentOwner).playbackComponent
+        setContent { AppContent(playback) }
     }
 }
 
 @Composable
-fun AppContent() {
+fun AppContent(playback: PlaybackComponent) {
     val scheme = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         val context = LocalContext.current
-        if (isSystemInDarkTheme()) dynamicDarkColorScheme(context)
-        else dynamicLightColorScheme(context)
+        val isDark = isSystemInDarkTheme()
+        remember(context, isDark) {
+            if (isDark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        }
     } else null
-    CompositionLocalProvider(LocalCustomTheme provides scheme) { App() }
+    CompositionLocalProvider(LocalCustomTheme provides scheme) { App(playback) }
 }
 
 @Preview(
@@ -53,5 +61,8 @@ fun AppContent() {
 )
 @Composable
 fun AppAndroidPreview() {
-    AppContent()
+    val context = LocalContext.current
+    val playback = remember(context) { createPlaybackComponent(context, R.drawable.ic_mono) }
+    DisposableEffect(playback) { onDispose { playback.close() } }
+    AppContent(playback)
 }

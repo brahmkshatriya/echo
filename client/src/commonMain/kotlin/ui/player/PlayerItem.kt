@@ -13,22 +13,21 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.runtime.staticCompositionLocalOf
-import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.BlurEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
+import dev.brahmkshatriya.echo.app.playback.PlayerSession
 import dev.brahmkshatriya.echo.app.ui.components.ScrollbarState
 import dev.brahmkshatriya.echo.app.ui.components.scrollbarStateValue
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.isActive
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
@@ -50,86 +49,49 @@ internal val playerBottomBarControlSize = 48.dp
 internal const val PlayerBottomBarContentType = "player-bottom-bar"
 internal const val PlayerScrollbarThumbSizePercent = 0.16f
 
-@Stable
-internal class PlayerTimelineState(val durationMs: Float) {
-    var positionMs by mutableFloatStateOf(0f)
-    var isSeeking by mutableStateOf(false)
-}
-
-@Composable
-internal fun rememberPlayerTimelineState(
-    key: Any?,
-    durationMs: Float,
-    running: Boolean,
-    onFinished: suspend () -> Boolean = { false },
-): PlayerTimelineState {
-    val state = remember(key, durationMs) { PlayerTimelineState(durationMs) }
-    val currentOnFinished by rememberUpdatedState(onFinished)
-    val isSeeking = state.isSeeking
-
-    LaunchedEffect(state, running, isSeeking) {
-        if (!running || isSeeking || state.positionMs >= state.durationMs) {
-            return@LaunchedEffect
-        }
-
-        var previousFrameNanos = withFrameNanos { it }
-        while (isActive) {
-            val frameNanos = withFrameNanos { it }
-            val elapsedMs = (frameNanos - previousFrameNanos) / 1_000_000f
-            state.positionMs =
-                (state.positionMs + elapsedMs).coerceAtMost(state.durationMs)
-            if (state.positionMs >= state.durationMs) {
-                state.positionMs = 0f
-                if (currentOnFinished()) return@LaunchedEffect
-            }
-            previousFrameNanos = frameNanos
-        }
-    }
-
-    return state
-}
-
-internal val LocalPlayerTimelineState = staticCompositionLocalOf<PlayerTimelineState?> { null }
-
 /** Page-local buttons stay in place during skips: select the target instantly,
  * then animate the new page's visibility instead of sliding its click targets. */
 @Stable
 internal class PlayerSkipNavigator(
     private val pagerState: PagerState,
-    private val controls: PlayerControlsState,
+    private val controls: PlayerSession,
     private val scope: CoroutineScope,
 ) {
-    private var pendingSong by mutableStateOf<Int?>(null)
+    private var pendingEntryId by mutableStateOf<Int?>(null)
     private var navigationJob: Job? = null
     private var requestId = 0
     private val entryAnimation = Animatable(1f)
-    var enteringSong by mutableStateOf<Int?>(null)
+    var enteringEntryId by mutableStateOf<Int?>(null)
         private set
     val entryProgress: Float get() = entryAnimation.value
 
-    val isNavigating: Boolean get() = pendingSong != null
-    private fun originSong(): Int = pendingSong ?: controls.songAt(pagerState.targetPage)
-    val canGoNext: Boolean get() = controls.nextSong(originSong()) != null
+    val isNavigating: Boolean get() = pendingEntryId != null
+    private fun originEntryId(): Int = pendingEntryId ?: controls.currentEntryId
+    val canGoNext: Boolean get() = controls.nextEntryId(originEntryId()) != null
 
-    fun next() = navigate(controls.nextSong(originSong()))
-    fun previous() = navigate(controls.previousSong(originSong()))
+    fun next() = navigate(controls.nextEntryId(originEntryId()))
+    fun previous() {
+        val target = controls.previousTarget(originEntryId(), allowRestart = !isNavigating)
+        if (target == controls.currentEntryId && !isNavigating) controls.previous()
+        else navigate(target)
+    }
 
-    private fun navigate(song: Int?) {
-        val destination = song?.let(controls::pageOf) ?: return
+    private fun navigate(entryId: Int?) {
+        val destination = entryId?.let(controls::indexOfEntry) ?: return
         if (destination !in 0 until pagerState.pageCount) return
         val id = ++requestId
         val willChangePage = pagerState.currentPage != destination
-        pendingSong = song
-        controls.currentSong = song
-        enteringSong = if (willChangePage) song else null
+        pendingEntryId = entryId
+        enteringEntryId = if (willChangePage) entryId else null
         navigationJob?.cancel()
-        navigationJob = scope.launch {
+        navigationJob = scope.launch(start = CoroutineStart.UNDISPATCHED) {
             try {
                 if (willChangePage) {
                     entryAnimation.snapTo(0f)
                 }
-                pagerState.scrollToPage(destination)
+                controls.selectEntry(entryId)
                 if (willChangePage) {
+                    snapshotFlow { pagerState.settledPage }.first { it == destination }
                     entryAnimation.animateTo(
                         1f,
                         animationSpec = tween(220, easing = FastOutSlowInEasing),
@@ -137,8 +99,8 @@ internal class PlayerSkipNavigator(
                 }
             } finally {
                 if (requestId == id) {
-                    pendingSong = null
-                    enteringSong = null
+                    pendingEntryId = null
+                    enteringEntryId = null
                     navigationJob = null
                 }
             }
@@ -146,16 +108,15 @@ internal class PlayerSkipNavigator(
     }
 
     /** Selecting from the queue takes priority over any skip in progress. */
-    fun selectSong(song: Int) {
-        val page = controls.pageOf(song)
+    fun selectEntry(entryId: Int) {
+        val page = controls.indexOfEntry(entryId)
         if (page < 0) return
         requestId++
-        pendingSong = null
-        enteringSong = null
+        pendingEntryId = null
+        enteringEntryId = null
         navigationJob?.cancel()
         navigationJob = null
-        controls.currentSong = song
-        pagerState.requestScrollToPage(page)
+        controls.selectEntry(entryId)
     }
 }
 
@@ -163,10 +124,10 @@ internal class PlayerSkipNavigator(
  * Manual horizontal swipes still use the normal pager slide transition. */
 internal fun Modifier.animatedSkipEntrance(
     navigator: PlayerSkipNavigator?,
-    song: Int,
+    entryId: Int,
     effectProgress: () -> Float = { 1f },
 ): Modifier = graphicsLayer {
-    if (navigator?.enteringSong == song) {
+    if (navigator?.enteringEntryId == entryId) {
         // Fade on every skip, including when collapsed. Only blur is gated
         // by sheet expansion so the mini-player remains sharp.
         val remaining = (1f - navigator.entryProgress).coerceIn(0f, 1f)

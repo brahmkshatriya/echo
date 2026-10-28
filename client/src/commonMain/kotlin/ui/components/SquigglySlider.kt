@@ -61,6 +61,7 @@ fun SquigglySlider(
     onValueChange: (Float) -> Unit,
     modifier: Modifier = Modifier,
     valueRange: ClosedFloatingPointRange<Float> = 0f..1f,
+    bufferedValue: (() -> Float?)? = null,
     onValueChangeFinished: (() -> Unit)? = null,
     enabled: Boolean = true,
     segmentGaps: List<Float> = emptyList(),
@@ -79,6 +80,7 @@ fun SquigglySlider(
     thumbTrackGap: Dp = 3.dp,
     activeColor: Color = MaterialTheme.colorScheme.primary,
     inactiveColor: Color = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f),
+    bufferedColor: Color = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f),
     stopIndicatorColor: Color = activeColor,
     thumbColor: Color = activeColor,
     interactionSource: MutableInteractionSource? = null,
@@ -216,6 +218,8 @@ fun SquigglySlider(
             value().coerceIn(valueRange.start, valueRange.endInclusive),
             valueRange,
         )
+        val bufferedProgress = bufferedValue?.invoke()?.takeIf(Float::isFinite)
+            ?.let { valueFraction(it.coerceIn(valueRange.start, valueRange.endInclusive), valueRange) }
         val halfThumbTravelInset = thumbSize.width.toPx() / 2f
         val trackEnd = max(halfThumbTravelInset, size.width - halfThumbTravelInset)
         val trackLength = trackEnd - halfThumbTravelInset
@@ -237,6 +241,7 @@ fun SquigglySlider(
 
         drawSlider(
             progress = progress,
+            bufferedProgress = bufferedProgress,
             segmentGaps = segmentGapFractions,
             segmentGapWidthPx = segmentGapWidth.toPx(),
             squiggleAmplitude = animatedSquiggleAmplitude,
@@ -253,6 +258,7 @@ fun SquigglySlider(
             thumbTrackGapPx = thumbTrackGap.toPx(),
             activeColor = activeColor,
             inactiveColor = inactiveColor,
+            bufferedColor = bufferedColor,
             stopIndicatorColor = stopIndicatorColor,
             thumbColor = thumbColor,
             layoutDirection = layoutDirection,
@@ -263,6 +269,7 @@ fun SquigglySlider(
 
 private fun DrawScope.drawSlider(
     progress: Float,
+    bufferedProgress: Float?,
     segmentGaps: List<Float>,
     segmentGapWidthPx: Float,
     squiggleAmplitude: Float,
@@ -279,6 +286,7 @@ private fun DrawScope.drawSlider(
     thumbTrackGapPx: Float,
     activeColor: Color,
     inactiveColor: Color,
+    bufferedColor: Color,
     stopIndicatorColor: Color,
     thumbColor: Color,
     layoutDirection: LayoutDirection,
@@ -335,6 +343,28 @@ private fun DrawScope.drawSlider(
                 color = inactiveColor,
                 layoutDirection = layoutDirection,
             )
+        }
+
+        if (bufferedProgress != null) {
+            val bufferedEnd = halfThumbTravelInset + trackLength *
+                bufferedProgress.coerceIn(0f, 1f)
+            ranges.forEach { range ->
+                val start = max(range.start, inactiveStart)
+                val end = min(range.endInclusive, bufferedEnd)
+                if (end <= start) return@forEach
+                drawStraightTrackSegment(
+                    startX = start,
+                    endX = end,
+                    trackStart = halfThumbTravelInset,
+                    trackEnd = trackEnd,
+                    centerY = centerY,
+                    strokeWidthPx = strokeWidth,
+                    startCornerRadiusPx = if (start <= halfThumbTravelInset) outerCornerRadius else insideCornerRadius,
+                    endCornerRadiusPx = if (end >= trackEnd) outerCornerRadius else insideCornerRadius,
+                    color = bufferedColor,
+                    layoutDirection = layoutDirection,
+                )
+            }
         }
 
         val amplitudePx = (

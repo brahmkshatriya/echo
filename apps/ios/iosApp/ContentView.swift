@@ -3,15 +3,19 @@ import SwiftUI
 import EchoApp
 
 struct ComposeView: UIViewControllerRepresentable {
+    let application: EchoApplication
+
     func makeUIViewController(context: Context) -> UIViewController {
-        MainViewControllerKt.MainViewController()
+        MainViewControllerKt.MainViewController(application: application)
     }
 
     func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
 }
 
 struct ContentView: View {
+    let application: EchoApplication
+
     var body: some View {
-        ComposeView().ignoresSafeArea()
+        ComposeView(application: application).ignoresSafeArea()
     }
 }

@@ -44,17 +44,15 @@ fun EchoTheme(
 ) {
     val isDarkTheme = isSystemInDarkTheme()
     val customTheme = LocalCustomTheme.current
-    val dynamicThemeState = rememberDynamicMaterialThemeState(
+    val targetColorScheme = customTheme ?: rememberDynamicMaterialThemeState(
         isDark = isDarkTheme,
         style = PaletteStyle.FruitSalad,
         specVersion = ColorSpec.SpecVersion.SPEC_2021,
         primary = Primary,
         secondary = Secondary,
         tertiary = Tertiary,
-    ) {
-        customTheme ?: it
-    }
-    val colorScheme = animateColorScheme(dynamicThemeState.colorScheme)
+    ).colorScheme
+    val colorScheme = animateColorScheme(targetColorScheme)
     val typography = LocalCustomTypography.current ?: googleSansTypography()
     MaterialExpressiveTheme(
         colorScheme = colorScheme,

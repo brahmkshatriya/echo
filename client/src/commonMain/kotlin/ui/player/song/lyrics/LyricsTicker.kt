@@ -25,14 +25,16 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextLayoutResult
@@ -43,7 +45,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import dev.brahmkshatriya.echo.app.platform.VariableText
 import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerControls
-import dev.brahmkshatriya.echo.app.ui.player.PlayerTimelineState
+import dev.brahmkshatriya.echo.app.playback.PlayerTimelineState
 import dev.brahmkshatriya.echo.app.ui.player.song.LyricsTransitionDurationMs
 import dev.brahmkshatriya.echo.app.ui.theme.googleSansFontFamily
 import kotlin.math.PI
@@ -107,10 +109,12 @@ private fun lyricsTickerContent(
 internal fun LyricsTicker(
     lyrics: Lyrics,
     timelineState: PlayerTimelineState,
+    active: Boolean = true,
 ) {
+    val positionMs = rememberLyricsVisualPosition(timelineState, active)
     when (lyrics) {
-        is Lyrics.Word -> TimedLyricsTicker(lyrics, timelineState)
-        is Lyrics.Line -> LineLyricsTicker(lyrics, timelineState)
+        is Lyrics.Word -> TimedLyricsTicker(lyrics, timelineState, positionMs, active)
+        is Lyrics.Line -> LineLyricsTicker(lyrics, positionMs, active)
         is Lyrics.Simple -> Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -130,19 +134,16 @@ internal fun LyricsTicker(
 @Composable
 private fun LineLyricsTicker(
     lyrics: Lyrics.Line,
-    timelineState: PlayerTimelineState,
+    positionMs: State<Long>,
+    active: Boolean,
 ) {
     val timingIndex = remember(lyrics.lines) { LyricsTimingIndex.line(lyrics.lines) }
-    val isPlaying = LocalPlayerControls.current?.isPlaying != false
-    val waitingGapActive by remember(timingIndex, timelineState) {
-        derivedStateOf {
-            timingIndex.waitingGapAt(timelineState.positionMs.toLong()) != null
-        }
+    val isPlaying = active && LocalPlayerControls.current.isPlaying
+    val waitingGapActive by rememberLyricsStructure(timingIndex, positionMs) {
+        timingIndex.waitingGapAt(positionMs.value) != null
     }
-    val content by remember(timingIndex, timelineState) {
-        derivedStateOf {
-            lyricsTickerContent(timingIndex, timelineState.positionMs.toLong())
-        }
+    val content by rememberLyricsStructure(timingIndex, positionMs) {
+        lyricsTickerContent(timingIndex, positionMs.value)
     }
     AnimatedContent(
         targetState = content,
@@ -176,7 +177,7 @@ private fun LineLyricsTicker(
         } else {
             LineLyricsMarquee(
                 lineTiming = lineTiming,
-                positionMs = timelineState.positionMs.toLong(),
+                positionMs = { positionMs.value },
             )
         }
     }
@@ -185,7 +186,7 @@ private fun LineLyricsTicker(
 @Composable
 private fun LineLyricsMarquee(
     lineTiming: LineTiming,
-    positionMs: Long,
+    positionMs: () -> Long,
 ) {
     val line = lineTiming.line
 
@@ -197,7 +198,7 @@ private fun LineLyricsMarquee(
             Text(
                 text = lineTiming.text,
                 style = typography.titleMedium,
-                color = colorScheme.onPrimaryContainer,
+                color = colorScheme.onSurface,
                 maxLines = 1,
                 softWrap = false,
             )
@@ -214,29 +215,28 @@ private fun LineLyricsMarquee(
         val width = constraints.maxWidth
         val height = constraints.maxHeight
         val overflow = (placeable.width - width).coerceAtLeast(0)
-        val x = if (overflow == 0) {
-            (width - placeable.width) / 2
-        } else {
-            val durationMs = (line.endMs - line.startMs).coerceAtLeast(1L)
-            val elapsedMs = (positionMs - line.startMs).coerceIn(0L, durationMs)
-
-            // Give both ends of an overflowing line some stationary reading time.
-            // The travel phase still covers the entire overflow before the line ends.
-            val startHoldMs = minOf(300L, durationMs / 5)
-            val endHoldMs = minOf(450L, durationMs / 4)
-            val travelMs = (durationMs - startHoldMs - endHoldMs).coerceAtLeast(1L)
-            val travelProgress = when {
-                elapsedMs <= startHoldMs -> 0f
-                elapsedMs >= durationMs - endHoldMs -> 1f
-                else -> ((elapsedMs - startHoldMs).toFloat() / travelMs.toFloat())
-                    .coerceIn(0f, 1f)
-            }
-
-            -(overflow * travelProgress).toInt()
-        }
         val y = (height - placeable.height) / 2
-
         layout(width, height) {
+            val x = if (overflow == 0) {
+                (width - placeable.width) / 2
+            } else {
+                val durationMs = (line.endMs - line.startMs).coerceAtLeast(1L)
+                val elapsedMs = (positionMs() - line.startMs).coerceIn(0L, durationMs)
+
+                // Give both ends of an overflowing line some stationary reading time.
+                // The travel phase still covers the entire overflow before the line ends.
+                val startHoldMs = minOf(300L, durationMs / 5)
+                val endHoldMs = minOf(450L, durationMs / 4)
+                val travelMs = (durationMs - startHoldMs - endHoldMs).coerceAtLeast(1L)
+                val travelProgress = when {
+                    elapsedMs <= startHoldMs -> 0f
+                    elapsedMs >= durationMs - endHoldMs -> 1f
+                    else -> ((elapsedMs - startHoldMs).toFloat() / travelMs.toFloat())
+                        .coerceIn(0f, 1f)
+                }
+
+                -(overflow * travelProgress).toInt()
+            }
             placeable.placeRelative(x, y)
         }
     }
@@ -246,18 +246,16 @@ private fun LineLyricsMarquee(
 private fun TimedLyricsTicker(
     lyrics: Lyrics.Word,
     timelineState: PlayerTimelineState,
+    positionMs: State<Long>,
+    active: Boolean,
 ) {
     val timingIndex = remember(lyrics.lines) { LyricsTimingIndex.word(lyrics.lines) }
-    val isPlaying = LocalPlayerControls.current?.isPlaying != false
-    val waitingGapActive by remember(timingIndex, timelineState) {
-        derivedStateOf {
-            timingIndex.waitingGapAt(timelineState.positionMs.toLong()) != null
-        }
+    val isPlaying = active && LocalPlayerControls.current.isPlaying
+    val waitingGapActive by rememberLyricsStructure(timingIndex, positionMs) {
+        timingIndex.waitingGapAt(positionMs.value) != null
     }
-    val content by remember(timingIndex, timelineState) {
-        derivedStateOf {
-            lyricsTickerContent(timingIndex, timelineState.positionMs.toLong())
-        }
+    val content by rememberLyricsStructure(timingIndex, positionMs) {
+        lyricsTickerContent(timingIndex, positionMs.value)
     }
     AnimatedContent(
         targetState = content,
@@ -288,7 +286,7 @@ private fun TimedLyricsTicker(
                     modifier = Modifier.size(width = 32.dp, height = 32.dp),
                 )
             }
-        } else TimedLyricsLine(timingIndex, lineTiming, timelineState)
+        } else TimedLyricsLine(timingIndex, lineTiming, timelineState, positionMs)
     }
 }
 
@@ -354,6 +352,7 @@ private fun TimedLyricsLine(
     timingIndex: LyricsTimingIndex,
     lineTiming: WordLineTiming,
     timelineState: PlayerTimelineState,
+    positionMs: State<Long>,
 ) {
     val line = lineTiming.line
     if (line.tokens.isEmpty()) return
@@ -361,25 +360,31 @@ private fun TimedLyricsLine(
     val lineText = lineTiming.text
     if (lineText.isEmpty()) return
 
-    val activeTokenIndex by remember(lineTiming, timelineState) {
-        derivedStateOf { lineTiming.tokenIndexAt(timelineState.positionMs.toLong()) }
+    val activeTokenIndex by rememberLyricsStructure(lineTiming, positionMs) {
+        lineTiming.tokenIndexAt(positionMs.value)
     }
-    val peakPosition = remember(timingIndex, timelineState) {
+    val peakPosition = remember(timingIndex, timelineState, positionMs) {
         {
             timingIndex.peakPositionAt(
-                timelineState.positionMs.toLong(),
+                positionMs.value,
                 timelineState.durationMs.toLong(),
             )
         }
     }
-    val horizontalRevealPosition = remember(lineTiming, timelineState) {
-        { lineTiming.revealPositionAt(timelineState.positionMs.toLong()) }
+    val horizontalRevealPosition = remember(lineTiming, positionMs) {
+        { lineTiming.revealPositionAt(positionMs.value) }
     }
-    val bloom = remember(lineTiming, timelineState) {
-        { lineTiming.bloomAt(timelineState.positionMs.toLong()) }
+    val bloomStrength = rememberLyricsBloomStrength()
+    val bloom = remember(lineTiming, positionMs, bloomStrength) {
+        {
+            val strength = bloomStrength.value
+            if (strength <= 0.001f) null
+            else lineTiming.bloomAt(positionMs.value)
+                ?.let { it.copy(strength = it.strength * strength) }
+        }
     }
 
-    val highlightedColor = colorScheme.onPrimaryContainer
+    val highlightedColor = colorScheme.onSurface
     val referenceFontFamily = googleSansFontFamily()
     val textMeasurer = rememberTextMeasurer()
     val titleMediumStyle = typography.titleMedium
@@ -416,7 +421,7 @@ private fun TimedLyricsLine(
     val focusTokenIndex = activeTokenIndex.coerceAtLeast(0)
         .coerceAtMost(line.tokens.lastIndex)
     val targetFocusX = marqueeLayout.tokenCenter(lineTiming, focusTokenIndex)
-    val focusX by animateFloatAsState(
+    val focusX = animateFloatAsState(
         targetValue = targetFocusX,
         animationSpec = tween()
     )
@@ -438,11 +443,15 @@ private fun TimedLyricsLine(
         val offsetX = if (marqueeLayout.size.width <= marqueeViewportWidth) {
             (viewportWidth - marqueeLayout.size.width) / 2f
         } else {
-            viewportWidth / 2f - focusX
+            viewportWidth / 2f
         }
         val offsetY = (viewportHeight - marqueeLayout.size.height) / 2f
 
         VariableText(
+            modifier = Modifier.fillMaxSize().drawWithContent {
+                val translation = if (marqueeLayout.size.width > marqueeViewportWidth) -focusX.value else 0f
+                translate(left = translation) { this@drawWithContent.drawContent() }
+            },
             text = lineText,
             peakPosition = peakPosition,
             glyphXPositions = glyphXPositions,
@@ -455,7 +464,6 @@ private fun TimedLyricsLine(
             offsetY = offsetY,
             color = highlightedColor,
             fontSize = typography.titleMedium.fontSize,
-            modifier = Modifier.fillMaxSize(),
         )
     }
 }

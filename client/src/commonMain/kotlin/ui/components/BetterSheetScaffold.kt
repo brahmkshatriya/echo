@@ -30,11 +30,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableFloatState
 import androidx.compose.runtime.MutableIntState
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
@@ -50,6 +50,7 @@ import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.NavigationEventTransitionState
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -68,20 +69,56 @@ fun rememberBetterSheet(
             enabledValues = setOf(Hidden, PartiallyExpanded, Expanded)
         )
     )
-    return remember { BetterSheet(scaffoldState, peekHeight) }
+    val scope = rememberCoroutineScope()
+    return remember(scaffoldState, peekHeight, scope) { BetterSheet(scaffoldState, peekHeight, scope) }
 }
 
+@Stable
 class BetterSheet(
     val scaffoldState: BottomSheetScaffoldState,
     val peekHeight: Dp,
-    val progressState: MutableFloatState = mutableFloatStateOf(0f),
-    val offsetState: MutableFloatState = mutableFloatStateOf(0f),
+    private val scope: CoroutineScope,
     val backProgressState: MutableFloatState = mutableFloatStateOf(0f),
     val midPointState: MutableIntState = mutableIntStateOf(0),
-    val isExpandedState: MutableState<Boolean> = mutableStateOf(false),
     val sheetState: SheetState = scaffoldState.bottomSheetState,
     val snackBarHostState: SnackbarHostState = scaffoldState.snackbarHostState
-)
+) {
+    internal val layoutHeightState = mutableIntStateOf(0)
+    // Compact/expanded content may be replaced while the sheet is moving.
+    // Its animations must outlive the child that initiated them.
+    fun expand() = scope.launch { sheetState.expand() }
+    fun collapse() = scope.launch { sheetState.show() }
+    fun hide() = scope.launch { sheetState.hide() }
+
+    // Observe the sheet animation directly. Mirroring its offset in placement
+    // invalidates the enclosing scaffold's placement on every animation frame,
+    // including the navigation/content tree underneath the player.
+    val offsetState = derivedStateOf {
+        runCatching { sheetState.requireOffset() }.getOrElse {
+            when (sheetState.currentValue) {
+                Expanded -> 0f
+                PartiallyExpanded -> midPointState.intValue.toFloat()
+                Hidden -> layoutHeightState.intValue.toFloat()
+            }
+        }
+    }
+    val progressState = derivedStateOf {
+        val height = layoutHeightState.intValue
+        if (height <= 0) {
+            when (sheetState.currentValue) {
+                Expanded -> 1f
+                PartiallyExpanded -> 0f
+                Hidden -> -1f
+            }
+        } else {
+            val midPoint = midPointState.intValue
+            val offset = offsetState.value
+            if (offset < midPoint) 1f - offset / midPoint.coerceAtLeast(1)
+            else (midPoint - offset) / (height - midPoint).coerceAtLeast(1)
+        }
+    }
+    val isExpandedState = derivedStateOf { progressState.value > 0.1f }
+}
 
 @Composable
 fun BetterSheetScaffold(
@@ -103,7 +140,6 @@ fun BetterSheetScaffold(
     contentColor: Color = contentColorFor(containerColor),
     content: @Composable (PaddingValues) -> Unit,
 ) {
-    val sheetState = betterSheet.sheetState
     val animatedBottomPadding by animateDpAsState(bottomPadding, tween())
     val newPeekHeight = betterSheet.peekHeight + animatedBottomPadding
 
@@ -134,24 +170,10 @@ fun BetterSheetScaffold(
         val placeables = measurables.fastMap { it.measure(constraints) }
 
         val midPoint = layoutHeight - newPeekHeight.roundToPx()
+        betterSheet.layoutHeightState.intValue = layoutHeight
         betterSheet.midPointState.intValue = midPoint
 
         layout(constraints.maxWidth, constraints.maxHeight) {
-            val offset = runCatching { sheetState.requireOffset() }.getOrElse {
-                when (sheetState.currentValue) {
-                    Expanded -> 0f
-                    PartiallyExpanded -> midPoint.toFloat()
-                    Hidden -> layoutHeight.toFloat()
-                }
-            }
-            betterSheet.offsetState.floatValue = offset
-
-            val progress = if (offset < midPoint) 1f - offset / midPoint
-            else (midPoint - offset) / (layoutHeight - midPoint)
-
-            betterSheet.progressState.floatValue = progress
-            betterSheet.isExpandedState.value = progress > 0.1f
-
             placeables.fastForEach { it.placeRelative(0, 0) }
         }
     }

@@ -1,16 +1,15 @@
 package dev.brahmkshatriya.echo.app.ui.player.song
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
@@ -32,7 +31,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FilledTonalIconToggleButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -47,11 +45,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -63,27 +62,29 @@ import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.LayoutCoordinates
-import androidx.compose.ui.layout.SubcomposeLayout
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import dev.brahmkshatriya.echo.app.platform.hasTouchInput
+import dev.brahmkshatriya.echo.app.playback.LocalPlayerTimelineState
 import dev.brahmkshatriya.echo.app.ui.components.BetterImage
 import dev.brahmkshatriya.echo.app.ui.components.PolygonIconRipple
-import dev.brahmkshatriya.echo.app.ui.components.ResponsiveRow
 import dev.brahmkshatriya.echo.app.ui.components.animatedPolygonIconShape
-import dev.brahmkshatriya.echo.app.ui.components.clover6Sided
+import dev.brahmkshatriya.echo.app.ui.errors.playerTickerAnchor
+import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerControls
 import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerPadding
 import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerSheet
-import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerTimelineState
+import dev.brahmkshatriya.echo.app.ui.player.artwork.PlayerArtwork
 import dev.brahmkshatriya.echo.app.ui.player.collapsedHorizontalPadding
+import dev.brahmkshatriya.echo.app.ui.player.components.QueueButton
 import dev.brahmkshatriya.echo.app.ui.player.playerBottomBarControlSize
 import dev.brahmkshatriya.echo.app.ui.player.song.lyrics.FullLyricsBottomFadeHeight
 import dev.brahmkshatriya.echo.app.ui.player.song.lyrics.FullLyricsTopFadeHeight
@@ -93,24 +94,14 @@ import dev.brahmkshatriya.echo.app.ui.player.song.lyrics.LyricsSelectionItem
 import dev.brahmkshatriya.echo.app.ui.player.song.lyrics.LyricsSelectionPillContent
 import dev.brahmkshatriya.echo.app.ui.player.song.lyrics.LyricsTicker
 import dev.brahmkshatriya.echo.app.ui.player.song.lyrics.LyricsTimingIndex
+import dev.brahmkshatriya.echo.app.ui.player.song.lyrics.MotionLyrics
 import dev.brahmkshatriya.echo.app.ui.player.song.lyrics.NoLyricsTicker
 import dev.brahmkshatriya.echo.app.ui.player.song.lyrics.lyricsEdgeFade
+import dev.brahmkshatriya.echo.app.ui.player.song.lyrics.rememberMotionLyricsPosition
 import echo.client.generated.resources.Res
-import echo.client.generated.resources.ic_close
 import echo.client.generated.resources.ic_format_quotes
 import echo.client.generated.resources.ic_keyboard_arrow_down
-import echo.client.generated.resources.ic_playlist_play
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
-import kotlin.time.Duration.Companion.milliseconds
-
-private enum class PlayerHeroSlot {
-    KineticShapes,
-    TopBar,
-    CoverOrLyrics,
-    Timeline,
-}
 
 private class PlayerHeroContentState(
     val showLyrics: Boolean,
@@ -120,7 +111,8 @@ private class PlayerHeroContentState(
 ) {
     override fun equals(other: Any?): Boolean {
         if (other !is PlayerHeroContentState ||
-            showLyrics != other.showLyrics || showKineticShapes != other.showKineticShapes) return false
+            showLyrics != other.showLyrics || showKineticShapes != other.showKineticShapes
+        ) return false
         if (!showLyrics) return true
         return lyrics === other.lyrics && timingIndex === other.timingIndex
     }
@@ -132,17 +124,24 @@ private class PlayerHeroContentState(
     }
 }
 
-private class LyricsBarContentState(
-    val lyricsVisible: Boolean,
-    val selectedLyrics: LyricsSelectionItem?,
-) {
-    override fun equals(other: Any?): Boolean =
-        other is LyricsBarContentState &&
-                lyricsVisible == other.lyricsVisible &&
-                selectedLyrics === other.selectedLyrics
+private data class PlayerHeroTransitionState(
+    val content: PlayerHeroContentState,
+    val chromeCollapsed: Boolean,
+)
 
-    override fun hashCode(): Int =
-        31 * lyricsVisible.hashCode() + (selectedLyrics?.title?.hashCode() ?: 0)
+private class PlayerHeroGeometry(val timeline: ExpandedTimelineGeometry) {
+    var heightPx = 0
+    var topBarHeightPx = 0
+    val maxCoverHeightPx: Int
+        get() = (heightPx - topBarHeightPx - timeline.metadataHeightPx).coerceAtLeast(0)
+
+    fun coverHeightPx(collapseProgress: Float): Float =
+        (heightPx - topBarHeightPx - timeline.visibleHeightPx(collapseProgress)).coerceAtLeast(0f)
+
+    fun kineticHeightPx(collapseProgress: Float): Float {
+        val progress = collapseProgress.coerceIn(0f, 1f)
+        return (heightPx - timeline.visibleHeightPx(progress) * (1f - progress)).coerceAtLeast(0f)
+    }
 }
 
 @Composable
@@ -152,7 +151,9 @@ internal fun PlayerHero(
     lyricsTimingIndex: LyricsTimingIndex?,
     showLyrics: Boolean,
     showKineticShapes: Boolean,
-    kineticShapesActive: Boolean,
+    pageActive: Boolean,
+    immersiveContentActive: Boolean,
+    @Suppress("ModifierParameter") transformModifier: Modifier,
     collapseTimelineRowsForLyrics: Boolean,
     onCollapseTimelineRowsForLyricsChange: (Boolean) -> Unit,
     onLyricsChromeInteraction: () -> Unit,
@@ -160,25 +161,66 @@ internal fun PlayerHero(
     userScrollEnabled: Boolean,
     topPadding: Dp,
     viewportWidth: Dp,
-    transformModifier: Modifier,
     onArtworkClick: () -> Unit,
     onLargeArtworkClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val immersiveMode = showLyrics || showKineticShapes
-    val coverLyricsScaleSpec = motionScheme.defaultSpatialSpec<Float>()
-    val chromeCollapseProgress by animateFloatAsState(
-        targetValue = if (collapseTimelineRowsForLyrics) 1f else 0f,
-        animationSpec = motionScheme.defaultSpatialSpec(),
-        label = "Lyrics player chrome collapse",
+    // One clock keeps artwork, immersive content and chrome aligned even
+    // when composing the incoming cover takes longer than a frame.
+    val heroTransition = updateTransition(
+        targetState = PlayerHeroTransitionState(
+            content = PlayerHeroContentState(
+                showLyrics,
+                showKineticShapes,
+                lyrics,
+                lyricsTimingIndex
+            ),
+            chromeCollapsed = immersiveMode && collapseTimelineRowsForLyrics,
+        ),
+        label = "Player hero mode",
     )
-    var compactArtwork by remember { mutableStateOf(false) }
-    LaunchedEffect(immersiveMode) {
-        if (!immersiveMode && collapseTimelineRowsForLyrics) {
-            delay(LyricsModeTransitionDurationMs.toLong().milliseconds)
-            onCollapseTimelineRowsForLyricsChange(false)
-        }
+    val chromeCollapseProgress = heroTransition.animateFloat(
+        transitionSpec = {
+            tween(LyricsModeTransitionDurationMs, easing = FastOutSlowInEasing)
+        },
+        label = "Lyrics player chrome collapse",
+    ) { if (it.chromeCollapsed) 1f else 0f }
+    val coverVisibility = heroTransition.animateFloat(
+        transitionSpec = {
+            tween(
+                if (!targetState.content.showLyrics && !targetState.content.showKineticShapes)
+                    LyricsModeTransitionDurationMs else LyricsModeTransitionDurationMs / 2,
+                easing = FastOutSlowInEasing,
+            )
+        },
+        label = "Player cover visibility",
+    ) { if (it.content.showLyrics || it.content.showKineticShapes) 0f else 1f }
+    val lyricsVisibility = heroTransition.animateFloat(
+        transitionSpec = {
+            tween(
+                if (targetState.content.showLyrics) LyricsModeTransitionDurationMs
+                else LyricsModeTransitionDurationMs / 2, easing = FastOutSlowInEasing
+            )
+        },
+        label = "Full lyrics visibility",
+    ) { if (it.content.showLyrics) 1f else 0f }
+    val kineticVisibility = heroTransition.animateFloat(
+        transitionSpec = { tween(LyricsModeTransitionDurationMs, easing = FastOutSlowInEasing) },
+        label = "Kinetic lyrics visibility",
+    ) { if (it.content.showKineticShapes) 1f else 0f }
+    var lyricsMounted by remember { mutableStateOf(false) }
+    var kineticMounted by remember { mutableStateOf(false) }
+    LaunchedEffect(showLyrics, showKineticShapes, pageActive) {
+        if (showLyrics && pageActive) lyricsMounted = true
+        if (showKineticShapes && pageActive) kineticMounted = true
     }
+    val timelineGeometry = remember { ExpandedTimelineGeometry() }
+    val geometry = remember(timelineGeometry) { PlayerHeroGeometry(timelineGeometry) }
+    val lyricsViewportHeight = remember(geometry, chromeCollapseProgress) {
+        { geometry.coverHeightPx(chromeCollapseProgress.value) }
+    }
+    var compactArtwork by remember { mutableStateOf(false) }
 
     val currentOnLyricsChromeInteraction by rememberUpdatedState(onLyricsChromeInteraction)
     val currentOnKineticShapesChromeClick by rememberUpdatedState(onKineticShapesChromeClick)
@@ -203,244 +245,287 @@ internal fun PlayerHero(
         }
     } else Modifier
 
-    SubcomposeLayout(
-        modifier.then(if (immersiveMode) Modifier.clipToBounds() else Modifier)
-    ) { constraints ->
-        val childConstraints = constraints.copy(minHeight = 0)
-        val topBar = subcompose(PlayerHeroSlot.TopBar) {
+    Layout(
+        modifier = modifier.then(if (immersiveMode) Modifier.clipToBounds() else Modifier),
+        content = {
             TopBar(i, transformModifier)
-        }.single().measure(childConstraints)
-        val timeline = subcompose(PlayerHeroSlot.Timeline) {
             Box(transformModifier.then(chromeInteractionModifier)) {
                 ExpandedTimeline(
                     i = i,
+                    geometry = timelineGeometry,
+                    rowsCollapsed = immersiveMode && collapseTimelineRowsForLyrics,
                     lyricsVisible = immersiveMode,
                     showCompactArtwork = compactArtwork,
-                    rowsCollapseProgress = chromeCollapseProgress,
+                    rowsCollapseProgress = { chromeCollapseProgress.value },
                     onArtworkClick = onArtworkClick,
                 )
             }
-        }.single().measure(childConstraints)
-        val coverHeight = (
-                constraints.maxHeight - topBar.height - timeline.height
-                ).coerceAtLeast(0)
-        val coverHeightDp = coverHeight.toDp()
-        val coverMaxSize = minOf(
-            maxSongCoverSize.dp,
-            (viewportWidth - (songCoverHorizontalPadding * 2).dp).coerceAtLeast(0.dp),
-            (coverHeightDp - (songCoverVerticalPadding * 2).dp).coerceAtLeast(0.dp),
-        )
-        val coverVerticalPadding = ((coverHeightDp - coverMaxSize) / 2)
-            .coerceAtLeast(songCoverVerticalPadding.dp)
-        // Original fade motion before the timeline-synchronization changes:
-        // interpolate independently between the timeline and bottom pill.
-        val kineticShapesViewportHeight = (
-            topBar.height + coverHeight +
-                (timeline.height * chromeCollapseProgress).toInt()
-        ).coerceIn(0, constraints.maxHeight)
-        val kineticShapes = subcompose(PlayerHeroSlot.KineticShapes) {
-            Box(Modifier.fillMaxSize()) {
-                AnimatedVisibility(
-                    visible = showKineticShapes,
-                    enter = fadeIn(tween(LyricsModeTransitionDurationMs)),
-                    exit = fadeOut(tween(LyricsModeTransitionDurationMs)),
-                    modifier = Modifier.fillMaxSize(),
-                ) {
+            Box(Modifier.fillMaxSize().graphicsLayer {
+                clip = true
+                shape = PlayerViewportShape(geometry.kineticHeightPx(chromeCollapseProgress.value))
+            }) {
+                if ((showKineticShapes && pageActive) || kineticMounted) {
                     Box(
-                        modifier = transformModifier.fillMaxSize()
-                            .lyricsEdgeFade(
-                                topFadeHeight = FullLyricsTopFadeHeight,
-                                bottomFadeHeight = FullLyricsBottomFadeHeight,
-                            )
-                            .clickable(
-                                interactionSource = kineticShapesInteractionSource,
-                                indication = null,
-                                onClick = { currentOnKineticShapesChromeClick() },
-                            ),
+                        Modifier.fillMaxSize().retainedPlayerPage(
+                            kineticVisibility,
+                            compositingStrategy = CompositingStrategy.Offscreen,
+                        )
                     ) {
-                        KineticShapesBackground(
-                            artworkKey = LocalPlayerItems.current.getOrNull(i).orEmpty(),
-                            active = showKineticShapes && kineticShapesActive,
-                        )
-                    }
-                }
-            }
-        }.single().measure(
-            childConstraints.copy(
-                minHeight = kineticShapesViewportHeight,
-                maxHeight = kineticShapesViewportHeight,
-            )
-        )
-        val cover = subcompose(PlayerHeroSlot.CoverOrLyrics) {
-            LaunchedEffect(coverMaxSize) {
-                compactArtwork = coverMaxSize < 64.dp
-            }
-            val heroContentState = PlayerHeroContentState(
-                showLyrics = showLyrics,
-                showKineticShapes = showKineticShapes,
-                lyrics = lyrics,
-                timingIndex = lyricsTimingIndex,
-            )
-            AnimatedContent(
-                targetState = heroContentState,
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center,
-                transitionSpec = {
-                    if (initialState.showLyrics && targetState.showLyrics) {
-                        val sourceAnimation = tween<IntOffset>(
-                            LyricsTransitionDurationMs,
-                            easing = FastOutSlowInEasing,
-                        )
-                        val enter = fadeIn(tween(LyricsTransitionDurationMs)) +
-                                slideInVertically(sourceAnimation) { height -> height / 20 }
-                        val exit = fadeOut(tween(LyricsTransitionDurationMs / 2)) +
-                                slideOutVertically(sourceAnimation) { height -> -height / 32 }
-                        enter togetherWith exit
-                    } else {
-                        val animation = tween<Float>(
-                            LyricsModeTransitionDurationMs,
-                            easing = FastOutSlowInEasing,
-                        )
-                        val enter = fadeIn(animation) + scaleIn(coverLyricsScaleSpec, 0.96f)
-                        val exit = fadeOut(tween(LyricsModeTransitionDurationMs / 2)) +
-                                scaleOut(coverLyricsScaleSpec, 1.04f)
-                        enter togetherWith exit
-                    }
-                },
-            ) { state ->
-                if (state.showKineticShapes) {
-                    // The visible kinetic-shapes layer owns the tap target; keeping this
-                    // overlay non-clickable avoids double taps and ripples.
-                    Box(modifier = transformModifier.fillMaxSize())
-                } else if (state.showLyrics) {
-                    if (state.lyrics != null) {
-                        LyricsPanel(
-                            lyrics = state.lyrics,
-                            timingIndex = state.timingIndex,
-                            userScrollEnabled = userScrollEnabled,
-                            chromeCollapsed = collapseTimelineRowsForLyrics,
-                            onChromeInteraction = currentOnLyricsChromeInteraction,
-                            onViewportMotionChange = { moving ->
-                                onCollapseTimelineRowsForLyricsChange(moving)
-                            },
-                            modifier = transformModifier.fillMaxSize(),
-                        )
-                    } else {
                         Box(
-                            modifier = transformModifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center,
+                            modifier = transformModifier.fillMaxSize()
+                                .clipToBounds()
+                                .lyricsEdgeFade(
+                                    topFadeHeight = FullLyricsTopFadeHeight,
+                                    bottomFadeHeight = FullLyricsBottomFadeHeight,
+                                    viewportHeightPx = {
+                                        geometry.kineticHeightPx(
+                                            chromeCollapseProgress.value
+                                        )
+                                    },
+                                    backgroundColor = colorScheme.primaryContainer,
+                                )
+                                .clickable(
+                                    interactionSource = kineticShapesInteractionSource,
+                                    indication = null,
+                                    onClick = { currentOnKineticShapesChromeClick() },
+                                ),
                         ) {
-                            Text(
-                                text = "No Lyrics",
-                                style = typography.headlineSmall,
-                                color = colorScheme.primary,
+                            KineticShapesBackground(
+                                artworkKey = LocalPlayerControls.current.mediaFor(i)?.artworkUri.orEmpty(),
+                                active = showKineticShapes && immersiveContentActive,
                             )
-                        }
-                    }
-                } else {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.TopStart,
-                    ) {
-                        if (coverMaxSize >= 64.dp) {
-                            CoverArt(
-                                i = i,
-                                maxCoverSize = coverMaxSize,
-                                verticalPadding = coverVerticalPadding,
-                                topPadding = topPadding,
-                                viewportWidth = viewportWidth,
-                                onClick = onLargeArtworkClick,
+                            val positionMs = rememberMotionLyricsPosition(
+                                i, active = showKineticShapes && immersiveContentActive,
+                            )
+                            MotionLyrics(
+                                lyrics = lyrics,
+                                positionMs = positionMs,
+                                modifier = Modifier.fillMaxSize().graphicsLayer {
+                                    translationY =
+                                        (geometry.kineticHeightPx(chromeCollapseProgress.value) -
+                                                geometry.heightPx) / 2f
+                                }.padding(24.dp),
                             )
                         }
                     }
                 }
             }
-        }.single().measure(
-            childConstraints.copy(
-                minHeight = coverHeight,
-                maxHeight = coverHeight,
-            )
+            Box(
+                Modifier.fillMaxSize().then(
+                    if (immersiveMode) Modifier.graphicsLayer {
+                    clip = true
+                    shape = PlayerViewportShape(lyricsViewportHeight())
+                } else Modifier
+            )) {
+                // Keep artwork ready behind the immersive pages so returning
+                // to it does not build an image subtree on the first frame.
+                Box(Modifier.fillMaxSize().graphicsLayer {
+                    alpha = coverVisibility.value
+                }) {
+                    CoverArt(
+                        i = i,
+                        topPadding = topPadding,
+                        viewportWidth = viewportWidth,
+                        interactive = !immersiveMode,
+                        geometry = geometry,
+                        chromeCollapseProgress = chromeCollapseProgress,
+                        onCompactArtworkChange = { compactArtwork = it },
+                        onClick = onLargeArtworkClick,
+                    )
+                }
+                if ((showLyrics && pageActive) || lyricsMounted) {
+                    Box(Modifier.fillMaxSize().retainedPlayerPage(lyricsVisibility)) {
+                        AnimatedContent(
+                            targetState = PlayerHeroContentState(
+                                true,
+                                showKineticShapes = false,
+                                lyrics = lyrics,
+                                timingIndex = lyricsTimingIndex
+                            ),
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center,
+                            transitionSpec = {
+                                val sourceAnimation = tween<IntOffset>(
+                                    LyricsTransitionDurationMs,
+                                    easing = FastOutSlowInEasing
+                                )
+                                val enter = fadeIn(tween(LyricsTransitionDurationMs)) +
+                                        slideInVertically(sourceAnimation) { it / 20 }
+                                val exit = fadeOut(tween(LyricsTransitionDurationMs / 2)) +
+                                        slideOutVertically(sourceAnimation) { -it / 32 }
+                                enter togetherWith exit
+                            },
+                        ) { state ->
+                            if (state.lyrics != null) {
+                                LyricsPanel(
+                                    modifier = transformModifier.fillMaxSize(),
+                                    lyrics = state.lyrics,
+                                    timingIndex = state.timingIndex,
+                                    userScrollEnabled = userScrollEnabled,
+                                    chromeCollapsed = collapseTimelineRowsForLyrics,
+                                    onChromeInteraction = currentOnLyricsChromeInteraction,
+                                    onViewportMotionChange = { moving ->
+                                        onCollapseTimelineRowsForLyricsChange(moving)
+                                    },
+                                    active = showLyrics && immersiveContentActive && state.lyrics === lyrics,
+                                    viewportHeightPx = lyricsViewportHeight,
+                                )
+                            } else {
+                                Box(
+                                    modifier = transformModifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    Text(
+                                        text = "No Lyrics",
+                                        style = typography.headlineSmall,
+                                        color = colorScheme.primary,
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+    ) { measurables, constraints ->
+        // Measure the largest content viewport once. Chrome movement changes
+        // clips/translations rather than constraints on every animation frame.
+        val childConstraints = constraints.copy(minHeight = 0)
+        val topBar = measurables[0].measure(childConstraints)
+        val timeline = measurables[1].measure(childConstraints)
+        geometry.heightPx = constraints.maxHeight
+        geometry.topBarHeightPx = topBar.height
+        val kineticShapes = measurables[2].measure(
+            childConstraints.copy(minHeight = constraints.maxHeight)
+        )
+        val coverHeight = geometry.maxCoverHeightPx
+        val cover = measurables[3].measure(
+            childConstraints.copy(minHeight = coverHeight, maxHeight = coverHeight)
         )
 
         layout(constraints.maxWidth, constraints.maxHeight) {
             kineticShapes.placeRelative(0, 0)
-            var y = 0
-            topBar.placeRelative(0, y)
-            y += topBar.height
-            cover.placeRelative(0, y)
-            y += cover.height
-            timeline.placeRelative(0, y)
+            topBar.placeRelative(0, 0)
+            cover.placeRelative(0, topBar.height)
+            timeline.placeRelativeWithLayer(
+                0,
+                constraints.maxHeight - timelineGeometry.metadataHeightPx
+            ) {
+                translationY = -timelineGeometry.secondaryHeightPx *
+                        (1f - chromeCollapseProgress.value.coerceIn(0f, 1f))
+            }
+        }
+    }
+}
+
+private fun Modifier.retainedPlayerPage(
+    visibility: State<Float>,
+    compositingStrategy: CompositingStrategy = CompositingStrategy.Auto,
+): Modifier = layout { measurable, constraints ->
+    val page = measurable.measure(constraints)
+    layout(page.width, page.height) {
+        if (visibility.value > 0f) {
+            page.placeRelativeWithLayer(0, 0) {
+                alpha = visibility.value
+                // Resolve the kinetic paint and its fade into one surface before
+                // ancestor transforms sample their shared edge.
+                this.compositingStrategy = compositingStrategy
+            }
         }
     }
 }
 
 @Composable
-fun CoverArt(
+private fun CoverArt(
     i: Int,
-    maxCoverSize: Dp,
-    verticalPadding: Dp,
     topPadding: Dp,
     viewportWidth: Dp,
+    interactive: Boolean,
+    geometry: PlayerHeroGeometry,
+    chromeCollapseProgress: State<Float>,
+    onCompactArtworkChange: (Boolean) -> Unit,
     onClick: () -> Unit = {},
 ) {
     val playerSheet = LocalPlayerSheet.current
     val playerPadding = LocalPlayerPadding.current
-
     val layoutDirection = LocalLayoutDirection.current
     val animatedTargetX = animateDpAsState(
         playerPadding.calculateStartPadding(layoutDirection) + (collapsedHorizontalPadding + 8).dp,
         tween()
     )
-    // The full cover scales to 48.dp when the player collapses. Compensate
-    // using its actual measured height so its border stays 0.33dp on screen.
     var coverHeightPx by remember { mutableIntStateOf(0) }
     val density = LocalDensity.current
-    val progress = (playerSheet?.progressState?.floatValue ?: 1f).coerceIn(0f, 1f)
-    val collapsedScale = with(density) {
-        val fullHeightPx = if (coverHeightPx > 0) coverHeightPx.toFloat()
-        else maxCoverSize.toPx().coerceAtLeast(1f)
-        48.dp.toPx() / fullHeightPx
+    val coverInteractive by remember(playerSheet) {
+        derivedStateOf { (playerSheet?.progressState?.value ?: 1f) > 0.9f }
     }
-    val coverScale = 1f + (collapsedScale - 1f) * (1f - progress)
-    // The large artwork has 8.dp corners; its 48.dp collapsed form has 4.dp.
-    val visibleCornerRadius = 8.dp
-    PlayerArtwork(
-        contentDescription = "${exampleSong(i)?.album ?: "Album"} cover art",
-        outlineWidth = 0.5.dp / coverScale,
-        outlineRadius = visibleCornerRadius / coverScale,
-        modifier = Modifier
-            .songCoverSize(maxCoverSize, verticalPadding)
-            .onSizeChanged { coverHeightPx = it.height }
-            .graphicsLayer {
-                val sheetProgress = playerSheet?.progressState?.floatValue ?: 0f
-                val positiveProgress = sheetProgress.coerceIn(0f, 1f)
-                val offset = 1 - positiveProgress
-
-                val targetX = animatedTargetX.value.toPx()
-                val targetY = -(playerSheet?.peekHeight?.toPx() ?: 0f) / 2
-                val targetSize = 48.dp
-                val targetScale = if (size.height > 0f) {
-                    targetSize.toPx() / size.height
-                } else {
-                    1f
-                }
-                val coverScale = 1 + (targetScale - 1) * offset
+    val outlineScale = remember(playerSheet, density, geometry, chromeCollapseProgress) {
+        {
+            val progress = (playerSheet?.progressState?.value ?: 1f).coerceIn(0f, 1f)
+            val baseSize = coverHeightPx.coerceAtLeast(1)
+            val naturalScale = with(density) {
+                (geometry.coverHeightPx(chromeCollapseProgress.value) - (songCoverVerticalPadding * 2).dp.toPx())
+                    .coerceIn(0f, baseSize.toFloat()) / baseSize
+            }
+            val collapsedScale = with(density) { 48.dp.toPx() / baseSize }
+            naturalScale + (collapsedScale - naturalScale) * (1f - progress)
+        }
+    }
+    Layout(
+        modifier = Modifier.fillMaxSize(),
+        content = {
+            PlayerArtwork(
+                contentDescription = "${LocalPlayerControls.current.mediaFor(i)?.album ?: "Album"} cover art",
+                outlineWidth = 0.5.dp,
+                outlineRadius = 8.dp,
+                outlineScale = outlineScale,
+                modifier = Modifier.fillMaxSize()
+                    .background(colorScheme.primaryFixed)
+                    .clickable(enabled = interactive && coverInteractive, onClick = onClick),
+            )
+        },
+    ) { measurables, constraints ->
+        val horizontalPadding = songCoverHorizontalPadding.dp.roundToPx()
+        val minimumVerticalPadding = songCoverVerticalPadding.dp.roundToPx()
+        val coverSize = minOf(
+            maxSongCoverSize.dp.roundToPx(),
+            (viewportWidth.roundToPx() - horizontalPadding * 2).coerceAtLeast(0),
+            (constraints.maxWidth - horizontalPadding * 2).coerceAtLeast(0),
+            (constraints.maxHeight - minimumVerticalPadding * 2).coerceAtLeast(0),
+        )
+        val expandedCoverSize = minOf(
+            coverSize,
+            (geometry.coverHeightPx(0f) - minimumVerticalPadding * 2).toInt().coerceAtLeast(0),
+        )
+        onCompactArtworkChange(expandedCoverSize < 64.dp.roundToPx())
+        coverHeightPx = coverSize
+        val artwork = measurables.single().measure(Constraints.fixed(coverSize, coverSize))
+        layout(constraints.maxWidth, constraints.maxHeight) {
+            artwork.placeRelativeWithLayer(horizontalPadding, 0) {
+                val availableHeight = geometry.coverHeightPx(chromeCollapseProgress.value)
+                val visibleSize = (availableHeight - minimumVerticalPadding * 2)
+                    .coerceIn(0f, coverSize.toFloat())
+                val verticalPadding = ((availableHeight - visibleSize) / 2f)
+                    .coerceAtLeast(minimumVerticalPadding.toFloat())
+                val progress = (playerSheet?.progressState?.value ?: 0f).coerceIn(0f, 1f)
+                val offset = 1f - progress
+                val naturalScale = if (coverSize > 0) visibleSize / coverSize else 1f
+                val targetScale = if (coverSize > 0) 48.dp.toPx() / coverSize else 1f
+                val coverScale = naturalScale + (targetScale - naturalScale) * offset
                 scaleX = coverScale
                 scaleY = coverScale
                 transformOrigin = TransformOrigin(0f, 0f)
-                val center = (viewportWidth.toPx() - size.width) / 2f
-                translationX =
-                    -songCoverHorizontalPadding.dp.toPx() + targetX * offset + center * positiveProgress
-
-                val collapsedY = targetY - verticalPadding.toPx() - topPadding.toPx()
-                translationY = collapsedY * offset
-
+                val center = (viewportWidth.toPx() - visibleSize) / 2f
+                translationX = -horizontalPadding + animatedTargetX.value.toPx() * offset +
+                        center * progress
+                val collapsedY = -(playerSheet?.peekHeight?.toPx() ?: 0f) / 2f -
+                        verticalPadding - topPadding.toPx()
+                translationY = verticalPadding + collapsedY * offset
+                alpha = if (visibleSize < 64.dp.toPx()) 0f else 1f
                 clip = true
-                shape = RoundedCornerShape(visibleCornerRadius / coverScale)
+                shape = RoundedCornerShape(8.dp / coverScale.coerceAtLeast(0.001f))
             }
-            .background(colorScheme.primaryFixed)
-            .clickable(enabled = progress > 0.9f, onClick = onClick),
-    )
+        }
+    }
 }
 
 @Composable
@@ -449,8 +534,6 @@ fun TopBar(
     modifier: Modifier = Modifier,
 ) {
     val playerSheet = LocalPlayerSheet.current
-    val sheetState = playerSheet?.sheetState
-    val scope = rememberCoroutineScope()
     Row(
         modifier.padding(horizontal = 8.dp).padding(top = 8.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -458,7 +541,7 @@ fun TopBar(
         Spacer(Modifier.width(4.dp))
         IconButton(
             onClick = {
-                scope.launch { sheetState?.show() }
+                playerSheet?.collapse()
             },
             modifier = Modifier.width(32.dp),
             shapes = IconButtonDefaults.shapes(),
@@ -481,7 +564,7 @@ fun TopBar(
                 style = mergedStyle
             )
             Text(
-                exampleSong(index)?.album ?: "Unknown album",
+                LocalPlayerControls.current.mediaFor(index)?.album ?: "Unknown album",
                 fontWeight = FontWeight.Bold,
                 style = mergedStyle,
                 maxLines = 1,
@@ -510,7 +593,7 @@ fun TopBar(
 @Composable
 internal fun BottomBar(
     index: Int = 0,
-    isSticky: Boolean = false,
+    modifier: Modifier = Modifier,
     lyricsVisible: Boolean = false,
     lyricsChromeCollapsed: Boolean = false,
     selectedLyrics: LyricsSelectionItem? = null,
@@ -522,34 +605,24 @@ internal fun BottomBar(
     onQueueButtonClick: () -> Unit = {},
     onLyricsClick: () -> Unit = {}
 ) {
-    val stickyProgress by animateFloatAsState(
-        if (isSticky) 1f else 0f,
-        tween()
-    )
     Box(
-        Modifier
+        modifier
             .fillMaxWidth()
-            .background(colorScheme.primaryContainer.copy(alpha = stickyProgress))
+            .playerTickerAnchor(index)
             .padding(8.dp)
     ) {
-        Crossfade(
-            targetState = isSticky,
-            animationSpec = tween()
-        ) { sticky ->
-            if (sticky) StickyMiniPlayer(index)
-            else LyricsBottomBar(
-                lyricsVisible = lyricsVisible,
-                lyricsChromeCollapsed = lyricsChromeCollapsed,
-                selectedLyrics = selectedLyrics,
-                lyricsSelectorActive = lyricsSelectorActive,
-                queueButtonHidden = queueButtonHidden,
-                onLyricsSelectorClick = onLyricsSelectorClick,
-                onLyricsPillBoundsChanged = onLyricsPillBoundsChanged,
-                onQueueButtonBoundsChanged = onQueueButtonBoundsChanged,
-                onQueueButtonClick = onQueueButtonClick,
-                onLyricsClick = onLyricsClick,
-            )
-        }
+        LyricsBottomBar(
+            lyricsVisible = lyricsVisible,
+            lyricsChromeCollapsed = lyricsChromeCollapsed,
+            selectedLyrics = selectedLyrics,
+            lyricsSelectorActive = lyricsSelectorActive,
+            queueButtonHidden = queueButtonHidden,
+            onLyricsSelectorClick = onLyricsSelectorClick,
+            onLyricsPillBoundsChanged = onLyricsPillBoundsChanged,
+            onQueueButtonBoundsChanged = onQueueButtonBoundsChanged,
+            onQueueButtonClick = onQueueButtonClick,
+            onLyricsClick = onLyricsClick,
+        )
     }
 }
 
@@ -605,7 +678,6 @@ private fun LyricsBottomBar(
     onLyricsClick: () -> Unit
 ) {
     val timelineState = LocalPlayerTimelineState.current ?: return
-    val queueInteractionSource = remember { MutableInteractionSource() }
     Row(
         Modifier.fillMaxWidth().height(playerBottomBarControlSize),
         verticalAlignment = Alignment.CenterVertically,
@@ -630,237 +702,41 @@ private fun LyricsBottomBar(
                     onClick = if (lyricsVisible) onLyricsSelectorClick else onLyricsClick
                 )
         ) {
-            Crossfade(
-                targetState = LyricsBarContentState(lyricsVisible, selectedLyrics),
-                animationSpec = tween(LyricsTransitionDurationMs)
-            ) { state ->
-                if (state.lyricsVisible) {
-                    LyricsSelectionPillContent(
-                        selectedLyrics = state.selectedLyrics,
-                        chromeCollapsed = lyricsChromeCollapsed && state.lyricsVisible,
-                    )
-                } else if (state.selectedLyrics != null) {
+            val selectionAlpha = animateFloatAsState(
+                targetValue = if (lyricsVisible) 1f else 0f,
+                animationSpec = tween(LyricsTransitionDurationMs),
+                label = "Lyrics source pill visibility",
+            )
+            Box(Modifier.fillMaxSize().graphicsLayer { alpha = 1f - selectionAlpha.value }) {
+                if (selectedLyrics != null) {
                     LyricsTicker(
-                        lyrics = state.selectedLyrics.lyrics,
+                        lyrics = selectedLyrics.lyrics,
                         timelineState = timelineState,
+                        active = !lyricsVisible,
                     )
                 } else {
                     NoLyricsTicker()
                 }
             }
+            Box(Modifier.fillMaxSize().graphicsLayer { alpha = selectionAlpha.value }) {
+                Crossfade(
+                    targetState = selectedLyrics,
+                    animationSpec = tween(LyricsTransitionDurationMs),
+                ) { selection ->
+                    LyricsSelectionPillContent(
+                        selectedLyrics = selection,
+                        chromeCollapsed = lyricsChromeCollapsed && lyricsVisible,
+                    )
+                }
+            }
         }
 
-        FilledTonalIconButton(
+        QueueButton(
             onClick = onQueueButtonClick,
             enabled = !queueButtonHidden,
-            shape = animatedPolygonIconShape(
-                shape = clover6Sided(),
-                pressedShape = MaterialShapes.Square,
-                interactionSource = queueInteractionSource,
-            ),
-            interactionSource = queueInteractionSource,
-            colors = IconButtonDefaults.iconButtonColors(
-                colorScheme.secondary,
-                colorScheme.onSecondary,
-
-                ),
             modifier = Modifier
-                .onGloballyPositioned { onQueueButtonBoundsChanged(it) }
+                .onGloballyPositioned(onQueueButtonBoundsChanged)
                 .graphicsLayer { alpha = if (queueButtonHidden) 0f else 1f },
-        ) {
-            PolygonIconRipple(queueInteractionSource) {
-                Icon(
-                    painterResource(Res.drawable.ic_playlist_play),
-                    contentDescription = "Open queue"
-                )
-            }
-        }
-    }
-}
-
-
-@Composable
-private fun StickyMiniPlayer(
-    index: Int,
-) {
-    val playerSheet = LocalPlayerSheet.current
-    val sheetState = playerSheet?.sheetState
-    val scope = rememberCoroutineScope()
-
-    CollapsedPlayerContent(
-        index,
-        modifier = Modifier.fillMaxWidth(),
-        leadingContent = {
-            PlayerArtwork(
-                contentDescription = "${exampleSong(index)?.album ?: "Album"} cover art",
-                modifier = Modifier
-                    .padding(start = 4.dp)
-                    .size(48.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(colorScheme.primaryFixed),
-            )
-        },
-        trailingContent = {
-            val interactionSource = remember { MutableInteractionSource() }
-            IconButton(
-                onClick = { scope.launch { sheetState?.show() } },
-                interactionSource = interactionSource,
-                shapes = IconButtonDefaults.shapes(),
-                colors = defaultIconButtonColors(),
-                modifier = Modifier.size(44.dp)
-            ) {
-                Icon(
-                    painterResource(Res.drawable.ic_keyboard_arrow_down),
-                    contentDescription = "Collapse Player"
-                )
-            }
-        },
-    )
-}
-
-@Composable
-fun CollapsedPlayer(
-    i: Int,
-    showCover: Boolean = false,
-) {
-    val playerSheet = LocalPlayerSheet.current
-    val playerPadding = LocalPlayerPadding.current
-    val sheetState = playerSheet?.sheetState
-    val scope = rememberCoroutineScope()
-    CollapsedPlayerContent(
-        i,
-        modifier = Modifier
-            .fillMaxWidth()
-            .graphicsLayer {
-                compositingStrategy = CompositingStrategy.ModulateAlpha
-                val sheetProgress = playerSheet?.progressState?.floatValue ?: 0f
-                val positiveProgress = sheetProgress.coerceIn(0f, 1f)
-                alpha = 1 - positiveProgress
-                translationY = -positiveProgress * size.height
-            }
-            .padding(playerPadding)
-            .padding(top = 8.dp, end = 2.dp)
-            .padding(horizontal = collapsedHorizontalPadding.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .clickable { scope.launch { sheetState?.expand() } }
-            .padding(8.dp),
-        leadingContent = {
-            Box(Modifier.size(48.dp)) {
-                AnimatedVisibility(
-                    visible = showCover,
-                    enter = fadeIn(tween(LyricsModeTransitionDurationMs)),
-                    exit = fadeOut(tween(LyricsModeTransitionDurationMs)),
-                ) {
-                    PlayerArtwork(
-                        contentDescription = "${exampleSong(i)?.album ?: "Album"} artwork",
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(colorScheme.primaryFixed),
-                    )
-                }
-            }
-        },
-        trailingContent = {
-            if (!hasTouchInput.value) {
-                val interactionSource = remember { MutableInteractionSource() }
-                IconButton(
-                    onClick = { scope.launch { sheetState?.hide() } },
-                    interactionSource = interactionSource,
-                    modifier = Modifier.size(44.dp),
-                    shapes = IconButtonDefaults.shapes(),
-                    colors = defaultIconButtonColors()
-                ) {
-                    Icon(
-                        painterResource(Res.drawable.ic_close),
-                        contentDescription = "Close Player"
-                    )
-                }
-            }
-        },
-    )
-}
-
-@Composable
-private fun CollapsedPlayerContent(
-    i: Int,
-    modifier: Modifier = Modifier,
-    leadingContent: @Composable () -> Unit,
-    trailingContent: @Composable () -> Unit,
-) {
-    val song = exampleSong(i)
-    ResponsiveRow(
-        modifier = modifier,
-        spacing = 4.dp,
-    ) {
-        item(priority = 90, key = "artwork") {
-            leadingContent()
-        }
-
-        item(priority = 80, key = "metadata") {
-            Column(Modifier.width(128.dp).padding(start = 4.dp)) {
-                val mergedStyle = LocalTextStyle.current.merge(typography.labelLarge)
-                Text(
-                    song?.title ?: "Unknown track",
-                    fontWeight = FontWeight.Bold,
-                    style = mergedStyle,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Text(
-                    song?.artist ?: "Unknown artist",
-                    fontWeight = FontWeight.Normal,
-                    style = mergedStyle,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-        }
-
-        spacer(
-            whenItemHidden = "timeline-volume",
-            key = "metadata-favourite-spacer",
-            weight = 1f,
         )
-
-        item(priority = 60, key = "favourite") {
-            LikeToggle(i)
-        }
-
-        item(priority = 10, key = "timeline-volume", weight = 1f) {
-            TimelineWithVolume(Modifier.fillMaxWidth())
-        }
-
-        item(priority = 49, key = "previous") {
-            PreviousButton(Modifier.size(44.dp))
-        }
-
-        item(
-            priority = 110,
-            key = "play-pause-compact",
-            whenItemHidden = "timeline-volume",
-        ) {
-            CompactPlayPauseButton()
-        }
-
-        item(
-            priority = 110,
-            key = "play-pause",
-            whenItemVisible = "timeline-volume",
-        ) {
-            PlayPauseButton(Modifier.size(44.dp))
-        }
-
-        item(priority = 50, key = "next") {
-            NextButton(Modifier.height(44.dp).width(36.dp))
-        }
-
-        item(priority = 30, key = "repeat") {
-            RepeatButton(Modifier.size(44.dp))
-        }
-
-        item(priority = 100, key = "trailing") {
-            trailingContent()
-        }
     }
 }

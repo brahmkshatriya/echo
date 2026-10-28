@@ -87,7 +87,7 @@ fun Modifier.playerBackground(
     )
 
     return fillMaxSize().graphicsLayer {
-        val sheetProgress = playerSheet?.progressState?.floatValue ?: 0f
+        val sheetProgress = playerSheet?.progressState?.value ?: 0f
         val positiveProgress = sheetProgress.coerceIn(0f, 1f)
         val backProgress = playerSheet?.backProgressState?.floatValue ?: 0f
         clip = true
@@ -109,7 +109,7 @@ fun Modifier.playerBackground(
             val maxStrokePx = 0.5.dp.toPx()
             onDrawWithContent {
                 drawContent()
-                val progress = (playerSheet?.progressState?.floatValue ?: 0f).coerceIn(0f, 1f)
+                val progress = (playerSheet?.progressState?.value ?: 0f).coerceIn(0f, 1f)
                 val collapsed = 1f - progress
                 val strokeWidth = maxStrokePx * collapsed
                 if (strokeWidth <= 0f) return@onDrawWithContent

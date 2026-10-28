@@ -11,7 +11,9 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven("https://redirector.kotlinlang.org/maven/compose-dev")
+        maven("https://packages.jetbrains.team/maven/p/cmp/dev") {
+            content { includeGroup("org.jetbrains.skiko") }
+        }
     }
 }
 

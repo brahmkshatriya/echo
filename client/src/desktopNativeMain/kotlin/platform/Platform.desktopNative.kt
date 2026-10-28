@@ -7,6 +7,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.Clipboard
 import androidx.compose.ui.platform.LocalWindowInfo
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.IntVar
@@ -15,12 +16,13 @@ import kotlinx.cinterop.get
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.value
-import sdl3.SDL_GetTouchDeviceType
-import sdl3.SDL_GetTouchDevices
-import sdl3.SDL_TOUCH_DEVICE_DIRECT
 import sdl3.SDL_DisableScreenSaver
 import sdl3.SDL_EnableScreenSaver
+import sdl3.SDL_GetTouchDeviceType
+import sdl3.SDL_GetTouchDevices
 import sdl3.SDL_ScreenSaverEnabled
+import sdl3.SDL_SetClipboardText
+import sdl3.SDL_TOUCH_DEVICE_DIRECT
 import sdl3.SDL_free
 import kotlin.experimental.ExperimentalNativeApi
 import kotlin.native.Platform as NativePlatform
@@ -67,4 +69,9 @@ internal actual fun KeepScreenAwake(enabled: Boolean) {
         if (enabled) SDL_DisableScreenSaver()
         onDispose { if (enabled && wasEnabled) SDL_EnableScreenSaver() }
     }
+}
+
+@OptIn(ExperimentalForeignApi::class)
+internal actual suspend fun Clipboard.setPlainText(text: String) {
+    SDL_SetClipboardText(text)
 }

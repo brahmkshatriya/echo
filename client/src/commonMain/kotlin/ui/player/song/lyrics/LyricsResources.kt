@@ -16,9 +16,11 @@ internal data class LyricsSelectionItem(
 )
 
 @Composable
-internal fun rememberLyricsSelections(): List<LyricsSelectionItem> {
-    val selections by produceState(emptyList()) {
-        value = withContext(Dispatchers.Default) { loadLyricsSelections() }
+internal fun rememberLyricsSelections(load: Boolean = true): List<LyricsSelectionItem> {
+    val selections by produceState(emptyList(), load) {
+        if (load && value.isEmpty()) {
+            value = withContext(Dispatchers.Default) { loadLyricsSelections() }
+        }
     }
     return selections
 }

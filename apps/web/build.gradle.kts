@@ -17,7 +17,6 @@ kotlin {
     sourceSets {
         wasmJsMain.dependencies {
             implementation(projects.client)
-            implementation("org.jetbrains.skiko:skiko-wasm-js:0.152.0")
         }
     }
 }

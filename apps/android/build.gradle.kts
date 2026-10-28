@@ -12,11 +12,14 @@ val gitCount = execute("git", "rev-list", "--count", "HEAD").toInt()
 
 android {
     namespace = "dev.brahmkshatriya.echo"
-    compileSdk = libs.versions.compileSdk.get().toInt()
+    compileSdk {
+        val (major, minor) = libs.versions.compileSdk.get().split('.').map(String::toInt)
+        version = release(major) { minorApiLevel = minor }
+    }
 
     defaultConfig {
         applicationId = group.toString()
-        minSdk = 24
+        minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = compileSdk
         versionCode = gitCount
         versionName = "${version}-$gitHash"

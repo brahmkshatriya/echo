@@ -141,12 +141,11 @@ private fun resolveCollapsedTitle(
     return low to ellipsizedTitlePrefix(text, low)
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScaledTopAppBar(
+    modifier: Modifier = Modifier,
     title: String,
     subtitle: String? = null,
-    modifier: Modifier = Modifier,
     navigationIcon: (@Composable () -> Unit)? = null,
     actions: (@Composable RowScope.() -> Unit)? = null,
     collapsedHeight: Dp = TopAppBarDefaults.MediumAppBarCollapsedHeight,
@@ -379,6 +378,7 @@ fun ScaledTopAppBar(
             }
 
             VariableText(
+                modifier = Modifier.layoutId("title"),
                 text = title,
                 peakPosition = { null },
                 glyphXPositions = titleX,
@@ -394,10 +394,8 @@ fun ScaledTopAppBar(
                         (CollapsedTitleWidthAxis - ExpandedTitleWidthAxis) * collapseFraction()
                 },
                 fontScale = { 1f + (collapsedTitleScale - 1f) * collapseFraction() },
-                scaleFromBottom = false,
                 uniformLines = { titleLines.value },
                 lineHeight = expandedTitleStyle.lineHeight,
-                modifier = Modifier.layoutId("title"),
             )
 
             subtitle?.let {

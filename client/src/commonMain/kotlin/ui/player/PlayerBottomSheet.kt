@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.systemGestures
 import androidx.compose.foundation.pager.HorizontalPager
@@ -19,16 +20,12 @@ import androidx.compose.material3.SheetValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.Stable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
@@ -42,175 +39,44 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import dev.brahmkshatriya.echo.app.playback.PlayerSession
+import dev.brahmkshatriya.echo.app.playback.ProvidePlaybackSession
 import dev.brahmkshatriya.echo.app.ui.components.BetterSheet
 import dev.brahmkshatriya.echo.app.ui.components.BetterSheetScaffold
 import dev.brahmkshatriya.echo.app.ui.components.blurFadePagerTransition
 import dev.brahmkshatriya.echo.app.ui.components.paddingMask
-import dev.brahmkshatriya.echo.app.ui.player.song.ExampleQueueGroup
-import dev.brahmkshatriya.echo.app.ui.player.song.LocalPlayerItems
-import dev.brahmkshatriya.echo.app.ui.player.song.PlayerPillTransition
-import dev.brahmkshatriya.echo.app.ui.player.song.ProvideSongPlayerState
-import dev.brahmkshatriya.echo.app.ui.player.song.SharedPlayerQueueOverlay
-import dev.brahmkshatriya.echo.app.ui.player.song.SongPlayerArtworkHost
-import dev.brahmkshatriya.echo.app.ui.player.song.SongPlayerPage
-import dev.brahmkshatriya.echo.app.ui.player.song.exampleQueueGroups
-import dev.brahmkshatriya.echo.app.ui.player.song.exampleSongs
-import dev.brahmkshatriya.echo.app.ui.player.song.maxSongCoverSize
-import dev.brahmkshatriya.echo.app.ui.player.song.rememberPlayerPillTransition
+import dev.brahmkshatriya.echo.app.ui.player.artwork.MaxPlayerArtworkSize
+import dev.brahmkshatriya.echo.app.ui.player.artwork.PlayerArtworkHost
+import dev.brahmkshatriya.echo.app.ui.player.components.PlayerPillTransition
+import dev.brahmkshatriya.echo.app.ui.player.components.rememberPlayerPillTransition
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import kotlin.math.abs
+import kotlin.math.roundToInt
 
 val LocalPlayerPadding = compositionLocalOf { PaddingValues.Zero }
 val LocalPlayerSheet = staticCompositionLocalOf<BetterSheet?> { null }
-val LocalNowPlayingControls = staticCompositionLocalOf<PlayerControlsState?> { null }
-val LocalInitialPlayerSheetValue = staticCompositionLocalOf { SheetValue.PartiallyExpanded }
-
-data class PlayerQueue(
-    val id: Int,
-    val title: String,
-    val songs: List<Int>,
-    val unshuffledOrder: List<Int> = songs,
-    val shuffleEnabled: Boolean = false,
-    val repeatMode: RepeatMode = RepeatMode.Off,
-)
-
-@Stable
-class PlayerControlsState(private val songCount: Int) {
-    var isPlaying by mutableStateOf(false)
-    var radioEnabled by mutableStateOf(false)
-    var currentSong by mutableIntStateOf(0)
-    private var favouriteSongs by mutableStateOf(emptySet<Int>())
-
-    fun isFavourite(song: Int): Boolean = song in favouriteSongs
-
-    fun setFavourite(song: Int, favourite: Boolean) {
-        if (song !in 0 until songCount) return
-        favouriteSongs = if (favourite) favouriteSongs + song else favouriteSongs - song
-    }
-
-    private val initialGroups = if (songCount == exampleSongs.size) {
-        exampleQueueGroups
-    } else listOf(ExampleQueueGroup("Sample Playlist", songCount))
-    var queues by mutableStateOf(buildList {
-        var nextSong = 0
-        initialGroups.forEachIndexed { index, group ->
-            val songs = (nextSong until nextSong + group.size).toList()
-            add(PlayerQueue(index, group.title, songs))
-            nextSong += group.size
-        }
-    })
-        private set
-
-    val playbackOrder: List<Int> get() = queues.flatMap { it.songs }
-    fun songAt(page: Int): Int = playbackOrder.getOrElse(page) { -1 }
-    fun pageOf(song: Int): Int = playbackOrder.indexOf(song)
-    fun queueFor(song: Int): PlayerQueue? = queues.firstOrNull { song in it.songs }
-
-    val shuffleEnabled: Boolean get() = queueFor(currentSong)?.shuffleEnabled == true
-    var repeatMode: RepeatMode
-        get() = queueFor(currentSong)?.repeatMode ?: RepeatMode.Off
-        set(value) {
-            updateQueue(currentSong) { it.copy(repeatMode = value) }
-        }
-
-    private fun updateQueue(song: Int, transform: (PlayerQueue) -> PlayerQueue) {
-        queues = queues.map { queue ->
-            if (song in queue.songs) transform(queue) else queue
-        }
-    }
-
-    fun setShuffle(enabled: Boolean, currentSong: Int) {
-        updateQueue(currentSong) { queue ->
-            if (queue.shuffleEnabled == enabled) queue else {
-                val reordered = if (enabled) {
-                    val remaining = queue.unshuffledOrder.filterNot { it == currentSong }
-                    val shuffled = remaining.shuffled()
-                    val next =
-                        if (remaining.size > 1 && shuffled == remaining) shuffled.reversed() else shuffled
-                    listOf(currentSong) + next
-                } else queue.unshuffledOrder
-                queue.copy(songs = reordered, shuffleEnabled = enabled)
-            }
-        }
-    }
-
-    fun selectRadioNext(song: Int) {
-        updateQueue(song) { queue ->
-            val position = queue.songs.indexOf(song)
-            if (position < 0 || queue.songs.size <= 2) return@updateQueue queue
-            val nextIndex = if (position == queue.songs.lastIndex) {
-                if (queue.repeatMode == RepeatMode.Off) return@updateQueue queue else 0
-            } else position + 1
-            val candidateIndex = (nextIndex + 1) % queue.songs.size
-            if (candidateIndex == position || candidateIndex == nextIndex) queue else {
-                val songs = queue.songs.toMutableList()
-                songs[candidateIndex] = songs[nextIndex]
-                songs[nextIndex] = queue.songs[candidateIndex]
-                queue.copy(
-                    songs = songs,
-                    unshuffledOrder = if (queue.shuffleEnabled) queue.unshuffledOrder else songs
-                )
-            }
-        }
-    }
-
-    fun moveQueueSong(fromSong: Int, toIndex: Int) {
-        val target = songAt(toIndex)
-        val fromQueue = queueFor(fromSong) ?: return
-        if (queueFor(target)?.id != fromQueue.id) return
-        updateQueue(fromSong) { queue ->
-            val from = queue.songs.indexOf(fromSong)
-            val to = queue.songs.indexOf(target)
-            if (from < 0 || to < 0 || from == to) queue else {
-                val songs = queue.songs.toMutableList().apply { add(to, removeAt(from)) }
-                queue.copy(
-                    songs = songs,
-                    unshuffledOrder = if (queue.shuffleEnabled) queue.unshuffledOrder else songs
-                )
-            }
-        }
-    }
-
-    fun nextSong(song: Int = currentSong): Int? {
-        val queueIndex = queues.indexOfFirst { song in it.songs }
-        if (queueIndex < 0) return null
-        val queue = queues[queueIndex]
-        val position = queue.songs.indexOf(song)
-        if (position < queue.songs.lastIndex) return queue.songs[position + 1]
-        if (queue.repeatMode != RepeatMode.Off) return queue.songs.firstOrNull()
-        return queues.getOrNull(queueIndex + 1)?.songs?.firstOrNull()
-    }
-
-    fun previousSong(song: Int = currentSong): Int? {
-        val queueIndex = queues.indexOfFirst { song in it.songs }
-        if (queueIndex < 0) return null
-        val queue = queues[queueIndex]
-        val position = queue.songs.indexOf(song)
-        if (position > 0) return queue.songs[position - 1]
-        if (queue.repeatMode != RepeatMode.Off) return queue.songs.lastOrNull()
-        return queues.getOrNull(queueIndex - 1)?.songs?.lastOrNull()
-    }
+val LocalPlayerControls = staticCompositionLocalOf<PlayerSession> {
+    error("PlayerBottomSheet must provide player controls")
 }
-
-enum class RepeatMode { Off, All, One }
+val LocalInitialPlayerSheetValue = staticCompositionLocalOf { SheetValue.PartiallyExpanded }
 
 val LocalPlayerPagerState =
     staticCompositionLocalOf<PagerState?> { null }
-val LocalPlayerControls =
-    staticCompositionLocalOf<PlayerControlsState?> { null }
 internal val LocalPlayerSkipNavigator =
     staticCompositionLocalOf<PlayerSkipNavigator?> { null }
 internal val LocalPlayerQueueTransition =
-    staticCompositionLocalOf<PlayerPillTransition?> { null }
+    staticCompositionLocalOf<PlayerPillTransition> { error("Player navigation must provide the queue transition") }
 @Composable
-fun ProvidePlayerControls(
+private fun ProvidePlayerNavigation(
     pagerState: PagerState,
-    controls: PlayerControlsState,
     content: @Composable () -> Unit,
 ) {
+    val controls = LocalPlayerControls.current
     val scope = rememberCoroutineScope()
     val skipNavigator = remember(pagerState, controls) {
         PlayerSkipNavigator(pagerState, controls, scope)
@@ -218,7 +84,6 @@ fun ProvidePlayerControls(
     val queueTransition = rememberPlayerPillTransition("queue")
     CompositionLocalProvider(
         LocalPlayerPagerState provides pagerState,
-        LocalPlayerControls provides controls,
         LocalPlayerSkipNavigator provides skipNavigator,
         LocalPlayerQueueTransition provides queueTransition,
         content = content,
@@ -230,9 +95,10 @@ fun ProvidePlayerControls(
 fun Modifier.applyPlayerTranslation() = run {
     val playerSheet = LocalPlayerSheet.current ?: return@run this
     val thresholdPx = with(LocalDensity.current) { playerSheet.peekHeight.toPx() / 2f }
-    graphicsLayer {
-        val y = playerSheet.offsetState.floatValue - playerSheet.midPointState.intValue
-        translationY = if (y <= thresholdPx) y else (2f * thresholdPx - y).coerceAtLeast(0f)
+    offset {
+        val y = playerSheet.offsetState.value - playerSheet.midPointState.intValue
+        val translation = if (y <= thresholdPx) y else (2f * thresholdPx - y).coerceAtLeast(0f)
+        IntOffset(0, translation.roundToInt())
     }
 }
 
@@ -281,6 +147,7 @@ private fun Modifier.reserveSystemGestureEdges(
 
 @Composable
 fun PlayerBottomSheet(
+    controls: PlayerSession,
     betterSheet: BetterSheet,
     startPadding: Dp = 0.dp,
     bottomPadding: Dp = 0.dp,
@@ -296,28 +163,56 @@ fun PlayerBottomSheet(
     val systemGestureInsets = WindowInsets.systemGestures
     val leftSystemGestureInset = systemGestureInsets.getLeft(density, layoutDirection)
     val rightSystemGestureInset = systemGestureInsets.getRight(density, layoutDirection)
-    val artWorks = LocalPlayerItems.current
-    val controls = remember(artWorks.size) { PlayerControlsState(artWorks.size) }
-
+    val snackbarAnchors = remember { dev.brahmkshatriya.echo.app.ui.errors.PlayerSnackbarAnchors() }
+    val presentation = rememberPlayerPresentationState()
     CompositionLocalProvider(
+        dev.brahmkshatriya.echo.app.ui.errors.LocalPlayerSnackbarAnchors provides snackbarAnchors,
+        LocalPlayerPresentation provides presentation,
         LocalPlayerSheet provides betterSheet,
-        LocalNowPlayingControls provides controls,
+        LocalPlayerControls provides controls,
         LocalPlayerPadding provides remember(startPadding, endPadding, bottomPadding) {
             PaddingValues(start = startPadding, end = endPadding, bottom = bottomPadding)
         }
     ) {
-        val pagerState = rememberPagerState(0, pageCount = { artWorks.size })
-        val currentSong = controls.currentSong
-        LaunchedEffect(pagerState, controls) {
-            snapshotFlow { pagerState.currentPage }.collect { page ->
-                controls.currentSong = controls.songAt(page)
+        val pagerState = rememberPagerState(0, pageCount = { controls.playbackOrder.size })
+        val currentEntryId = controls.currentEntryId
+        val sheetState = betterSheet.sheetState
+        val hasQueue = controls.hasQueue
+        val queueGeneration = controls.queueGeneration
+        // Queue mutations own visibility. Keep this animation at the player root
+        // so navigation and replacing compact content cannot cancel it.
+        LaunchedEffect(sheetState, controls, hasQueue, queueGeneration) {
+            if (!hasQueue) {
+                sheetState.hide()
+            } else if (sheetState.targetValue == SheetValue.Hidden) {
+                sheetState.show()
+            }
+        }
+        LaunchedEffect(sheetState, controls, hasQueue, queueGeneration) {
+            if (!hasQueue) return@LaunchedEffect
+            // A restored queue can still be at the Hidden anchor while its
+            // reveal starts. Only a subsequent dismissal should empty it.
+            snapshotFlow { sheetState.targetValue != SheetValue.Hidden }.first { it }
+            snapshotFlow {
+                sheetState.currentValue == SheetValue.Hidden &&
+                    sheetState.targetValue == SheetValue.Hidden
+            }.first { it }
+            if (controls.queueGeneration == queueGeneration &&
+                sheetState.currentValue == SheetValue.Hidden &&
+                sheetState.targetValue == SheetValue.Hidden) {
+                controls.clearQueue()
             }
         }
         val pageScrolledToTop = remember { mutableStateMapOf<Int, Boolean>() }
         val pageInteractionLocked = remember { mutableStateMapOf<Int, Boolean>() }
+        LaunchedEffect(controls.queueGeneration) {
+            snackbarAnchors.clear()
+            pageScrolledToTop.clear()
+            pageInteractionLocked.clear()
+        }
         val interactionLocked by remember {
             derivedStateOf {
-                pageInteractionLocked[controls.songAt(pagerState.currentPage)] == true
+                pageInteractionLocked[controls.entryIdAt(pagerState.currentPage)] == true
             }
         }
         val backGestureActive by remember {
@@ -327,7 +222,7 @@ fun PlayerBottomSheet(
             derivedStateOf {
                 !interactionLocked &&
                         !backGestureActive &&
-                        pageScrolledToTop[controls.songAt(pagerState.currentPage)] != false
+                        pageScrolledToTop[controls.entryIdAt(pagerState.currentPage)] != false
             }
         }
 
@@ -349,6 +244,8 @@ fun PlayerBottomSheet(
             scaleY = scale
             transformOrigin = TransformOrigin(0.5f, 1f)
         }
+        ProvidePlaybackSession(controls, pagerState) {
+        Box(Modifier.fillMaxSize()) {
         BetterSheetScaffold(
             sheetContent = {
                 BoxWithConstraints(Modifier.fillMaxSize().graphicsLayer {
@@ -362,57 +259,59 @@ fun PlayerBottomSheet(
                 }) {
                     val queueViewport =
                         Size(constraints.maxWidth.toFloat(), constraints.maxHeight.toFloat())
-                    ProvidePlayerControls(pagerState, controls) {
-                        val queueTransition = LocalPlayerQueueTransition.current
-                        val skipNavigator = LocalPlayerSkipNavigator.current
-                        ProvideSongPlayerState {
-                            Box(Modifier.fillMaxSize()) {
-                                HorizontalPager(
-                                    pagerState,
-                                    Modifier
-                                        .fillMaxSize()
-                                        .reserveSystemGestureEdges(
-                                            leftInsetPx = leftSystemGestureInset,
-                                            rightInsetPx = rightSystemGestureInset,
-                                        ),
-                                    userScrollEnabled = pagerUserScrollEnabled,
-                                    key = { controls.songAt(it) },
-                                ) { page ->
-                                    val song = controls.songAt(page)
-                                    val effectProgress = {
-                                        if (betterSheet.backProgressState.floatValue > 0f) 0f
-                                        else betterSheet.progressState.floatValue.coerceIn(0f, 1f)
+                    if (controls.hasQueue) {
+                        ProvidePlayerNavigation(pagerState) {
+                            val queueTransition = LocalPlayerQueueTransition.current
+                            val skipNavigator = LocalPlayerSkipNavigator.current
+                            ProvidePlayerPresentation {
+                                Box(Modifier.fillMaxSize()) {
+                                    HorizontalPager(
+                                        pagerState,
+                                        Modifier
+                                            .fillMaxSize()
+                                            .reserveSystemGestureEdges(
+                                                leftInsetPx = leftSystemGestureInset,
+                                                rightInsetPx = rightSystemGestureInset,
+                                            ),
+                                        userScrollEnabled = pagerUserScrollEnabled,
+                                        key = { controls.entryIdAt(it) },
+                                    ) { page ->
+                                        val entryId = controls.entryIdAt(page)
+                                        val effectProgress = {
+                                            if (betterSheet.backProgressState.floatValue > 0f) 0f
+                                            else betterSheet.progressState.value.coerceIn(0f, 1f)
+                                        }
+                                        Box(
+                                            Modifier.fillMaxSize()
+                                                .blurFadePagerTransition(pagerState, page, effectProgress)
+                                                .animatedSkipEntrance(skipNavigator, entryId, effectProgress)
+                                        ) {
+                                            MediaPlayerPage(
+                                                i = entryId,
+                                                onScrolledToTopChanged = { scrolledToTop ->
+                                                    pageScrolledToTop[entryId] = scrolledToTop
+                                                },
+                                                onInteractionLockChanged = { locked ->
+                                                    pageInteractionLocked[entryId] = locked
+                                                },
+                                            )
+                                        }
                                     }
-                                    Box(
-                                        Modifier.fillMaxSize()
-                                            .blurFadePagerTransition(pagerState, page, effectProgress)
-                                            .animatedSkipEntrance(skipNavigator, song, effectProgress)
-                                    ) {
-                                        SongPlayerPage(
-                                            i = song,
-                                            onScrolledToTopChanged = { scrolledToTop ->
-                                                pageScrolledToTop[song] = scrolledToTop
-                                            },
-                                            onInteractionLockChanged = { locked ->
-                                                pageInteractionLocked[song] = locked
-                                            },
-                                        )
-                                    }
-                                }
-                                if (queueTransition != null && (queueTransition.open || queueTransition.mounted)) {
-                                    SongPlayerArtworkHost(
-                                        index = currentSong,
-                                        artworkMaxSize = maxSongCoverSize.dp,
-                                        coloredBackground = false,
-                                    ) {
-                                        SharedPlayerQueueOverlay(
-                                            transition = queueTransition,
-                                            viewport = queueViewport,
-                                            currentSong = currentSong,
-                                            onSongSelected = { song ->
-                                                skipNavigator?.selectSong(song)
-                                            },
-                                        )
+                                    if (queueTransition.open || queueTransition.mounted) {
+                                        PlayerArtworkHost(
+                                            index = currentEntryId,
+                                            artworkMaxSize = MaxPlayerArtworkSize.dp,
+                                            coloredBackground = false,
+                                        ) {
+                                            SharedPlayerQueueOverlay(
+                                                transition = queueTransition,
+                                                viewport = queueViewport,
+                                                currentEntryId = currentEntryId,
+                                                onEntrySelected = { entryId ->
+                                                    skipNavigator?.selectEntry(entryId)
+                                                },
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -424,10 +323,11 @@ fun PlayerBottomSheet(
             betterSheet = betterSheet,
             sheetShape = RectangleShape,
             sheetDragHandle = null,
+            snackBarHost = {},
             sheetShadowElevation = 0.dp,
             sheetContainerColor = Color.Unspecified,
             sheetMaxWidth = Dp.Unspecified,
-            sheetSwipeEnabled = !interactionLocked,
+            sheetSwipeEnabled = controls.hasQueue && !interactionLocked,
             containerColor = Color.Unspecified,
             content = {
                 Box(Modifier.paddingMask().then(modifier).applyPlayerTranslation()) {
@@ -435,5 +335,10 @@ fun PlayerBottomSheet(
                 }
             }
         )
+        dev.brahmkshatriya.echo.app.ui.errors.PlaybackErrors(
+            controls, betterSheet, snackbarAnchors, startPadding, endPadding, bottomPadding,
+        )
+        }
+        }
     }
 }

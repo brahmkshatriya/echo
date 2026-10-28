@@ -6,8 +6,11 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import platform.UIKit.UIDevice
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.platform.ClipEntry
+import androidx.compose.ui.platform.Clipboard
 import platform.UIKit.UIApplication
+import platform.UIKit.UIDevice
 
 private class IosPlatform : Platform {
     override val name: String = buildString {
@@ -36,4 +39,9 @@ internal actual fun KeepScreenAwake(enabled: Boolean) {
             if (enabled) application.idleTimerDisabled = wasDisabled
         }
     }
+}
+
+@OptIn(ExperimentalComposeUiApi::class)
+internal actual suspend fun Clipboard.setPlainText(text: String) {
+    setClipEntry(ClipEntry.withPlainText(text))
 }

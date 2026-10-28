@@ -25,15 +25,15 @@ import androidx.compose.material3.MaterialTheme.motionScheme
 import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.CompositionLocalProvider
+import com.skydoves.landscapist.image.LocalLandscapist
+import dev.brahmkshatriya.echo.app.playback.PlaybackComponent
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalWindowInfo
@@ -42,8 +42,8 @@ import androidx.compose.ui.unit.isUnspecified
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.savedstate.serialization.SavedStateConfiguration
-import dev.brahmkshatriya.echo.app.platform.PreloadComposeResources
 import dev.brahmkshatriya.echo.app.platform.getPlatform
+import dev.brahmkshatriya.echo.app.playback.PlayerSession
 import dev.brahmkshatriya.echo.app.ui.components.BetterNavDisplay
 import dev.brahmkshatriya.echo.app.ui.components.LocalMainBackStack
 import dev.brahmkshatriya.echo.app.ui.components.expandingButton
@@ -52,13 +52,12 @@ import dev.brahmkshatriya.echo.app.ui.main.ExtensionSelectorFABMenu
 import dev.brahmkshatriya.echo.app.ui.main.MainRoute
 import dev.brahmkshatriya.echo.app.ui.main.MainSideNavigation
 import dev.brahmkshatriya.echo.app.ui.player.LocalInitialPlayerSheetValue
-import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerSheet
+import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerControls
 import dev.brahmkshatriya.echo.app.ui.player.PlayerBottomSheet
 import dev.brahmkshatriya.echo.app.ui.theme.EchoTheme
 import dev.brahmkshatriya.echo.app.ui.theme.LocalSurfaceColor
 import echo.client.generated.resources.Res
 import echo.client.generated.resources.compose_multiplatform
-import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.SerializersModule
@@ -77,8 +76,12 @@ private val module = SerializersModule {
 private val config = SavedStateConfiguration { serializersModule = module }
 
 @Composable
-fun App() = EchoTheme {
-    PreloadComposeResources()
+fun App(playback: PlaybackComponent) = CompositionLocalProvider(LocalLandscapist provides playback.imageLoader) {
+    EchoTheme { AppContent(playback.session) }
+}
+
+@Composable
+private fun AppContent(session: PlayerSession) {
     val initialSheetValue = LocalInitialPlayerSheetValue.current
     val betterSheet = rememberBetterSheet(80.dp, initialSheetValue)
     val backStack = rememberNavBackStack(config, Main(MainRoute.Home))
@@ -97,20 +100,19 @@ fun App() = EchoTheme {
         tween(),
         label = "Content bottom padding",
     )
-    val sheetPaddingState = remember { mutableStateOf(0.dp) }
-    LaunchedEffect(betterSheet) {
-        snapshotFlow { betterSheet.progressState.floatValue < -0.8f }.collect {
-            sheetPaddingState.value = if (it) 0.dp
+    val sheetPadding by remember(betterSheet) {
+        derivedStateOf {
+            if (betterSheet.progressState.value < -0.8f) 0.dp
             else (betterSheet.peekHeight - 8.dp).coerceAtLeast(0.dp)
         }
     }
     val animatedSheetPadding by animateDpAsState(
-        sheetPaddingState.value,
+        sheetPadding,
         tween(),
         label = "Content sheet padding",
     )
 
-    PlayerBottomSheet(betterSheet, targetStartPadding, targetBottomPadding) {
+    PlayerBottomSheet(session, betterSheet, targetStartPadding, targetBottomPadding) {
         val modifier = Modifier
             .fillMaxSize()
             .padding(
@@ -170,8 +172,7 @@ fun Test(string: String) {
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        val scope = rememberCoroutineScope()
-        val playerUi = LocalPlayerSheet.current
+        val controls = LocalPlayerControls.current
         var showContent by rememberSaveable { mutableStateOf(false) }
         val backStack = LocalMainBackStack.current
         ExpandingButton(onClick = {
@@ -179,18 +180,19 @@ fun Test(string: String) {
                 if (it.size == 1) return@let
                 it.removeLastOrNull()
             }
-            scope.launch { playerUi?.sheetState?.show() }
+            controls.ensureQueue()
         }) {
             Text("Back")
         }
         ExpandingButton(onClick = {
             backStack?.add(Media(backStack.size.toString()))
+            controls.ensureQueue()
         }) {
             Text("Next")
         }
         ExpandingButton(onClick = {
             showContent = !showContent
-            scope.launch { playerUi?.sheetState?.show() }
+            controls.ensureQueue()
         }) {
             Text(string)
         }

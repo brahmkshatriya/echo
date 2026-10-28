@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.app.ui.player.song
+package dev.brahmkshatriya.echo.app.ui.player.artwork
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
@@ -13,13 +13,14 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.CornerRadius
@@ -36,13 +37,15 @@ import androidx.compose.ui.unit.dp
 import com.kmpalette.generatePalette
 import com.kmpalette.palette.graphics.Palette
 import com.materialkolor.ktx.animateColorScheme
-import com.skydoves.landscapist.image.LandscapistImage
-import com.skydoves.landscapist.image.convertToImageBitmap
 import com.skydoves.landscapist.core.ImageRequest
 import com.skydoves.landscapist.core.model.ImageResult
 import com.skydoves.landscapist.core.scheduler.DecodePriority
+import com.skydoves.landscapist.image.LandscapistImage
+import com.skydoves.landscapist.image.convertToImageBitmap
 import com.skydoves.landscapist.image.getLandscapist
-import dev.brahmkshatriya.echo.app.ui.player.PlayerControlsState
+import dev.brahmkshatriya.echo.app.playback.PlayerSession
+import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerControls
+import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerSheet
 import dev.brahmkshatriya.echo.app.ui.player.PlayerItemHost
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
@@ -50,26 +53,23 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-val LocalPlayerItems = staticCompositionLocalOf { exampleSongs.map { it.artworkUrl } }
-
 @Composable
-internal fun PreloadAdjacentSongArtwork(pagerState: PagerState, controls: PlayerControlsState) {
-    val artworks = LocalPlayerItems.current
+internal fun PreloadAdjacentArtwork(pagerState: PagerState, controls: PlayerSession) {
     val landscapist = getLandscapist()
     val requestSize = with(LocalDensity.current) {
-        maxSongCoverSize.dp.roundToPx().coerceAtLeast(1)
+        MaxPlayerArtworkSize.dp.roundToPx().coerceAtLeast(1)
     }
 
-    LaunchedEffect(pagerState, controls, artworks, landscapist, requestSize) {
+    LaunchedEffect(pagerState, controls, landscapist, requestSize) {
         snapshotFlow { pagerState.currentPage to controls.playbackOrder }.collectLatest { (currentPage, order) ->
             val adjacentPages = listOf(currentPage - 1, currentPage + 1)
                 .mapNotNull { order.getOrNull(it) }
-                .filter { it in artworks.indices }
+
 
             coroutineScope {
                 adjacentPages.forEach { page ->
                     launch {
-                        val artworkModel = artworks[page]
+                        val artworkModel = controls.mediaFor(page)?.artworkUri ?: return@launch
                         landscapist.load(
                             ImageRequest.builder()
                                 .model(artworkModel)
@@ -91,6 +91,8 @@ internal fun PreloadAdjacentSongArtwork(pagerState: PagerState, controls: Player
         }
     }
 }
+
+internal const val MaxPlayerArtworkSize = 360
 
 private data class PlayerArtworkCacheEntry(
     val artwork: ImageBitmap? = null,
@@ -156,31 +158,13 @@ internal fun cachePlayerArtwork(model: String, artwork: ImageBitmap) {
 }
 
 @Composable
-fun SongPlayerPage(
-    i: Int,
-    onScrolledToTopChanged: (Boolean) -> Unit = {},
-    onInteractionLockChanged: (Boolean) -> Unit = {},
-) {
-    SongPlayerArtworkHost(
-        index = i,
-        artworkMaxSize = maxSongCoverSize.dp,
-    ) {
-        SongPlayerItem(
-            i = i,
-            onScrolledToTopChanged = onScrolledToTopChanged,
-            onLyricsSelectorOpenChanged = onInteractionLockChanged,
-        )
-    }
-}
-
-@Composable
-internal fun SongPlayerArtworkHost(
+internal fun PlayerArtworkHost(
     index: Int,
     artworkMaxSize: Dp,
     coloredBackground: Boolean = true,
     content: @Composable () -> Unit,
 ) {
-    val artworkModel = LocalPlayerItems.current.getOrNull(index)
+    val artworkModel = LocalPlayerControls.current.mediaFor(index)?.artworkUri
     val cachedArtwork = remember(artworkModel) {
         artworkModel?.let(PlayerArtworkMemoryCache::get)
     }
@@ -232,16 +216,23 @@ internal fun SongPlayerArtworkHost(
 
     val isDark = isSystemInDarkTheme()
     val scheme = remember(palette, isDark, artworkModel) {
-        palette.artworkColorScheme(isDark, artworkModel?.hashCode() ?: 0)
+        palette.artworkColorScheme(isDark, artworkModel.hashCode())
     }
     val favouriteAccent = remember(palette, artworkModel) {
-        palette.favouriteArtworkAccent(artworkModel?.hashCode() ?: 0)
+        palette.favouriteArtworkAccent(artworkModel.hashCode())
     }
+    val sheet = LocalPlayerSheet.current
+    val animateArtworkColors by remember(sheet) {
+        derivedStateOf { sheet == null || sheet.progressState.value > 0f }
+    }
+    // A cold artwork load should not recompose all retained, hidden controls
+    // for every intermediate palette color while the compact player is shown.
+    val displayedScheme = if (animateArtworkColors) animateColorScheme(scheme) else scheme
     CompositionLocalProvider(
         LocalPlayerArtwork provides artwork,
         LocalPlayerFavouriteAccent provides favouriteAccent,
     ) {
-        MaterialExpressiveTheme(animateColorScheme(scheme)) {
+        MaterialExpressiveTheme(displayedScheme) {
             PlayerItemHost(
                 backgroundColor = if (coloredBackground) colorScheme.primaryContainer else null,
                 outlineColor = if (coloredBackground) colorScheme.primary.copy(alpha = 0.1f) else null,
@@ -260,19 +251,25 @@ internal fun Modifier.grayCoverOutline(
     outlineColor: Color,
     outlineWidth: Dp = 0.5.dp,
     outlineRadius: Dp = 8.dp,
+    outlineScale: () -> Float = { 1f },
 ): Modifier = drawWithCache {
-    val strokeWidth = outlineWidth.toPx().coerceAtLeast(0f)
-    val visible = strokeWidth > 0f && size.width > strokeWidth * 2 && size.height > strokeWidth * 2
-    val inset = strokeWidth / 2f
-    val topLeft = Offset(inset, inset)
-    val bounds = Size(size.width - strokeWidth, size.height - strokeWidth)
-    val radius = CornerRadius((outlineRadius.toPx() - inset).coerceAtLeast(0f))
-    val stroke = Stroke(width = strokeWidth)
+    val baseStrokeWidth = outlineWidth.toPx().coerceAtLeast(0f)
+    val baseRadius = outlineRadius.toPx()
     val color = outlineColor.copy(alpha = 0.5f)
     onDrawWithContent {
         drawContent()
-        if (visible) {
-            drawRoundRect(color, topLeft, bounds, radius, style = stroke)
+        // Sheet scaling changes drawing, without recomposing the image subtree.
+        val scale = outlineScale().coerceAtLeast(0.001f)
+        val strokeWidth = baseStrokeWidth / scale
+        if (strokeWidth > 0f && size.width > strokeWidth * 2 && size.height > strokeWidth * 2) {
+            val inset = strokeWidth / 2f
+            drawRoundRect(
+                color = color,
+                topLeft = Offset(inset, inset),
+                size = Size(size.width - strokeWidth, size.height - strokeWidth),
+                cornerRadius = CornerRadius((baseRadius / scale - inset).coerceAtLeast(0f)),
+                style = Stroke(width = strokeWidth),
+            )
         }
     }
 }
@@ -284,8 +281,9 @@ internal fun PlayerArtwork(
     contentScale: ContentScale = ContentScale.Crop,
     outlineWidth: Dp = 0.5.dp,
     outlineRadius: Dp = 4.dp,
+    outlineScale: () -> Float = { 1f },
 ) {
-    Box(modifier.grayCoverOutline(Color.Gray, outlineWidth, outlineRadius)) {
+    Box(modifier.grayCoverOutline(Color.Gray, outlineWidth, outlineRadius, outlineScale)) {
         Crossfade(
             targetState = LocalPlayerArtwork.current,
             modifier = Modifier.matchParentSize(),

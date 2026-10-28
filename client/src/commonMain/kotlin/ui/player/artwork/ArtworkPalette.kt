@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.app.ui.player.song
+package dev.brahmkshatriya.echo.app.ui.player.artwork
 
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.darkColorScheme
@@ -253,14 +253,14 @@ private fun List<Sample>.monochromeRestraint(): Double {
     var colorWeight = 0.0
     var hueX = 0.0
     var hueY = 0.0
-    for (cluster in this) {
-        val chroma = cluster.color.chroma
+    for ((color, population) in this) {
+        val chroma = color.chroma
         if (chroma < 0.018) continue
-        val weight = cluster.population / total *
+        val weight = population / total *
                 ((chroma - 0.018) / 0.075).coerceIn(0.0, 1.0)
         colorWeight += weight
-        hueX += cos(cluster.color.hue) * weight
-        hueY += sin(cluster.color.hue) * weight
+        hueX += cos(color.hue) * weight
+        hueY += sin(color.hue) * weight
     }
     if (colorWeight < 0.001) return 1.0
     val coherence = (sqrt(hueX * hueX + hueY * hueY) / colorWeight).coerceIn(0.0, 1.0)

@@ -35,14 +35,20 @@ kotlin {
     
     android {
         namespace = group.toString()
-        compileSdk = 37
+        compileSdk {
+            val (major, minor) = libs.versions.compileSdk.get().split('.').map(String::toInt)
+            version = release(major) { minorApiLevel = minor }
+        }
+        minSdk = libs.versions.minSdk.get().toInt()
         androidResources.enable = true
     }
 
     sourceSets {
         commonMain.dependencies {
+            api(libs.kmedia.notification)
+            implementation(libs.kmplayer.core)
+            implementation(libs.kmplayer.compose)
             api(libs.bundles.parsing)
-            api(libs.ktor.client.core)
 
             api(libs.bundles.compose)
             api(libs.androidx.navigation)

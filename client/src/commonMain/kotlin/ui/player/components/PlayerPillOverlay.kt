@@ -1,4 +1,4 @@
-package dev.brahmkshatriya.echo.app.ui.player.song
+package dev.brahmkshatriya.echo.app.ui.player.components
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.VectorConverter

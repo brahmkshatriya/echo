@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import echo.client.generated.resources.GoogleSansFlex
 import echo.client.generated.resources.Res
+import kotlinx.coroutines.sync.withLock
 import org.jetbrains.compose.resources.getFontResourceBytes
 import org.jetbrains.compose.resources.rememberResourceEnvironment
 import org.jetbrains.skia.Color4f
@@ -37,7 +38,7 @@ import kotlin.math.roundToInt
 import kotlin.math.sin
 
 private var variableLyricsBaseTypeface by mutableStateOf<Typeface?>(null)
-private var variableLyricsTypefaceLoading by mutableStateOf(false)
+private val variableLyricsTypefaceMutex = kotlinx.coroutines.sync.Mutex()
 private val variableLyricsTypefaces = mutableMapOf<Int, Typeface>()
 private val variableTextUniformTypefaces = mutableMapOf<Int, Typeface>()
 
@@ -51,23 +52,18 @@ private suspend fun ensureVariableTextBaseTypeface(
     environment: org.jetbrains.compose.resources.ResourceEnvironment,
 ): Typeface {
     variableLyricsBaseTypeface?.let { return it }
-    if (variableLyricsTypefaceLoading) {
-        while (variableLyricsTypefaceLoading) kotlinx.coroutines.yield()
-        return requireNotNull(variableLyricsBaseTypeface)
-    }
-
-    variableLyricsTypefaceLoading = true
-    return try {
-        val bytes = getFontResourceBytes(environment, Res.font.GoogleSansFlex)
-        requireNotNull(FontMgr.default.makeFromData(Data.makeFromBytes(bytes)))
-            .also { variableLyricsBaseTypeface = it }
-    } finally {
-        variableLyricsTypefaceLoading = false
+    return variableLyricsTypefaceMutex.withLock {
+        variableLyricsBaseTypeface ?: run {
+            val bytes = getFontResourceBytes(environment, Res.font.GoogleSansFlex)
+            requireNotNull(FontMgr.default.makeFromData(Data.makeFromBytes(bytes)))
+                .also { variableLyricsBaseTypeface = it }
+        }
     }
 }
 
 @Composable
 internal actual fun VariableText(
+    modifier: Modifier,
     text: String,
     peakPosition: () -> Float?,
     glyphXPositions: FloatArray,
@@ -77,6 +73,7 @@ internal actual fun VariableText(
     horizontalRevealPosition: (() -> Float?)?,
     bloom: (() -> LyricsBloom?)?,
     horizontalRevealFeather: Float,
+    unrevealedAlpha: () -> Float,
     offsetX: Float,
     offsetY: Float,
     color: Color,
@@ -87,8 +84,13 @@ internal actual fun VariableText(
     scaleFromBottom: Boolean,
     uniformLines: (() -> List<String>)?,
     lineHeight: TextUnit,
-    modifier: Modifier,
 ) {
+    if (remember(text) { text.any { it.code > 0x7f } }) {
+        ShapedVariableText(text, peakPosition, glyphXPositions, glyphBaselines, glyphPeakPositions,
+            horizontalRevealPosition, bloom, unrevealedAlpha, offsetX, offsetY, color, fontSize,
+            uniformWeight, uniformWidth, fontScale, scaleFromBottom, uniformLines, lineHeight, modifier)
+        return
+    }
     val environment = rememberResourceEnvironment()
     LaunchedEffect(environment) {
         ensureVariableTextBaseTypeface(environment)
@@ -216,8 +218,9 @@ internal actual fun VariableText(
             }
 
             drawBloom()
+            val baseAlpha = unrevealedAlpha().coerceIn(0f, 1f)
             glyphTexts.indices.forEach { index ->
-                drawGlyph(index, LyricsMinAlpha)
+                drawGlyph(index, baseAlpha)
             }
 
             val clampedReveal = revealPosition.coerceIn(0f, glyphTexts.size.toFloat())

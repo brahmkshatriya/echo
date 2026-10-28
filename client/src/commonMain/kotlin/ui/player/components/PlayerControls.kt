@@ -1,11 +1,7 @@
-package dev.brahmkshatriya.echo.app.ui.player.song
+package dev.brahmkshatriya.echo.app.ui.player.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.expandHorizontally
-import androidx.compose.animation.shrinkHorizontally
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.hoverable
@@ -14,11 +10,9 @@ import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -26,6 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FilledTonalIconToggleButton
@@ -43,37 +38,31 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
-import androidx.compose.ui.layout.Layout
-import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import dev.brahmkshatriya.echo.app.platform.hasTouchInput
+import dev.brahmkshatriya.echo.app.playback.LocalPlayerEntryId
+import dev.brahmkshatriya.echo.app.playback.LocalPlayerTimelineState
+import dev.brahmkshatriya.echo.app.playback.PlayerTimelineState
+import dev.brahmkshatriya.echo.app.playback.RepeatMode
 import dev.brahmkshatriya.echo.app.ui.components.MorphingProgressIconButton
 import dev.brahmkshatriya.echo.app.ui.components.SquigglySlider
 import dev.brahmkshatriya.echo.app.ui.components.SwitchingIcon
 import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerControls
 import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerSkipNavigator
-import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerTimelineState
-import dev.brahmkshatriya.echo.app.ui.player.PlayerTimelineState
-import dev.brahmkshatriya.echo.app.ui.player.RepeatMode
+import dev.brahmkshatriya.echo.app.ui.player.artwork.LocalPlayerFavouriteAccent
+import dev.brahmkshatriya.echo.app.ui.player.artwork.favouriteButtonPalette
 import echo.client.generated.resources.Res
 import echo.client.generated.resources.ic_favorite
 import echo.client.generated.resources.ic_favorite_filled
@@ -92,7 +81,6 @@ import echo.client.generated.resources.ic_skip_previous_32
 import echo.client.generated.resources.ic_volume_off
 import echo.client.generated.resources.ic_volume_up
 import org.jetbrains.compose.resources.painterResource
-import kotlin.math.roundToInt
 
 @Composable
 fun defaultIconButtonColors() = IconButtonDefaults.iconButtonColors(
@@ -120,16 +108,15 @@ internal fun favouriteButtonColors() = colorScheme.primaryContainer
 @Composable
 internal fun RepeatButton(modifier: Modifier = Modifier) {
     val controls = LocalPlayerControls.current
-    val mode = controls?.repeatMode ?: RepeatMode.Off
+    val mode = controls.repeatMode
     IconButton(
         onClick = {
-            controls?.repeatMode = when (mode) {
+            controls.repeatMode = when (mode) {
                 RepeatMode.Off -> RepeatMode.All
                 RepeatMode.All -> RepeatMode.One
                 RepeatMode.One -> RepeatMode.Off
             }
         },
-        enabled = controls != null,
         modifier = modifier,
         shapes = IconButtonDefaults.shapes(),
         colors = defaultIconButtonColors()
@@ -158,15 +145,10 @@ internal fun PreviousButton(
 ) {
     val timelineState = LocalPlayerTimelineState.current
     val navigator = LocalPlayerSkipNavigator.current
+    val playback = LocalPlayerControls.current
     IconButton(
         onClick = {
-            val timeline = timelineState ?: return@IconButton
-            if (timeline.positionMs > 3_000f && navigator?.isNavigating != true) {
-                timeline.positionMs = 0f
-            } else {
-                timeline.positionMs = 0f
-                navigator?.previous()
-            }
+            if (navigator != null) navigator.previous() else playback.previous()
         },
         enabled = timelineState != null,
         modifier = modifier,
@@ -182,7 +164,7 @@ internal fun PreviousButton(
         SwitchingIcon(
             icon = if (large) Res.drawable.ic_skip_previous_32
             else Res.drawable.ic_skip_previous,
-            contentDescription = "Previous song"
+            contentDescription = "Previous item"
         )
     }
 }
@@ -195,57 +177,70 @@ internal fun PlayPauseButton(
     shapes: IconButtonShapes? = null,
 ) {
     val controls = LocalPlayerControls.current
-    val isPlaying = controls?.isPlaying == true
+    val isPlaying = controls.isPlaying
+    val isLoading = controls.isLoading
     FilledIconButton(
-        onClick = { controls?.isPlaying = !isPlaying },
-        enabled = controls != null,
+        onClick = { controls.togglePlayPause() },
         modifier = modifier,
-        shapes = shapes ?: IconButtonDefaults.shapes(
-            shape = IconButtonDefaults.filledShape,
-            pressedShape = IconButtonDefaults.filledShape,
-        ),
+        shapes = shapes ?: IconButtonDefaults.shapes(),
         interactionSource = interactionSource,
         colors = IconButtonDefaults.filledIconButtonColors(
             colorScheme.primary,
             colorScheme.onPrimary
         )
     ) {
-        SwitchingIcon(
-            icon = when {
-                isPlaying && large -> Res.drawable.ic_pause_32
-                isPlaying -> Res.drawable.ic_pause
-                large -> Res.drawable.ic_play_arrow_32
-                else -> Res.drawable.ic_play_arrow
-            },
-            contentDescription = if (isPlaying) "Pause" else "Play"
-        )
+        Box(contentAlignment = Alignment.Center) {
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(if (large) 48.dp else 34.dp),
+                    color = colorScheme.onPrimary,
+                    strokeWidth = 2.dp,
+                )
+            }
+            SwitchingIcon(
+                icon = when {
+                    isPlaying && large -> Res.drawable.ic_pause_32
+                    isPlaying -> Res.drawable.ic_pause
+                    large -> Res.drawable.ic_play_arrow_32
+                    else -> Res.drawable.ic_play_arrow
+                },
+                contentDescription = when {
+                    isLoading -> "Song loading"
+                    isPlaying -> "Pause"
+                    else -> "Play"
+                },
+            )
+        }
     }
 }
 
 @Composable
 internal fun CompactPlayPauseButton(modifier: Modifier = Modifier) {
     val controls = LocalPlayerControls.current
-    val isPlaying = controls?.isPlaying == true
+    val isPlaying = controls.isPlaying
+    val isLoading = controls.isLoading
     val timelineState = LocalPlayerTimelineState.current
-    val progress = if (timelineState == null || timelineState.durationMs <= 0f) {
-        0f
-    } else {
-        (timelineState.positionMs / timelineState.durationMs).coerceIn(0f, 1f)
-    }
-    val enabled = controls != null
     MorphingProgressIconButton(
-        progress = progress,
-        onClick = { controls?.isPlaying = !isPlaying },
-        enabled = enabled,
+        progress = {
+            if (timelineState == null || timelineState.durationMs <= 0f) 0f
+            else (timelineState.positionMs / timelineState.durationMs).coerceIn(0f, 1f)
+        },
+        indeterminate = isLoading,
+        onClick = { controls.togglePlayPause() },
+        enabled = true,
         backgroundColor = colorScheme.onPrimaryContainer.copy(alpha = 0.1f),
         progressColor = colorScheme.primary,
-        buttonColor = if (enabled) colorScheme.primary else colorScheme.onSurface.copy(0.1f),
+        buttonColor = colorScheme.primary,
         modifier = modifier,
     ) {
         SwitchingIcon(
             icon = if (isPlaying) Res.drawable.ic_pause else Res.drawable.ic_play_arrow,
-            contentDescription = if (isPlaying) "Pause" else "Play",
-            tint = if (enabled) colorScheme.onPrimary else colorScheme.onSurface.copy(0.38f),
+            contentDescription = when {
+                isLoading -> "Song loading"
+                isPlaying -> "Pause"
+                else -> "Play"
+            },
+            tint = colorScheme.onPrimary,
         )
     }
 }
@@ -263,7 +258,6 @@ internal fun NextButton(
     FilledTonalIconButton(
         onClick = {
             if (!canGoNext) return@FilledTonalIconButton
-            timelineState?.positionMs = 0f
             navigator.next()
         },
         enabled = timelineState != null && canGoNext,
@@ -279,7 +273,7 @@ internal fun NextButton(
     ) {
         SwitchingIcon(
             icon = if (large) Res.drawable.ic_skip_next_32 else Res.drawable.ic_skip_next,
-            contentDescription = "Next song"
+            contentDescription = "Next item"
         )
     }
 }
@@ -335,7 +329,7 @@ fun Controller() = BoxWithConstraints(Modifier.fillMaxWidth()) {
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.align(Alignment.Center)
-            .padding(horizontal = 16.dp).padding(top = 8.dp, bottom = 4.dp)
+            .padding(horizontal = 16.dp).padding(top = 16.dp, bottom = 8.dp)
     ) {
         PreviousButton(
             modifier = Modifier.width(previousWidth).height(64.dp),
@@ -359,185 +353,6 @@ fun Controller() = BoxWithConstraints(Modifier.fillMaxWidth()) {
 }
 
 @Composable
-fun ExpandedTimeline(
-    i: Int,
-    lyricsVisible: Boolean = false,
-    showCompactArtwork: Boolean = false,
-    rowsCollapseProgress: Float = 0f,
-    onArtworkClick: () -> Unit = {},
-) {
-    val timelineState = LocalPlayerTimelineState.current ?: return
-    val song = exampleSong(i)
-    val maxRange = timelineState.durationMs
-    var showRemainingTime by remember { mutableStateOf(false) }
-    val currentTimeLabel by remember {
-        derivedStateOf { formatTime(timelineState.positionMs) }
-    }
-    val endLabel by remember(showRemainingTime) {
-        derivedStateOf {
-            if (showRemainingTime) {
-                "-${formatTime(maxRange - timelineState.positionMs)}"
-            } else {
-                formatTime(maxRange)
-            }
-        }
-    }
-    val mergedStyle = LocalTextStyle.current.merge(typography.labelLarge)
-    val collapseProgress = rowsCollapseProgress.coerceIn(0f, 1f)
-    val secondaryRowsAlpha = 1f - collapseProgress
-    val compactPlayPauseVisible = lyricsVisible && collapseProgress >= 0.5f
-    val coverSlideSpec = motionScheme.defaultSpatialSpec<IntOffset>()
-    val coverWidthSpec = motionScheme.defaultSpatialSpec<IntSize>()
-
-    SubcomposeLayout(Modifier.fillMaxWidth().clipToBounds()) { constraints ->
-        val looseConstraints = constraints.copy(minHeight = 0)
-        val metadata = subcompose("metadata") {
-            Row(
-                Modifier.fillMaxWidth().defaultMinSize(minHeight = 48.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                AnimatedVisibility(
-                    visible = lyricsVisible || showCompactArtwork,
-                    enter = slideInHorizontally(coverSlideSpec) { -it } +
-                            expandHorizontally(coverWidthSpec, expandFrom = Alignment.Start),
-                    exit = slideOutHorizontally(coverSlideSpec) { -it } +
-                            shrinkHorizontally(coverWidthSpec, shrinkTowards = Alignment.Start),
-                ) {
-                    PlayerArtwork(
-                        contentDescription = "${song?.album ?: "Album"} artwork",
-                        modifier = Modifier
-                            .padding(start = 16.dp, end = 8.dp)
-                            .size(48.dp)
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(colorScheme.primaryFixed)
-                            .clickable(onClick = onArtworkClick),
-                    )
-                }
-                AnimatedVisibility(
-                    visible = !lyricsVisible && !showCompactArtwork,
-                    enter = expandHorizontally(coverWidthSpec),
-                    exit = shrinkHorizontally(coverWidthSpec),
-                ) {
-                    Spacer(Modifier.width(16.dp))
-                }
-                Column(Modifier.weight(1f)) {
-                    Text(song?.title ?: "Unknown track", maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    Text(
-                        song?.artist ?: "Unknown artist",
-                        color = colorScheme.onPrimaryContainer.copy(0.66f),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
-                Spacer(Modifier.width(4.dp))
-                LikeToggle(i)
-                AnimatedVisibility(compactPlayPauseVisible) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Spacer(Modifier.width(4.dp))
-                        CompactPlayPauseButton()
-                    }
-                }
-                Spacer(Modifier.width(4.dp))
-                MoreButton()
-                Spacer(Modifier.width(16.dp))
-            }
-        }.single().measure(looseConstraints)
-
-        val chromeTop = (metadata.height - 12.dp.roundToPx()).coerceAtLeast(0)
-        val chrome = subcompose("chrome") {
-            Layout(
-                modifier = Modifier.fillMaxWidth(),
-                content = {
-                    Row(
-                        Modifier.fillMaxWidth().padding(horizontal = 12.dp)
-                    ) {
-                        Text(
-                            text = currentTimeLabel,
-                            style = mergedStyle,
-                            modifier = Modifier.padding(8.dp, 4.dp),
-                        )
-                        Spacer(Modifier.weight(1f))
-                        val endInteraction = remember { MutableInteractionSource() }
-                        Text(
-                            text = endLabel,
-                            style = mergedStyle,
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .clickable(interactionSource = endInteraction) {
-                                    showRemainingTime = !showRemainingTime
-                                }
-                                .padding(8.dp, 4.dp),
-                        )
-                    }
-                    PlayerSlider(
-                        modifier = Modifier.height(72.dp),
-                        timelineState = timelineState,
-                    )
-                    Text(
-                        text = "FLAC",
-                        style = mergedStyle,
-                        modifier = Modifier
-                            .padding(bottom = 4.dp)
-                            .clip(RoundedCornerShape(100))
-                            .background(colorScheme.onPrimaryContainer.copy(0.1f))
-                            .clickable {}
-                            .padding(12.dp, 4.dp),
-                    )
-                    Controller()
-                },
-            ) { measurables, chromeConstraints ->
-                val chromeLoose = chromeConstraints.copy(minHeight = 0)
-                val times = measurables[0].measure(chromeLoose)
-                val sliderHorizontalPadding = 16.dp.roundToPx()
-                val sliderWidth =
-                    (chromeConstraints.maxWidth - sliderHorizontalPadding * 2).coerceAtLeast(0)
-                val slider = measurables[1].measure(
-                    Constraints(
-                        minWidth = sliderWidth,
-                        maxWidth = sliderWidth,
-                        minHeight = 0,
-                        maxHeight = chromeLoose.maxHeight,
-                    )
-                )
-                val formatBadge = measurables[2].measure(chromeLoose.copy(minWidth = 0))
-                val controls = measurables[3].measure(chromeLoose)
-                val timesTop = metadata.height + 40.dp.roundToPx() - chromeTop
-                val chromeContentHeight = maxOf(
-                    timesTop + times.height,
-                    slider.height,
-                    formatBadge.height,
-                )
-
-                layout(chromeConstraints.maxWidth, chromeContentHeight + controls.height) {
-                    slider.placeRelative(sliderHorizontalPadding, 0)
-                    times.placeRelative(0, timesTop)
-                    formatBadge.placeRelative(
-                        (chromeConstraints.maxWidth - formatBadge.width) / 2,
-                        chromeContentHeight - formatBadge.height,
-                    )
-                    controls.placeRelative(0, chromeContentHeight)
-                }
-            }
-        }.single().measure(looseConstraints)
-
-        val expandedContentHeight = chromeTop + chrome.height
-        val collapsedContentHeight = metadata.height
-        val contentHeight = (expandedContentHeight +
-                (collapsedContentHeight - expandedContentHeight) * collapseProgress)
-            .roundToInt().coerceIn(constraints.minHeight, constraints.maxHeight)
-        val chromeTravel = (expandedContentHeight - collapsedContentHeight) * collapseProgress
-
-        layout(constraints.maxWidth, contentHeight) {
-            chrome.placeRelativeWithLayer(0, chromeTop) {
-                alpha = secondaryRowsAlpha
-                translationY = chromeTravel
-            }
-            metadata.placeRelative(0, 0)
-        }
-    }
-}
-
-@Composable
 fun MoreButton() {
     IconButton(
         onClick = { },
@@ -553,14 +368,13 @@ fun MoreButton() {
 }
 
 @Composable
-fun LikeToggle(song: Int) {
+fun LikeToggle(entryId: Int) {
     val controls = LocalPlayerControls.current
-    val favourite = controls?.isFavourite(song) == true
+    val favourite = controls.isFavourite(entryId)
     val interactionSource = remember { MutableInteractionSource() }
     FilledTonalIconToggleButton(
         checked = favourite,
-        onCheckedChange = { controls?.setFavourite(song, it) },
-        enabled = controls != null,
+        onCheckedChange = { controls.setFavourite(entryId, it) },
         modifier = Modifier.size(44.dp),
         shapes = IconButtonDefaults.toggleableShapes(
             checkedShape = RoundedCornerShape(100)
@@ -576,8 +390,6 @@ fun LikeToggle(song: Int) {
         )
     }
 }
-
-
 
 
 fun formatTime(ms: Float): String {
@@ -626,7 +438,7 @@ fun Timeline(modifier: Modifier = Modifier) {
         Text(
             text = currentTimeLabel,
             style = mergedStyle,
-            modifier = Modifier.widthIn(min = 40.dp) .padding(8.dp, 4.dp),
+            modifier = Modifier.widthIn(min = 40.dp).padding(8.dp, 4.dp),
             textAlign = TextAlign.Center
         )
 
@@ -654,7 +466,7 @@ fun Timeline(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun PlayerSlider(
+internal fun PlayerSlider(
     modifier: Modifier = Modifier,
     timelineState: PlayerTimelineState,
 ) {
@@ -667,25 +479,30 @@ private fun PlayerSlider(
     val controls = LocalPlayerControls.current
     val interactionSource = remember { MutableInteractionSource() }
     val isDragged by interactionSource.collectIsDraggedAsState()
+    val entryId = LocalPlayerEntryId.current
     LaunchedEffect(isDragged) {
-        timelineState.isSeeking = isDragged
+        if (!isDragged) controls.cancelScrub(entryId)
+    }
+    androidx.compose.runtime.DisposableEffect(controls, entryId) {
+        onDispose { controls.cancelScrub(entryId) }
     }
 
     SquigglySlider(
+        enabled = timelineState.durationMs > 0f,
         valueRange = rangeMS,
         value = { timelineState.positionMs },
+        bufferedValue = { timelineState.bufferedMs },
         onValueChange = { newValue ->
-            timelineState.isSeeking = true
-            timelineState.positionMs = newValue
+            controls.previewSeek(entryId, newValue)
         },
         onValueChangeFinished = {
-            timelineState.isSeeking = false
+            controls.commitSeek(entryId)
         },
         modifier = modifier.pointerHoverIcon(PointerIcon.Hand),
         interactionSource = interactionSource,
         segmentGaps = segmentGaps,
         segmentGapWidth = 3.dp,
-        squiggleAmplitude = if (controls?.isPlaying != false) 0.66f else 0f,
+        squiggleAmplitude = if (controls.isPlaying) 0.66f else 0f,
         squiggleWavelength = 40.dp,
         waveSpeed = 40.dp,
         trackHeight = 16.dp,
@@ -697,35 +514,26 @@ private fun PlayerSlider(
         thumbSize = DpSize(4.dp, 24.dp),
         activeColor = colorScheme.primary,
         inactiveColor = colorScheme.onPrimaryContainer.copy(alpha = 0.05f),
+        bufferedColor = colorScheme.primary.copy(alpha = 0.35f),
     )
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun VolumeAdjuster() {
     val interactionSource = remember { MutableInteractionSource() }
+    val playback = LocalPlayerControls.current
     val isHovered = interactionSource.collectIsHoveredAsState()
     val hasTouch = hasTouchInput.value
-    val position = remember { mutableFloatStateOf(1f) }
-    val lastAudiblePosition = remember { mutableFloatStateOf(1f) }
+    val position = playback.volume
+    val lastAudiblePosition = playback.lastAudibleVolume
     var isSliderPinned by remember { mutableStateOf(false) }
     val sliderInteraction = remember { MutableInteractionSource() }
     val isSliderDragged = sliderInteraction.collectIsDraggedAsState()
 
-    fun setVolume(value: Float) {
-        val volume = value.coerceIn(0f, 1f)
-        position.floatValue = volume
-        if (volume > 0f) lastAudiblePosition.floatValue = volume
-    }
-
-    fun toggleMute() {
-        if (position.floatValue > 0f) {
-            lastAudiblePosition.floatValue = position.floatValue
-            position.floatValue = 0f
-        } else {
-            position.floatValue = lastAudiblePosition.floatValue.coerceAtLeast(0.01f)
-        }
-    }
+    fun setVolume(value: Float) = playback.setVolume(value)
+    fun toggleMute() = playback.setVolume(
+        if (position.floatValue > 0f) 0f else lastAudiblePosition.floatValue.coerceAtLeast(0.01f),
+    )
 
     Row(
         modifier = Modifier

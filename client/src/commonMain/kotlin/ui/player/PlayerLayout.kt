@@ -1,16 +1,20 @@
 package dev.brahmkshatriya.echo.app.ui.player
 
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.node.ModifierNodeElement
 import androidx.compose.ui.platform.InspectorInfo
 import androidx.compose.ui.relocation.BringIntoViewModifierNode
+import androidx.compose.ui.unit.IntOffset
 import dev.brahmkshatriya.echo.app.ui.components.BetterSheet
+import kotlin.math.roundToInt
 
 
 private data object BlockBringIntoViewElement : ModifierNodeElement<BlockBringIntoViewNode>() {
@@ -32,6 +36,15 @@ private class BlockBringIntoViewNode : Modifier.Node(), BringIntoViewModifierNod
 
 internal fun Modifier.blockDescendantBringIntoView(): Modifier = then(BlockBringIntoViewElement)
 
+/** Keep scroll fades on the scroll clock and exclude invisible controls from hit testing. */
+internal fun Modifier.playerScrollFade(opacity: () -> Float): Modifier = layout { measurable, constraints ->
+    val placeable = measurable.measure(constraints)
+    layout(placeable.width, placeable.height) {
+        val alpha = opacity().coerceIn(0f, 1f)
+        if (alpha > 0f) placeable.placeRelativeWithLayer(0, 0) { this.alpha = alpha }
+    }
+}
+
 internal fun Modifier.clipHeaderTop(
     lazyListState: LazyListState,
     key: Any,
@@ -49,11 +62,15 @@ fun Modifier.expandedListItemTransform(
     playerSheet: BetterSheet?,
     playerHeight: () -> Int
 ): Modifier {
-    return graphicsLayer {
-        val sheetProgress = playerSheet?.progressState?.floatValue ?: 0f
+    // Placement offsets let Compose move the subtree's bounds together. A
+    // graphics-layer translation recalculates every descendant's transformed
+    // bounds, even though none of their sizes or relative positions changed.
+    return offset {
+        val progress = (playerSheet?.progressState?.value ?: 0f).coerceIn(0f, 1f)
+        IntOffset(0, ((1f - progress) * playerHeight() * 0.33f).roundToInt())
+    }.graphicsLayer {
+        val sheetProgress = playerSheet?.progressState?.value ?: 0f
         val positiveProgress = sheetProgress.coerceIn(0f, 1f)
-        val offset = 1 - positiveProgress
         alpha = if (positiveProgress > 0.5f) (positiveProgress - 0.5f) * 2 else 0f
-        translationY = offset * playerHeight() * 0.33f
     }
 }
