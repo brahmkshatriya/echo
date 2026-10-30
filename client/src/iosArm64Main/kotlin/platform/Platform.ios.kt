@@ -27,10 +27,10 @@ actual val hasTouchInput: State<Boolean>
     get() = remember { mutableStateOf(true) }
 
 @Composable
-internal actual fun imeAnimationInsetsOrNull(): Pair<WindowInsets, WindowInsets>? = null
+actual fun imeAnimationInsetsOrNull(): Pair<WindowInsets, WindowInsets>? = null
 
 @Composable
-internal actual fun KeepScreenAwake(enabled: Boolean) {
+actual fun KeepScreenAwake(enabled: Boolean) {
     DisposableEffect(enabled) {
         val application = UIApplication.sharedApplication
         val wasDisabled = application.idleTimerDisabled
@@ -42,6 +42,6 @@ internal actual fun KeepScreenAwake(enabled: Boolean) {
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
-internal actual suspend fun Clipboard.setPlainText(text: String) {
+actual suspend fun Clipboard.setPlainText(text: String) {
     setClipEntry(ClipEntry.withPlainText(text))
 }

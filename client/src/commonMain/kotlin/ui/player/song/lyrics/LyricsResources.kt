@@ -4,10 +4,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import echo.client.generated.resources.Res
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-internal data class LyricsSelectionItem(
+data class LyricsSelectionItem(
     val title: String,
     val subtitle: String,
     val extension: String,
@@ -16,60 +17,68 @@ internal data class LyricsSelectionItem(
 )
 
 @Composable
-internal fun rememberLyricsSelections(load: Boolean = true): List<LyricsSelectionItem> {
-    val selections by produceState(emptyList(), load) {
-        if (load && value.isEmpty()) {
-            value = withContext(Dispatchers.Default) { loadLyricsSelections() }
+fun rememberLyricsSelections(load: Boolean = true): List<LyricsSelectionItem> {
+    val selections by
+        produceState(emptyList(), load) {
+            if (load && value.isEmpty())
+                value = withContext(Dispatchers.Default) { loadLyricsSelections() }
         }
-    }
     return selections
 }
 
 private suspend fun loadLyricsSelections(): List<LyricsSelectionItem> {
     val result = mutableListOf<LyricsSelectionItem>()
-    for (relativePath in lyricsResourcePaths) {
-        loadLyricsSelection("Apple Lyrics", relativePath)?.let(result::add)
-    }
+    for (relativePath in lyricsResourcePaths) loadLyricsSelection("Apple Lyrics", relativePath)
+        ?.let(result::add)
     return result
 }
 
-private val lyricsResourcePaths = listOf(
-    "Rap God - Eminem.ttml",
-    "blackorwhite.ttml",
-)
+private val lyricsResourcePaths = listOf("Rap God - Eminem.ttml", "blackorwhite.ttml")
 
 private suspend fun loadLyricsSelection(
     extension: String,
-    relativePath: String
+    relativePath: String,
 ): LyricsSelectionItem? {
     val fileExtension = relativePath.substringAfterLast('.', "").lowercase()
     if (fileExtension !in supportedLyricsExtensions) return null
 
-    val text = try {
-        Res.readBytes("files/lyrics/$relativePath").decodeToString()
-    } catch (_: Throwable) {
-        return null
-    }
-
-    val lyrics = runCatching {
-        when (fileExtension) {
-            "ttml" -> TtmlLyricsParser.parse(text)
-            "lrc" -> LrcLyricsParser.parse(text)
-            "json" -> LrcLibLyricsParser.parseJson(text)
-            else -> return null
+    val text =
+        try {
+            Res.readBytes("files/lyrics/$relativePath").decodeToString()
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (error: Exception) {
+            println("Could not read lyrics '$relativePath': ${error.message}")
+            return null
         }
-    }.getOrNull() ?: return null
 
-    val syncType = when (lyrics) {
-        is Lyrics.Word -> "Word synced lyrics"
-        is Lyrics.Line -> "Line synced lyrics"
-        is Lyrics.Simple -> "Plain lyrics"
-    }
-    val timingIndex = when (lyrics) {
-        is Lyrics.Word -> LyricsTimingIndex.word(lyrics.lines)
-        is Lyrics.Line -> LyricsTimingIndex.line(lyrics.lines)
-        is Lyrics.Simple -> null
-    }
+    val lyrics =
+        try {
+            when (fileExtension) {
+                "ttml" -> TtmlLyricsParser.parse(text)
+                "lrc" -> LrcLyricsParser.parse(text)
+                "json" -> LrcLibLyricsParser.parseJson(text)
+                else -> return null
+            }
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (error: Exception) {
+            println("Could not parse lyrics '$relativePath': ${error.message}")
+            return null
+        }
+
+    val syncType =
+        when (lyrics) {
+            is Lyrics.Word -> "Word synced lyrics"
+            is Lyrics.Line -> "Line synced lyrics"
+            is Lyrics.Simple -> "Plain lyrics"
+        }
+    val timingIndex =
+        when (lyrics) {
+            is Lyrics.Word -> LyricsTimingIndex.word(lyrics.lines)
+            is Lyrics.Line -> LyricsTimingIndex.line(lyrics.lines)
+            is Lyrics.Simple -> null
+        }
     return LyricsSelectionItem(
         title = relativePath.substringAfterLast('/').substringBeforeLast('.').toDisplayTitle(),
         subtitle = "$extension • $syncType",
@@ -82,12 +91,8 @@ private suspend fun loadLyricsSelection(
 private val supportedLyricsExtensions = setOf("ttml", "lrc", "json")
 
 private fun String.toDisplayTitle(): String =
-    replace('_', ' ')
-        .replace('-', ' ')
-        .trim()
-        .split(Regex("\\s+"))
-        .joinToString(" ") { word ->
-            word.replaceFirstChar { char ->
-                if (char.isLowerCase()) char.titlecase() else char.toString()
-            }
+    replace('_', ' ').replace('-', ' ').trim().split(Regex("\\s+")).joinToString(" ") { word ->
+        word.replaceFirstChar { char ->
+            if (char.isLowerCase()) char.titlecase() else char.toString()
         }
+    }

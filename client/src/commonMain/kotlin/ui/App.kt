@@ -25,15 +25,13 @@ import androidx.compose.material3.MaterialTheme.motionScheme
 import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import com.skydoves.landscapist.image.LocalLandscapist
-import dev.brahmkshatriya.echo.app.playback.PlaybackComponent
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalWindowInfo
@@ -43,6 +41,7 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.savedstate.serialization.SavedStateConfiguration
 import dev.brahmkshatriya.echo.app.platform.getPlatform
+import dev.brahmkshatriya.echo.app.playback.PlaybackComponent
 import dev.brahmkshatriya.echo.app.playback.PlayerSession
 import dev.brahmkshatriya.echo.app.ui.components.BetterNavDisplay
 import dev.brahmkshatriya.echo.app.ui.components.LocalMainBackStack
@@ -52,7 +51,6 @@ import dev.brahmkshatriya.echo.app.ui.main.ExtensionSelectorFABMenu
 import dev.brahmkshatriya.echo.app.ui.main.MainRoute
 import dev.brahmkshatriya.echo.app.ui.main.MainSideNavigation
 import dev.brahmkshatriya.echo.app.ui.player.LocalInitialPlayerSheetValue
-import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerControls
 import dev.brahmkshatriya.echo.app.ui.player.PlayerBottomSheet
 import dev.brahmkshatriya.echo.app.ui.theme.EchoTheme
 import dev.brahmkshatriya.echo.app.ui.theme.LocalSurfaceColor
@@ -75,8 +73,13 @@ private val module = SerializersModule {
 }
 private val config = SavedStateConfiguration { serializersModule = module }
 
+val LocalPlaybackComponent = staticCompositionLocalOf<PlaybackComponent> {
+    error("The app entry point must provide a playback component")
+}
+
 @Composable
-fun App(playback: PlaybackComponent) = CompositionLocalProvider(LocalLandscapist provides playback.imageLoader) {
+fun App() {
+    val playback = LocalPlaybackComponent.current
     EchoTheme { AppContent(playback.session) }
 }
 
@@ -125,7 +128,7 @@ private fun AppContent(session: PlayerSession) {
         }
         BetterNavDisplay(backStack, navBackEnabled, modifier) {
             entry<Main> { it.route.content() }
-            entry<Media> { Test(it.toString()) }
+            entry<Media> { Test(it.toString(), session::ensureQueue) }
         }
         AnimatedVisibility(isNavigationVisible, modifier, fadeIn(), fadeOut()) {
             ExtensionSelectorFABMenu()
@@ -159,7 +162,7 @@ fun ExpandingButton(
 }
 
 @Composable
-fun Test(string: String) {
+fun Test(string: String, onEnsureQueue: () -> Unit) {
     Column(
         modifier = Modifier.fillMaxSize()
             .safeDrawingPadding()
@@ -172,7 +175,6 @@ fun Test(string: String) {
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        val controls = LocalPlayerControls.current
         var showContent by rememberSaveable { mutableStateOf(false) }
         val backStack = LocalMainBackStack.current
         ExpandingButton(onClick = {
@@ -180,19 +182,19 @@ fun Test(string: String) {
                 if (it.size == 1) return@let
                 it.removeLastOrNull()
             }
-            controls.ensureQueue()
+            onEnsureQueue()
         }) {
             Text("Back")
         }
         ExpandingButton(onClick = {
             backStack?.add(Media(backStack.size.toString()))
-            controls.ensureQueue()
+            onEnsureQueue()
         }) {
             Text("Next")
         }
         ExpandingButton(onClick = {
             showContent = !showContent
-            controls.ensureQueue()
+            onEnsureQueue()
         }) {
             Text(string)
         }

@@ -1,15 +1,12 @@
 package dev.brahmkshatriya.echo.app.ui.player.song
 
-import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
@@ -18,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.width
@@ -27,7 +25,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme.colorScheme
-import androidx.compose.material3.MaterialTheme.motionScheme
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -60,22 +57,16 @@ import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
-import androidx.navigationevent.NavigationEventInfo
-import androidx.navigationevent.NavigationEventTransitionState
-import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
-import androidx.navigationevent.compose.NavigationBackHandler
-import androidx.navigationevent.compose.rememberNavigationEventState
-import dev.brahmkshatriya.echo.app.playback.LocalPlayerTimelineState
+import dev.brahmkshatriya.echo.app.playback.PlayerSession
 import dev.brahmkshatriya.echo.app.ui.Media
 import dev.brahmkshatriya.echo.app.ui.components.FastScrollbar
 import dev.brahmkshatriya.echo.app.ui.components.LocalMainBackStack
 import dev.brahmkshatriya.echo.app.ui.components.materialGroup
 import dev.brahmkshatriya.echo.app.ui.components.paddingMask
 import dev.brahmkshatriya.echo.app.ui.main.Header
-import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerControls
 import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerPagerState
 import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerPresentation
 import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerQueueTransition
@@ -86,12 +77,12 @@ import dev.brahmkshatriya.echo.app.ui.player.PlayerScrollbarItemSizes
 import dev.brahmkshatriya.echo.app.ui.player.blockDescendantBringIntoView
 import dev.brahmkshatriya.echo.app.ui.player.clipHeaderTop
 import dev.brahmkshatriya.echo.app.ui.player.components.CollapsedPlayer
-import dev.brahmkshatriya.echo.app.ui.player.components.StickyMiniPlayer
-import dev.brahmkshatriya.echo.app.ui.player.playerScrollFade
 import dev.brahmkshatriya.echo.app.ui.player.components.PlayerPillOverlay
+import dev.brahmkshatriya.echo.app.ui.player.components.StickyMiniPlayer
 import dev.brahmkshatriya.echo.app.ui.player.components.rememberPlayerPillTransition
 import dev.brahmkshatriya.echo.app.ui.player.expandedListItemTransform
 import dev.brahmkshatriya.echo.app.ui.player.playerBottomBarHeight
+import dev.brahmkshatriya.echo.app.ui.player.redrawPlayerOnReveal
 import dev.brahmkshatriya.echo.app.ui.player.rememberPlayerScrollbarState
 import dev.brahmkshatriya.echo.app.ui.player.rememberPlayerScrollbarThumbMover
 import dev.brahmkshatriya.echo.app.ui.player.song.lyrics.LyricsSelectionPage
@@ -99,107 +90,86 @@ import dev.brahmkshatriya.echo.app.ui.player.song.lyrics.LyricsSelectionPillCont
 import dev.brahmkshatriya.echo.app.ui.player.song.lyrics.LyricsSelectorPageInfo
 import dev.brahmkshatriya.echo.app.ui.player.song.lyrics.LyricsSelectorPlayerInfo
 import dev.brahmkshatriya.echo.app.ui.player.song.lyrics.rememberLyricsSelections
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.milliseconds
-
-private object PlayerHeroVisibleInfo : NavigationEventInfo()
-private object PlayerHeroHiddenInfo : NavigationEventInfo()
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 @Composable
 fun SongPlayerItem(
+    controls: PlayerSession,
     i: Int,
     onScrolledToTopChanged: (Boolean) -> Unit = {},
     onLyricsSelectorOpenChanged: (Boolean) -> Unit = {},
-) = CompositionLocalProvider(
-    LocalContentColor provides colorScheme.onSurface
-) {
-    val controls = LocalPlayerControls.current
-    val pagerState = LocalPlayerPagerState.current
-    val scope = rememberCoroutineScope()
-    val isCurrentItem = pagerState == null || controls.currentEntryId == i
-    val playerSheet = LocalPlayerSheet.current
-    val prepareLyrics by remember(playerSheet) {
-        derivedStateOf {
-            playerSheet == null || playerSheet.sheetState.targetValue == SheetValue.Expanded ||
-                playerSheet.progressState.value > 0f
-        }
-    }
-    val lyricsSelections = rememberLyricsSelections(load = prepareLyrics)
-    val timelineState = controls.timelineFor(i)
-    val lyricsTransition = rememberPlayerPillTransition("lyrics")
-    val queueTransition = LocalPlayerQueueTransition.current
-    var playerCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
-    var lyricsPillCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
-    var queueButtonCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
-    CompositionLocalProvider(LocalPlayerTimelineState provides timelineState) {
-        BoxWithConstraints {
-            val immersiveContentVisible by remember(playerSheet) {
-                derivedStateOf { (playerSheet?.progressState?.value ?: 1f) > 0.5f }
+) =
+    CompositionLocalProvider(LocalContentColor provides colorScheme.onSurface) {
+        val pagerState = LocalPlayerPagerState.current
+        val scope = rememberCoroutineScope()
+        val isCurrentItem = pagerState == null || controls.currentEntryId == i
+        val pageVisible by
+            remember(pagerState, i) {
+                derivedStateOf {
+                    pagerState == null || pagerState.layoutInfo.visiblePagesInfo.any { it.key == i }
+                }
             }
+        val playerSheet = LocalPlayerSheet.current
+        val prepareLyrics by
+            remember(playerSheet) {
+                derivedStateOf {
+                    playerSheet == null ||
+                        playerSheet.sheetState.targetValue == SheetValue.Expanded ||
+                        playerSheet.progressState.value > 0f
+                }
+            }
+        val lyricsSelections = rememberLyricsSelections(load = prepareLyrics)
+        val timelineState = controls.timelineFor(i)
+        val lyricsTransition = rememberPlayerPillTransition("lyrics")
+        val queueTransition = LocalPlayerQueueTransition.current
+        val overlays =
+            remember(i, lyricsTransition, queueTransition) {
+                SongPlayerOverlayState(lyricsTransition, queueTransition)
+            }
+        BoxWithConstraints {
+            val immersiveContentVisible by
+                remember(playerSheet) {
+                    derivedStateOf { (playerSheet?.progressState?.value ?: 1f) > 0.5f }
+                }
             val backStack = LocalMainBackStack.current
-            val cardColors = CardDefaults.cardColors(
-                containerColor = colorScheme.surface,
-                contentColor = colorScheme.onSurface
-            )
+            val cardColors =
+                CardDefaults.cardColors(
+                    containerColor = colorScheme.surface,
+                    contentColor = colorScheme.onSurface,
+                )
             val listState = rememberLazyListState()
             val scrollbarItemSizes = remember { PlayerScrollbarItemSizes() }
             val bottomBarKey = remember(i) { "player-bottom-bar-$i" }
-            val isBottomBarSticky by remember(bottomBarKey) {
-                derivedStateOf {
-                    val layoutInfo = listState.layoutInfo
-                    val item =
-                        layoutInfo.visibleItemsInfo.firstOrNull { it.key == bottomBarKey }
-                    item != null && item.offset <= 0 && listState.firstVisibleItemIndex >= item.index
+            val isBottomBarSticky by
+                remember(bottomBarKey) {
+                    derivedStateOf {
+                        val layoutInfo = listState.layoutInfo
+                        val item =
+                            layoutInfo.visibleItemsInfo.firstOrNull { it.key == bottomBarKey }
+                        item != null &&
+                            item.offset <= 0 &&
+                            listState.firstVisibleItemIndex >= item.index
+                    }
                 }
-            }
             val presentation = LocalPlayerPresentation.current
             val showLyrics = presentation.mode == PlayerPresentationMode.Lyrics
             val showKineticShapes = presentation.mode == PlayerPresentationMode.Kinetic
             val immersiveMode = presentation.mode != PlayerPresentationMode.Cover
             val lyricsChromeCollapsed = presentation.chromeCollapsed
-            val setLyricsChromeCollapsed: (Boolean) -> Unit = { collapsed ->
-                if (isCurrentItem) presentation.chromeCollapsed = collapsed
-            }
-            var lyricsChromeInteractionNonce by remember(i) { mutableIntStateOf(0) }
-            val onLyricsChromeInteraction: () -> Unit = {
-                if (isCurrentItem && immersiveMode) {
-                    setLyricsChromeCollapsed(false)
-                    lyricsChromeInteractionNonce++
-                }
-            }
-            LaunchedEffect(immersiveMode) {
-                if (!immersiveMode) {
-                    lyricsChromeInteractionNonce = 0
-                    setLyricsChromeCollapsed(false)
-                }
-            }
-            LaunchedEffect(timelineState.isSeeking) {
-                if (immersiveMode && timelineState.isSeeking) {
-                    onLyricsChromeInteraction()
-                }
-            }
-            LaunchedEffect(
-                showLyrics,
-                showKineticShapes,
-                lyricsChromeInteractionNonce,
-                timelineState.isSeeking,
-                isCurrentItem,
-                isBottomBarSticky,
-            ) {
-                if (
-                    !isCurrentItem ||
-                    !immersiveMode ||
-                    timelineState.isSeeking ||
-                    isBottomBarSticky
-                ) return@LaunchedEffect
-
-                delay(3_000.milliseconds)
-                setLyricsChromeCollapsed(true)
-            }
+            val chrome =
+                rememberSongPlayerChromeState(
+                    entryId = i,
+                    presentation = presentation,
+                    isCurrentItem = isCurrentItem,
+                    isSeeking = timelineState.isSeeking,
+                    isBottomBarSticky = isBottomBarSticky,
+                )
+            val setLyricsChromeCollapsed: (Boolean) -> Unit = chrome::setCollapsed
+            val onLyricsChromeInteraction: () -> Unit = chrome::interact
             // The current pager item owns both the morph and its two pill anchors.
             val mediaId = controls.mediaFor(i)?.id
             val selectedLyricsIndex = presentation.lyricsSource(mediaId)
@@ -211,177 +181,58 @@ fun SongPlayerItem(
             val queueMounted = queueTransition.open || queueTransition.mounted
             val selectorMounted = lyricsMounted || queueMounted
             val pillDensity = LocalDensity.current
-            fun localPillBounds(anchor: LayoutCoordinates?): Rect? {
-                val root = playerCoordinates
-                if (root?.isAttached != true || anchor?.isAttached != true) return null
-                return root.localBoundingBoxOf(anchor, clipBounds = false)
-            }
-            fun queuePillBounds(anchor: LayoutCoordinates? = queueButtonCoordinates): Rect? {
-                val bounds = localPillBounds(anchor) ?: return null
-                val container = IconButtonDefaults.smallContainerSize()
-                val width = with(pillDensity) { container.width.toPx() }
-                val height = with(pillDensity) { container.height.toPx() }
-                return Rect(
-                    bounds.center.x - width / 2f,
-                    bounds.center.y - height / 2f,
-                    bounds.center.x + width / 2f,
-                    bounds.center.y + height / 2f,
-                )
-            }
-            LaunchedEffect(playerCoordinates, lyricsPillCoordinates, queueButtonCoordinates, isBottomBarSticky, isCurrentItem) {
+            fun queuePillBounds(
+                anchor: LayoutCoordinates? = overlays.queueButtonCoordinates
+            ): Rect? =
+                overlays.queueBounds(pillDensity, IconButtonDefaults.smallContainerSize(), anchor)
+            LaunchedEffect(
+                overlays.playerCoordinates,
+                overlays.lyricsPillCoordinates,
+                overlays.queueButtonCoordinates,
+                isBottomBarSticky,
+                isCurrentItem,
+            ) {
                 if (!isBottomBarSticky) {
-                    localPillBounds(lyricsPillCoordinates)?.let(lyricsTransition::updateAnchor)
+                    overlays
+                        .localBounds(overlays.lyricsPillCoordinates)
+                        ?.let(lyricsTransition::updateAnchor)
                     if (isCurrentItem) queuePillBounds()?.let(queueTransition::updateAnchor)
                 }
             }
-            fun openLyrics(bounds: Rect) {
-                queueTransition.close()
-                lyricsTransition.openFrom(bounds)
-            }
-            fun openQueue(bounds: Rect) {
-                lyricsTransition.close()
-                queueTransition.openFrom(bounds)
-            }
             SideEffect {
                 if (isCurrentItem) {
-                    queueTransition.alternateSource = if (showLyrics && !isBottomBarSticky) {
-                        localPillBounds(lyricsPillCoordinates)
-                    } else null
+                    queueTransition.alternateSource =
+                        if (showLyrics && !isBottomBarSticky)
+                            overlays.localBounds(overlays.lyricsPillCoordinates)
+                        else null
                     queueTransition.onAlternateClick = {
-                        if (showLyrics && !isBottomBarSticky) {
-                            localPillBounds(lyricsPillCoordinates)?.let(::openLyrics)
-                        }
+                        if (showLyrics && !isBottomBarSticky)
+                            overlays
+                                .localBounds(overlays.lyricsPillCoordinates)
+                                ?.let(overlays::openLyrics)
                     }
                 }
             }
-            LaunchedEffect(selectorMounted) {
-                onLyricsSelectorOpenChanged(selectorMounted)
-            }
-            LaunchedEffect(showLyrics) {
-                if (!showLyrics) {
-                    lyricsTransition.close()
-                }
-            }
+            val currentOnSelectorOpenChanged by rememberUpdatedState(onLyricsSelectorOpenChanged)
+            LaunchedEffect(selectorMounted) { currentOnSelectorOpenChanged(selectorMounted) }
+            LaunchedEffect(showLyrics) { if (!showLyrics) lyricsTransition.close() }
             val isPlayerScrolledToTop by remember {
                 derivedStateOf { !listState.canScrollBackward }
             }
-            val heroInViewport by remember(listState) {
-                derivedStateOf { listState.firstVisibleItemIndex == 0 }
-            }
+            val heroInViewport by
+                remember(listState) { derivedStateOf { listState.firstVisibleItemIndex == 0 } }
             LaunchedEffect(heroInViewport, isCurrentItem) {
                 if (heroInViewport && isCurrentItem) onLyricsChromeInteraction()
             }
-            val heroBackProgress = remember(i) { Animatable(0f) }
-            val heroBackAnimationSpec = motionScheme.defaultSpatialSpec<Float>()
-            var heroBackGestureActive by remember(i) { mutableStateOf(false) }
-            var heroBackStartIndex by remember(i) { mutableIntStateOf(0) }
-            var heroBackStartItemOffset by remember(i) { mutableIntStateOf(0) }
-            var heroBackStartScrollOffset by remember(i) { mutableIntStateOf(0) }
-            var heroBackFallbackSize by remember(i) { mutableIntStateOf(1) }
-            var heroBackTotalItems by remember(i) { mutableIntStateOf(0) }
-            val heroBackMaxPredictiveTravelPx = (constraints.maxHeight / 4).coerceAtLeast(1)
-
-            fun captureHeroBackStart(): Boolean {
-                val layoutInfo = listState.layoutInfo
-                val totalItems = layoutInfo.totalItemsCount
-                if (totalItems <= 0 || !isBottomBarSticky || !listState.canScrollBackward) {
-                    return false
-                }
-
-                layoutInfo.visibleItemsInfo.forEach { item ->
-                    scrollbarItemSizes.update(item.index, item.size)
-                }
-                val viewportSize =
-                    (layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset).coerceAtLeast(1)
-                val fallbackSize = scrollbarItemSizes.fallbackSize(viewportSize)
-                heroBackStartIndex = listState.firstVisibleItemIndex
-                heroBackStartItemOffset = listState.firstVisibleItemScrollOffset
-                heroBackStartScrollOffset = scrollbarItemSizes.estimatedScrollOffset(
-                    firstVisibleIndex = heroBackStartIndex,
-                    firstVisibleItemScrollOffset = heroBackStartItemOffset,
-                    fallbackSize = fallbackSize,
-                )
-                heroBackFallbackSize = fallbackSize
-                heroBackTotalItems = totalItems
-                heroBackGestureActive = heroBackStartScrollOffset > 0
-                return heroBackGestureActive
-            }
-
-            fun applyHeroBackProgress(progress: Float) {
-                if (!heroBackGestureActive || heroBackTotalItems <= 0) return
-                val predictiveTravel = minOf(
-                    heroBackStartScrollOffset,
-                    heroBackMaxPredictiveTravelPx,
-                )
-                val targetScrollOffset = (
-                        heroBackStartScrollOffset -
-                                predictiveTravel * progress.coerceIn(0f, 1f)
-                        ).roundToInt().coerceAtLeast(0)
-                val target = scrollbarItemSizes.itemAtOffset(
-                    targetScrollOffset = targetScrollOffset,
-                    totalItems = heroBackTotalItems,
-                    fallbackSize = heroBackFallbackSize,
-                )
-                listState.requestScrollToItem(
-                    index = (target ushr 32).toInt(),
-                    scrollOffset = target.toInt(),
-                )
-            }
-
-            val heroBackEnabled =
-                isCurrentItem && !selectorMounted &&
-                        (isBottomBarSticky || heroBackGestureActive)
-            val heroBackNavigationEventState = rememberNavigationEventState(
-                currentInfo = if (heroBackEnabled) PlayerHeroHiddenInfo else PlayerHeroVisibleInfo,
-                backInfo = if (heroBackEnabled) listOf(PlayerHeroVisibleInfo) else emptyList(),
+            SongPlayerBackHandler(
+                entryId = i,
+                listState = listState,
+                scrollbarItemSizes = scrollbarItemSizes,
+                isCurrentItem = isCurrentItem,
+                selectorMounted = selectorMounted,
+                isBottomBarSticky = isBottomBarSticky,
+                viewportHeightPx = constraints.maxHeight,
             )
-            if (LocalNavigationEventDispatcherOwner.current != null) {
-                NavigationBackHandler(
-                    state = heroBackNavigationEventState,
-                    isBackEnabled = heroBackEnabled,
-                    onBackCompleted = {
-                        scope.launch {
-                            listState.animateScrollToItem(0)
-                            heroBackStartScrollOffset = 0
-                            heroBackGestureActive = false
-                            heroBackProgress.snapTo(0f)
-                        }
-                    },
-                    onBackCancelled = {
-                        scope.launch {
-                            heroBackProgress.animateTo(
-                                targetValue = 0f,
-                                animationSpec = heroBackAnimationSpec,
-                            )
-                            listState.scrollToItem(
-                                heroBackStartIndex,
-                                heroBackStartItemOffset,
-                            )
-                            heroBackGestureActive = false
-                        }
-                    },
-                )
-            }
-            LaunchedEffect(heroBackNavigationEventState, heroBackProgress) {
-                snapshotFlow {
-                    when (val state = heroBackNavigationEventState.transitionState) {
-                        NavigationEventTransitionState.Idle -> null
-                        is NavigationEventTransitionState.InProgress -> state.latestEvent.progress
-                    }
-                }.collectLatest { progress ->
-                    if (progress != null) {
-                        if (!heroBackGestureActive && !captureHeroBackStart()) {
-                            return@collectLatest
-                        }
-                        heroBackProgress.snapTo(progress.coerceIn(0f, 1f))
-                    }
-                }
-            }
-            LaunchedEffect(heroBackProgress) {
-                snapshotFlow { heroBackProgress.value }.collectLatest { progress ->
-                    applyHeroBackProgress(progress)
-                }
-            }
             val layoutDirection = LocalLayoutDirection.current
             val safeDrawing = WindowInsets.safeDrawing.asPaddingValues()
             val topPadding = safeDrawing.calculateTopPadding()
@@ -394,56 +245,70 @@ fun SongPlayerItem(
             }
             playerSheet?.let { sheet ->
                 LaunchedEffect(sheet, listState) {
-                    snapshotFlow { sheet.progressState.value < 0.75f }.collect { shouldReset ->
-                        if (shouldReset && listState.canScrollBackward) {
-                            withFrameNanos { }
-                            listState.scrollToItem(0)
+                    snapshotFlow { sheet.progressState.value < 0.75f }
+                        .collect { shouldReset ->
+                            if (shouldReset && listState.canScrollBackward) {
+                                withFrameNanos {}
+                                listState.scrollToItem(0)
+                            }
                         }
-                    }
                 }
             }
 
             val playerViewportHeightPx = constraints.maxHeight
-            val heroHeight = (maxHeight - topPadding - bottomPadding - playerBottomBarHeight)
-                .coerceAtLeast(0.dp)
+            val heroHeight =
+                (maxHeight - topPadding - bottomPadding - playerBottomBarHeight).coerceAtLeast(0.dp)
             val heroHeightPx = with(LocalDensity.current) { heroHeight.toPx().coerceAtLeast(1f) }
-            val heroAlpha by remember(listState, heroHeightPx) {
-                derivedStateOf {
-                    val scrollOffset = if (listState.firstVisibleItemIndex == 0) {
-                        listState.firstVisibleItemScrollOffset.toFloat()
-                    } else {
-                        heroHeightPx
+            val heroScrollProgress by
+                remember(listState, heroHeightPx) {
+                    derivedStateOf {
+                        val scrollOffset =
+                            if (listState.firstVisibleItemIndex == 0)
+                                listState.firstVisibleItemScrollOffset.toFloat()
+                            else heroHeightPx
+                        (scrollOffset / heroHeightPx).coerceIn(0f, 1f)
                     }
-                    1f - (scrollOffset / heroHeightPx).coerceIn(0f, 1f)
                 }
-            }
+            val heroVisible by
+                remember(playerSheet, listState, heroHeightPx) {
+                    derivedStateOf { immersiveContentVisible && heroScrollProgress < 0.6f }
+                }
             val coverViewportWidth = maxWidth
-            Box(Modifier.fillMaxSize().graphicsLayer {
-                val reveal = maxOf(lyricsTransition.reveal.value, queueTransition.reveal.value)
-                val back = when {
-                    lyricsTransition.backGestureActive -> lyricsTransition.backProgress.value.coerceIn(0f, 1f)
-                    queueTransition.backGestureActive -> queueTransition.backProgress.value.coerceIn(0f, 1f)
-                    else -> 0f
-                }
-                val pageProgress = (reveal / 0.45f).coerceIn(0f, 1f)
-                val scale = 1f - 0.04f * pageProgress * (1f - back)
-                scaleX = scale
-                scaleY = scale
-            }.onGloballyPositioned {
-                playerCoordinates = it
-            }) {
-                val transformModifier = Modifier.expandedListItemTransform(playerSheet) {
-                    playerViewportHeightPx
-                }
+            Box(
+                Modifier.fillMaxSize()
+                    .graphicsLayer {
+                        val reveal =
+                            maxOf(lyricsTransition.reveal.value, queueTransition.reveal.value)
+                        val back =
+                            when {
+                                lyricsTransition.backGestureActive ->
+                                    lyricsTransition.backProgress.value.coerceIn(0f, 1f)
+                                queueTransition.backGestureActive ->
+                                    queueTransition.backProgress.value.coerceIn(0f, 1f)
+                                else -> 0f
+                            }
+                        val pageProgress = (reveal / 0.45f).coerceIn(0f, 1f)
+                        val scale = 1f - 0.04f * pageProgress * (1f - back)
+                        scaleX = scale
+                        scaleY = scale
+                    }
+                    .onGloballyPositioned { overlays.updatePlayer(it) }
+            ) {
+                val transformModifier =
+                    Modifier.expandedListItemTransform(playerSheet) { playerViewportHeightPx }
 
                 fun heroSnapTarget(directionY: Float): Int? {
-                    val hero = listState.layoutInfo.visibleItemsInfo.firstOrNull {
-                        it.key == "player-hero-$i"
-                    } ?: return null
+                    val hero =
+                        listState.layoutInfo.visibleItemsInfo.firstOrNull {
+                            it.key == "player-hero-$i"
+                        } ?: return null
                     val offset = listState.firstVisibleItemScrollOffset
-                    if (listState.firstVisibleItemIndex != hero.index ||
-                        offset <= 0 || hero.size <= 0
-                    ) return null
+                    if (
+                        listState.firstVisibleItemIndex != hero.index ||
+                            offset <= 0 ||
+                            hero.size <= 0
+                    )
+                        return null
 
                     return when {
                         directionY < 0f -> 1
@@ -453,35 +318,36 @@ fun SongPlayerItem(
                     }
                 }
 
-                val heroSnapConnection = remember(listState, i) {
-                    object : NestedScrollConnection {
-                        override suspend fun onPreFling(available: Velocity): Velocity {
-                            val target = heroSnapTarget(available.y) ?: return Velocity.Zero
-                            listState.animateScrollToItem(target)
-                            return available
-                        }
-
-                        override suspend fun onPostFling(
-                            consumed: Velocity,
-                            available: Velocity,
-                        ): Velocity {
-                            val directionY = when {
-                                consumed.y != 0f -> consumed.y
-                                else -> available.y
-                            }
-                            heroSnapTarget(directionY)?.let { target ->
+                val heroSnapConnection =
+                    remember(listState, i) {
+                        object : NestedScrollConnection {
+                            override suspend fun onPreFling(available: Velocity): Velocity {
+                                val target = heroSnapTarget(available.y) ?: return Velocity.Zero
                                 listState.animateScrollToItem(target)
+                                return available
                             }
-                            return Velocity.Zero
+
+                            override suspend fun onPostFling(
+                                consumed: Velocity,
+                                available: Velocity,
+                            ): Velocity {
+                                val directionY =
+                                    when {
+                                        consumed.y != 0f -> consumed.y
+                                        else -> available.y
+                                    }
+                                heroSnapTarget(directionY)?.let { target ->
+                                    listState.animateScrollToItem(target)
+                                }
+                                return Velocity.Zero
+                            }
                         }
                     }
-                }
                 var wheelScrollGeneration by remember(i) { mutableIntStateOf(0) }
                 var wheelScrollDirectionY by remember(i) { mutableFloatStateOf(0f) }
                 LaunchedEffect(wheelScrollGeneration, isCurrentItem, selectorMounted) {
-                    if (wheelScrollGeneration == 0 || !isCurrentItem || selectorMounted) {
+                    if (wheelScrollGeneration == 0 || !isCurrentItem || selectorMounted)
                         return@LaunchedEffect
-                    }
                     delay(180.milliseconds)
                     snapshotFlow { listState.isScrollInProgress }.first { !it }
                     heroSnapTarget(wheelScrollDirectionY)?.let { target ->
@@ -514,30 +380,91 @@ fun SongPlayerItem(
                         }
                 ) {
                     LazyColumn(
-                        Modifier.fillMaxSize()
-                            .paddingMask(safeDrawing, backgroundColor = colorScheme.primaryContainer) {
-                                playerSheet?.progressState?.value ?: 0f
-                            },
+                        Modifier.fillMaxSize().paddingMask(
+                            safeDrawing,
+                            backgroundColor = colorScheme.primaryContainer,
+                        ) {
+                            playerSheet?.progressState?.value ?: 0f
+                        },
                         state = listState,
                         userScrollEnabled = false,
-                        contentPadding = PaddingValues(
-                            top = topPadding,
-                            start = safeDrawing.calculateStartPadding(layoutDirection),
-                            end = safeDrawing.calculateEndPadding(layoutDirection),
-                        )
+                        contentPadding =
+                            PaddingValues(
+                                top = topPadding,
+                                start = safeDrawing.calculateStartPadding(layoutDirection),
+                                end = safeDrawing.calculateEndPadding(layoutDirection),
+                            ),
                     ) {
-                        // Only list geometry is recycled; the hero and its page state live above the list.
+                        // Only list geometry is recycled; the hero and its page state live above
+                        // the list.
                         item(key = "player-hero-$i") {
                             Spacer(Modifier.fillMaxWidth().height(heroHeight))
                         }
                         stickyHeader(bottomBarKey, PlayerBottomBarContentType, isSlidable = false) {
-                            Spacer(Modifier.fillMaxWidth().height(playerBottomBarHeight))
+                            Box(
+                                transformModifier
+                                    .blockDescendantBringIntoView()
+                                    .height(playerBottomBarHeight)
+                            ) {
+                                BottomBar(
+                                    timelineState = timelineState,
+                                    isPlaying = controls.isPlaying,
+                                    miniPlayerContent = { StickyMiniPlayer(controls, i) },
+                                    index = i,
+                                    scrollProgress = { heroScrollProgress },
+                                    lyricsVisible = showLyrics,
+                                    lyricsChromeCollapsed = lyricsChromeCollapsed,
+                                    selectedLyrics = selectedLyrics,
+                                    lyricsSelectorActive = lyricsMounted,
+                                    queueButtonHidden = queueMounted,
+                                    onLyricsPillBoundsChanged = { bounds ->
+                                        overlays.updateLyricsPill(bounds)
+                                        if (!isBottomBarSticky)
+                                            overlays.localBounds(bounds)?.let {
+                                                lyricsTransition.updateAnchor(it)
+                                            }
+                                    },
+                                    onQueueButtonBoundsChanged = { bounds ->
+                                        overlays.updateQueueButton(bounds)
+                                        if (isCurrentItem && !isBottomBarSticky)
+                                            queuePillBounds(bounds)?.let {
+                                                queueTransition.updateAnchor(it)
+                                            }
+                                    },
+                                    onLyricsSelectorClick = {
+                                        if (isCurrentItem && showLyrics && !isBottomBarSticky)
+                                            overlays
+                                                .localBounds(overlays.lyricsPillCoordinates)
+                                                ?.let { overlays.openLyrics(it) }
+                                    },
+                                    onQueueButtonClick = {
+                                        if (isCurrentItem && !isBottomBarSticky)
+                                            queuePillBounds()?.let { overlays.openQueue(it) }
+                                    },
+                                    onLyricsClick = {
+                                        listState.requestScrollToItem(0)
+                                        if (showLyrics || showKineticShapes) {
+                                            // Start the chrome with the mode change, whether
+                                            // returning
+                                            // to the cover or entering the other immersive view.
+                                            setLyricsChromeCollapsed(false)
+                                            chrome.restartTimeout()
+                                        }
+
+                                        presentation.show(
+                                            if (showLyrics) PlayerPresentationMode.Cover
+                                            else PlayerPresentationMode.Lyrics
+                                        )
+                                    },
+                                )
+                            }
                         }
 
                         val firstHeaderKey = "Header $i"
                         stickyHeader(key = firstHeaderKey, contentType = "player-header") {
                             Box(
-                                transformModifier.blockDescendantBringIntoView()
+                                transformModifier
+                                    .blockDescendantBringIntoView()
                                     .clipHeaderTop(listState, firstHeaderKey)
                             ) {
                                 Header(i.toString())
@@ -552,7 +479,7 @@ fun SongPlayerItem(
                                     modifier = transformModifier.padding(horizontal = 8.dp),
                                     key = "$i$it",
                                     contentType = SongQueueItemContentType,
-                                    colors = cardColors
+                                    colors = cardColors,
                                 ) {
                                     Box(
                                         Modifier.fillMaxWidth()
@@ -561,8 +488,11 @@ fun SongPlayerItem(
                                                     playerSheet?.sheetState?.partialExpand()
                                                     backStack?.add(Media(it.toString()))
                                                 }
-                                            }.padding(16.dp, 24.dp)
-                                    ) { Text("Item $it") }
+                                            }
+                                            .padding(16.dp, 24.dp)
+                                    ) {
+                                        Text("Item $it")
+                                    }
                                 }
                             }
                         }
@@ -570,7 +500,8 @@ fun SongPlayerItem(
                         val secondHeaderKey = "Header $i-2"
                         stickyHeader(key = secondHeaderKey, contentType = "player-header-2") {
                             Box(
-                                transformModifier.blockDescendantBringIntoView()
+                                transformModifier
+                                    .blockDescendantBringIntoView()
                                     .clipHeaderTop(listState, secondHeaderKey)
                             ) {
                                 Header("$i 2")
@@ -585,7 +516,7 @@ fun SongPlayerItem(
                                     modifier = transformModifier.padding(horizontal = 8.dp),
                                     key = "$i$it 2",
                                     contentType = SongQueueItemContentType,
-                                    colors = cardColors
+                                    colors = cardColors,
                                 ) {
                                     Box(
                                         Modifier.fillMaxWidth()
@@ -594,162 +525,123 @@ fun SongPlayerItem(
                                                     playerSheet?.sheetState?.partialExpand()
                                                     backStack?.add(Media(it.toString()))
                                                 }
-                                            }.padding(16.dp, 24.dp)
-                                    ) { Text("Item $it") }
+                                            }
+                                            .padding(16.dp, 24.dp)
+                                    ) {
+                                        Text("Item $it")
+                                    }
                                 }
                             }
                         }
                     }
 
-                    Box(Modifier.fillMaxSize().paddingMask(safeDrawing, backgroundColor = colorScheme.primaryContainer) {
-                        playerSheet?.progressState?.value ?: 0f
-                    }) {
+                    Box(
+                        Modifier.fillMaxSize().paddingMask(
+                            safeDrawing,
+                            backgroundColor = colorScheme.primaryContainer,
+                        ) {
+                            playerSheet?.progressState?.value ?: 0f
+                        }
+                    ) {
                         PlayerHero(
-                            i = i,
+                            media = controls.mediaFor(i),
+                            timelineState = timelineState,
+                            isPlaying = controls.isPlaying,
+                            bassLevel = controls.bassLevel,
+                            onSeek = { controls.seekTo(it, i) },
+                            timelineContent = {
+                                geometry,
+                                rowsCollapsed,
+                                compactArtwork,
+                                collapseProgress ->
+                                ExpandedTimeline(
+                                    session = controls,
+                                    i = i,
+                                    geometry = geometry,
+                                    rowsCollapsed = rowsCollapsed,
+                                    lyricsVisible = immersiveMode,
+                                    showCompactArtwork = compactArtwork,
+                                    rowsCollapseProgress = collapseProgress,
+                                    onArtworkClick = {
+                                        setLyricsChromeCollapsed(false)
+                                        presentation.show(PlayerPresentationMode.Cover)
+                                    },
+                                )
+                            },
                             lyrics = selectedLyrics?.lyrics,
                             lyricsTimingIndex = selectedLyrics?.timingIndex,
                             showLyrics = showLyrics,
                             showKineticShapes = showKineticShapes,
-                            pageActive = isCurrentItem || pagerState.isScrollInProgress,
-                            immersiveContentActive = isCurrentItem && !isBottomBarSticky &&
-                                immersiveContentVisible,
+                            pageActive = pageVisible,
+                            immersiveContentActive =
+                                isCurrentItem && !isBottomBarSticky && immersiveContentVisible,
                             collapseTimelineRowsForLyrics = lyricsChromeCollapsed,
                             onCollapseTimelineRowsForLyricsChange = setLyricsChromeCollapsed,
                             onLyricsChromeInteraction = onLyricsChromeInteraction,
                             onKineticShapesChromeClick = {
                                 if (isCurrentItem && showKineticShapes) {
                                     setLyricsChromeCollapsed(!lyricsChromeCollapsed)
-                                    lyricsChromeInteractionNonce++
+                                    chrome.restartTimeout()
                                 }
                             },
                             userScrollEnabled = isPlayerScrolledToTop,
                             topPadding = topPadding,
                             viewportWidth = coverViewportWidth,
                             transformModifier = transformModifier,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(
-                                    start = safeDrawing.calculateStartPadding(layoutDirection),
-                                    end = safeDrawing.calculateEndPadding(layoutDirection),
-                                )
-                                .offset {
-                                    val scroll = if (listState.firstVisibleItemIndex == 0)
-                                        listState.firstVisibleItemScrollOffset.toFloat() else heroHeightPx
-                                    IntOffset(0, (topPadding.toPx() - scroll).roundToInt())
-                                }
-                                .height(heroHeight)
-                                .graphicsLayer { alpha = heroAlpha },
-                            onArtworkClick = {
-                                setLyricsChromeCollapsed(false)
-                                presentation.show(PlayerPresentationMode.Cover)
-
-                            },
+                            modifier =
+                                Modifier.fillMaxWidth()
+                                    .padding(
+                                        start = safeDrawing.calculateStartPadding(layoutDirection),
+                                        end = safeDrawing.calculateEndPadding(layoutDirection),
+                                    )
+                                    .offset {
+                                        val scroll =
+                                            if (listState.firstVisibleItemIndex == 0)
+                                                listState.firstVisibleItemScrollOffset.toFloat()
+                                            else heroHeightPx
+                                        IntOffset(0, (topPadding.toPx() - scroll).roundToInt())
+                                    }
+                                    .height(heroHeight)
+                                    .graphicsLayer {
+                                        alpha = (1f - heroScrollProgress / 0.6f).coerceIn(0f, 1f)
+                                    }
+                                    .redrawPlayerOnReveal(heroVisible),
                             onLargeArtworkClick = {
                                 if (isCurrentItem) {
                                     presentation.show(PlayerPresentationMode.Kinetic)
                                     setLyricsChromeCollapsed(false)
-                                    lyricsChromeInteractionNonce++
+                                    chrome.restartTimeout()
                                 }
                             },
                         )
                     }
-                    BottomBar(
-                        index = i,
-                        modifier = transformModifier
-                            .align(Alignment.BottomCenter)
-                            .padding(safeDrawing)
-                            .playerScrollFade { heroAlpha },
-                        lyricsVisible = showLyrics,
-                        lyricsChromeCollapsed = lyricsChromeCollapsed,
-                        selectedLyrics = selectedLyrics,
-                        lyricsSelectorActive = lyricsMounted,
-                        queueButtonHidden = queueMounted,
-                        onLyricsPillBoundsChanged = { bounds ->
-                            lyricsPillCoordinates = bounds
-                            if (!isBottomBarSticky) {
-                                localPillBounds(bounds)?.let {
-                                    lyricsTransition.updateAnchor(it)
-                                }
-                            }
-                        },
-                        onQueueButtonBoundsChanged = { bounds ->
-                            queueButtonCoordinates = bounds
-                            if (isCurrentItem && !isBottomBarSticky) {
-                                queuePillBounds(bounds)?.let {
-                                    queueTransition.updateAnchor(it)
-                                }
-                            }
-                        },
-                        onLyricsSelectorClick = {
-                            if (isCurrentItem && showLyrics && !isBottomBarSticky) {
-                                localPillBounds(lyricsPillCoordinates)?.let {
-                                    openLyrics(it)
-                                }
-                            }
-                        },
-                        onQueueButtonClick = {
-                            if (isCurrentItem && !isBottomBarSticky) {
-                                queuePillBounds()?.let {
-                                    openQueue(it)
-                                }
-                            }
-                        },
-                        onLyricsClick = {
-                            listState.requestScrollToItem(0)
-                            if (showLyrics || showKineticShapes) {
-                                // Start the chrome with the mode change, whether returning
-                                // to the cover or entering the other immersive view.
-                                setLyricsChromeCollapsed(false)
-                                lyricsChromeInteractionNonce++
-                            }
-
-                            presentation.show(if (showLyrics) PlayerPresentationMode.Cover else PlayerPresentationMode.Lyrics)
-                        }
-                    )
-                    Box(
-                        transformModifier
-                            .align(Alignment.TopCenter)
-                            .padding(
-                                top = topPadding,
-                                start = safeDrawing.calculateStartPadding(layoutDirection),
-                                end = safeDrawing.calculateEndPadding(layoutDirection),
-                            )
-                            .fillMaxWidth()
-                            .height(playerBottomBarHeight)
-                            .playerScrollFade { 1f - heroAlpha }
-                            .background(colorScheme.primaryContainer)
-                            .padding(8.dp),
-                    ) {
-                        StickyMiniPlayer(i)
-                    }
                 }
 
-                CollapsedPlayer(i = i, showCover = immersiveMode)
+                CollapsedPlayer(session = controls, i = i, showCover = immersiveMode)
                 val scrollbarState = rememberPlayerScrollbarState(listState, scrollbarItemSizes)
                 val scrollbarThumbMover =
                     rememberPlayerScrollbarThumbMover(listState, scrollbarItemSizes)
                 var previousScrollbarTravel by remember(i) { mutableStateOf<Float?>(null) }
                 var scrollbarDirectionY by remember(i) { mutableFloatStateOf(0f) }
                 FastScrollbar(
-                    modifier = transformModifier
-                        .fillMaxHeight()
-                        .width(8.dp)
-                        .padding(top = 4.dp, bottom = 4.dp)
-                        .padding(safeDrawing)
-                        .graphicsLayer {
-                            compositingStrategy = CompositingStrategy.ModulateAlpha
-                            alpha = playerSheet?.progressState?.value ?: 1f
-                        }
-                        .align(Alignment.TopEnd),
+                    modifier =
+                        transformModifier
+                            .fillMaxHeight()
+                            .width(8.dp)
+                            .padding(top = 4.dp, bottom = 4.dp)
+                            .padding(safeDrawing)
+                            .graphicsLayer {
+                                compositingStrategy = CompositingStrategy.ModulateAlpha
+                                alpha = playerSheet?.progressState?.value ?: 1f
+                            }
+                            .align(Alignment.TopEnd),
                     state = scrollbarState,
                     scrollInProgress = listState.isScrollInProgress,
                     orientation = Orientation.Vertical,
                     onThumbMoved = { travel ->
                         previousScrollbarTravel?.let { previous ->
                             val delta = travel - previous
-                            if (delta != 0f) {
-                                scrollbarDirectionY = if (delta < 0f) 1f else -1f
-                            }
+                            if (delta != 0f) scrollbarDirectionY = if (delta < 0f) 1f else -1f
                         }
                         previousScrollbarTravel = travel
                         scrollbarThumbMover(travel)
@@ -764,18 +656,19 @@ fun SongPlayerItem(
                     },
                 )
             }
-            if (lyricsMounted) {
+            if (lyricsMounted)
                 PlayerPillOverlay(
                     transition = lyricsTransition,
-                    viewport = Size(constraints.maxWidth.toFloat(), constraints.maxHeight.toFloat()),
+                    viewport =
+                        Size(constraints.maxWidth.toFloat(), constraints.maxHeight.toFloat()),
                     isCurrentPage = isCurrentItem,
                     pillColor = colorScheme.onPrimaryContainer.copy(alpha = 0.1f),
                     openInfo = LyricsSelectorPageInfo,
                     closedInfo = LyricsSelectorPlayerInfo,
-                    currentSource = { localPillBounds(lyricsPillCoordinates) },
+                    currentSource = { overlays.localBounds(overlays.lyricsPillCoordinates) },
                     alternateSource = if (isBottomBarSticky) null else queuePillBounds(),
                     onAlternateClick = {
-                        if (!isBottomBarSticky) queuePillBounds()?.let(::openQueue)
+                        if (!isBottomBarSticky) queuePillBounds()?.let(overlays::openQueue)
                     },
                     pillContent = {
                         LyricsSelectionPillContent(
@@ -799,10 +692,10 @@ fun SongPlayerItem(
                         )
                     },
                 )
-            }
         }
     }
-}
 
-/** The queue's only composition is outside the pager, so moving the playing
- * song's pager key cannot unmount the queue for a frame. */
+/**
+ * The queue's only composition is outside the pager, so moving the playing song's pager key cannot
+ * unmount the queue for a frame.
+ */

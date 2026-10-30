@@ -45,6 +45,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
+            api(libs.kaudio.output)
             api(libs.kmedia.notification)
             implementation(libs.kmplayer.core)
             implementation(libs.kmplayer.compose)

@@ -8,7 +8,7 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 
 /** Lives with playback rather than the composition, so background media controls retain artwork. */
-internal class NotificationArtworkRequest(
+class NotificationArtworkRequest(
     private val scope: CoroutineScope,
     private val load: suspend (String) -> MediaArtwork,
     private val onLoaded: (String, MediaArtwork) -> Unit,

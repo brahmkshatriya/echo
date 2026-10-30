@@ -35,7 +35,7 @@ private fun observeIosPlaybackAudio(session: PlayerSession): AutoCloseable {
     }
 }
 
-internal fun createIosSystemMediaSession(session: PlayerSession, imageLoader: Landscapist): SystemMediaSession {
+fun createIosSystemMediaSession(session: PlayerSession, imageLoader: Landscapist): SystemMediaSession {
     val adapter = MediaNotificationAdapter(session, MediaPlatform.apple(), imageLoader)
     val audioEvents = observeIosPlaybackAudio(session)
     return object : SystemMediaSession {

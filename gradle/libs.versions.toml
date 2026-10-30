@@ -1,12 +1,11 @@
 [versions]
 kotlin = "2.4.21"
-agp = "9.4.1"
+agp = "9.5.0"
 compose = "1.13.0-beta01"
 composeNative = "1.13.0-beta01"
 androidxLifecycle = "2.11.0"
 landscapist = "2.13.2-alpha02"
-kmplayer = "0.2.0"
-kmediaNotification = "0.1.0"
+kmplayer = "0.2.1"
 
 #noinspection UnusedVersionCatalogEntry
 compileSdk = "37.2"
@@ -16,7 +15,8 @@ minSdk = "24"
 [libraries]
 kmplayer-core = { module = "dev.brahmkshatriya.kmplayer:kmplayer", version.ref = "kmplayer" }
 kmplayer-compose = { module = "dev.brahmkshatriya.kmplayer:kmplayer-compose", version.ref = "kmplayer" }
-kmedia-notification = { module = "dev.brahmkshatriya.kmedianotification:kmedia-notification", version.ref = "kmediaNotification" }
+kmedia-notification = { module = "dev.brahmkshatriya.kmedianotification:lib", version = "0.1.1" }
+kaudio-output = { module = "dev.brahmkshatriya.kaudiooutput:lib", version = "0.1.1" }
 
 compose-foundation = { module = "dev.brahmkshatriya.compose.foundation:foundation", version.ref = "composeNative" }
 compose-material3 = { module = "dev.brahmkshatriya.compose.material3:material3", version.ref = "composeNative" }

@@ -50,10 +50,10 @@ private fun observeTouchInputChanges(onChange: () -> Unit): () -> Unit = js(
 )
 
 @Composable
-internal actual fun imeAnimationInsetsOrNull(): Pair<WindowInsets, WindowInsets>? = null
+actual fun imeAnimationInsetsOrNull(): Pair<WindowInsets, WindowInsets>? = null
 
 @Composable
-internal actual fun KeepScreenAwake(enabled: Boolean) {
+actual fun KeepScreenAwake(enabled: Boolean) {
     DisposableEffect(enabled) {
         val release = if (enabled) acquireScreenWakeLock() else null
         onDispose { release?.invoke() }
@@ -89,6 +89,6 @@ private fun acquireScreenWakeLock(): () -> Unit = js(
     })()"""
 )
 
-internal actual suspend fun Clipboard.setPlainText(text: String) {
+actual suspend fun Clipboard.setPlainText(text: String) {
     setClipEntry(ClipEntry.withPlainText(text))
 }

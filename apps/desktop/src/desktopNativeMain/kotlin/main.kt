@@ -35,17 +35,19 @@ import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import com.materialkolor.PaletteStyle
 import com.materialkolor.dynamicColorScheme
 import com.materialkolor.dynamiccolor.ColorSpec
+import com.skydoves.landscapist.image.LocalLandscapist
 import dev.brahmkshatriya.echo.app.playback.createPlaybackComponent
 import dev.brahmkshatriya.echo.app.ui.App
+import dev.brahmkshatriya.echo.app.ui.LocalPlaybackComponent
 import dev.brahmkshatriya.echo.app.ui.theme.LocalCustomTheme
 import dev.brahmkshatriya.echo.app.ui.theme.LocalDensityMultiplier
 import echo.client.generated.resources.Res
 import echo.client.generated.resources.app_name
 import echo.client.generated.resources.compose_multiplatform
+import kotlin.coroutines.ContinuationInterceptor
 import kotlinx.coroutines.CoroutineDispatcher
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import kotlin.coroutines.ContinuationInterceptor
 
 private const val InitialDensityMultiplier = 1f
 private const val DensityScrollStep = 0.005f
@@ -55,29 +57,28 @@ private const val MaxDensityMultiplier = 2f
 fun main() = application {
     val applicationScope = rememberCoroutineScope()
     val playback = remember {
-        createPlaybackComponent(applicationScope.coroutineContext[ContinuationInterceptor] as CoroutineDispatcher)
+        createPlaybackComponent(
+            applicationScope.coroutineContext[ContinuationInterceptor] as CoroutineDispatcher
+        )
     }
     DisposableEffect(playback) { onDispose { playback.close() } }
     val escapeNavigationInput = remember { EscapeNavigationInput() }
     var densityMultiplier by remember { mutableFloatStateOf(InitialDensityMultiplier) }
     val isDarkTheme = isSystemInDarkTheme()
-    val windowState = rememberWindowState(
-        position = WindowPosition.Aligned(Alignment.Center),
-        size = DpSize(
-            (960 * InitialDensityMultiplier).dp,
-            (640 * InitialDensityMultiplier).dp
+    val windowState =
+        rememberWindowState(
+            position = WindowPosition.Aligned(Alignment.Center),
+            size = DpSize((960 * InitialDensityMultiplier).dp, (640 * InitialDensityMultiplier).dp),
         )
-    )
     Window(
-        onCloseRequest = {
-            exitApplication()
-        },
+        onCloseRequest = { exitApplication() },
         state = windowState,
         title = stringResource(Res.string.app_name),
         icon = painterResource(Res.drawable.compose_multiplatform),
         titleBar = TitleBar.Auto(foreground = if (isDarkTheme) Color.White else Color.Black),
         onKeyEvent = { event ->
-            if (event.key != Key.Escape) false else {
+            if (event.key != Key.Escape) false
+            else {
                 if (event.type == KeyEventType.KeyDown) escapeNavigationInput.back()
                 true
             }
@@ -90,27 +91,31 @@ fun main() = application {
             onDispose { dispatcher?.removeInput(escapeNavigationInput) }
         }
         val accentColor = LocalPlatformAccentColor.current
-        val dynamicTheme = accentColor?.let {
-            dynamicColorScheme(
-                primary = it,
-                isDark = isDarkTheme,
-                style = PaletteStyle.Rainbow,
-                specVersion = ColorSpec.SpecVersion.SPEC_2021,
-            )
-        }
+        val dynamicTheme =
+            accentColor?.let {
+                dynamicColorScheme(
+                    primary = it,
+                    isDark = isDarkTheme,
+                    style = PaletteStyle.Rainbow,
+                    specVersion = ColorSpec.SpecVersion.SPEC_2021,
+                )
+            }
         CompositionLocalProvider(
             LocalCustomTheme provides dynamicTheme,
-            LocalDensityMultiplier provides densityMultiplier
+            LocalDensityMultiplier provides densityMultiplier,
+            LocalPlaybackComponent provides playback,
+            LocalLandscapist provides playback.imageLoader,
         ) {
             Box(
-                Modifier
-                    .fillMaxSize()
-                    .onCtrlScrollDensityChange {
-                        densityMultiplier = (densityMultiplier - it * DensityScrollStep)
-                            .coerceIn(MinDensityMultiplier, MaxDensityMultiplier)
-                    }
+                Modifier.fillMaxSize().onCtrlScrollDensityChange {
+                    densityMultiplier =
+                        (densityMultiplier - it * DensityScrollStep).coerceIn(
+                            MinDensityMultiplier,
+                            MaxDensityMultiplier,
+                        )
+                }
             ) {
-                App(playback)
+                App()
             }
         }
     }
@@ -118,8 +123,15 @@ fun main() = application {
 
 private class EscapeNavigationInput : NavigationEventInput() {
     private var hasEnabledHandlers = false
-    fun back() { if (hasEnabledHandlers) dispatchOnBackCompleted() }
-    override fun onRemoved() { hasEnabledHandlers = false }
+
+    fun back() {
+        if (hasEnabledHandlers) dispatchOnBackCompleted()
+    }
+
+    override fun onRemoved() {
+        hasEnabledHandlers = false
+    }
+
     override fun onHasEnabledHandlersChanged(hasEnabledHandlers: Boolean) {
         this.hasEnabledHandlers = hasEnabledHandlers
     }

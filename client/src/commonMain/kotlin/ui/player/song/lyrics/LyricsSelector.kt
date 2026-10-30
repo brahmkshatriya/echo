@@ -98,26 +98,25 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.jetbrains.compose.resources.painterResource
 
-internal object LyricsSelectorPlayerInfo : NavigationEventInfo()
-internal object LyricsSelectorPageInfo : NavigationEventInfo()
+object LyricsSelectorPlayerInfo : NavigationEventInfo()
 
-internal val LyricsPosition.textAlign: TextAlign
-    get() = when (this) {
-        LyricsPosition.Start -> TextAlign.Start
-        LyricsPosition.End -> TextAlign.End
-    }
+object LyricsSelectorPageInfo : NavigationEventInfo()
 
+val LyricsPosition.textAlign: TextAlign
+    get() =
+        when (this) {
+            LyricsPosition.Start -> TextAlign.Start
+            LyricsPosition.End -> TextAlign.End
+        }
 
 @Composable
-internal fun LyricsSelectionPillContent(
+fun LyricsSelectionPillContent(
     modifier: Modifier = Modifier,
     selectedLyrics: LyricsSelectionItem?,
     chromeCollapsed: Boolean = false,
 ) {
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp),
+        modifier = modifier.fillMaxSize().padding(horizontal = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
@@ -144,17 +143,12 @@ internal fun LyricsSelectionPillContent(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-        } else {
-            Text(
-                text = "Choose Lyrics",
-                style = typography.labelLarge,
-            )
-        }
+        } else Text(text = "Choose Lyrics", style = typography.labelLarge)
     }
 }
 
 @Composable
-internal fun LyricsSelectionPage(
+fun LyricsSelectionPage(
     selectedLyrics: LyricsSelectionItem?,
     items: List<LyricsSelectionItem>,
     topPadding: Dp,
@@ -165,31 +159,23 @@ internal fun LyricsSelectionPage(
 ) {
     val queryState = rememberTextFieldState()
     var appliedQuery by remember { mutableStateOf("") }
-    val filteredItems = remember(items, appliedQuery) {
-        val needle = appliedQuery.trim()
-        if (needle.isEmpty()) {
-            items
-        } else {
-            items.filter { item ->
-                item.title.contains(needle, ignoreCase = true) ||
+    val filteredItems =
+        remember(items, appliedQuery) {
+            val needle = appliedQuery.trim()
+            if (needle.isEmpty()) items
+            else
+                items.filter { item ->
+                    item.title.contains(needle, ignoreCase = true) ||
                         item.subtitle.contains(needle, ignoreCase = true) ||
                         item.extension.contains(needle, ignoreCase = true)
-            }
+                }
         }
-    }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val resultsListState = rememberLazyListState()
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .imePadding()
-            .navigationBarsPadding(),
-    ) {
+    Box(modifier = Modifier.fillMaxSize().imePadding().navigationBarsPadding()) {
         Scaffold(
-            modifier = Modifier
-                .fillMaxSize()
-                .nestedScroll(scrollBehavior.nestedScrollConnection),
+            modifier = Modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
             containerColor = Color.Transparent,
             contentColor = colorScheme.onSurface,
             contentWindowInsets = WindowInsets(0.dp),
@@ -210,10 +196,11 @@ internal fun LyricsSelectionPage(
                         }
                     },
                     windowInsets = WindowInsets(0.dp),
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color.Transparent,
-                        scrolledContainerColor = Color.Transparent,
-                    ),
+                    colors =
+                        TopAppBarDefaults.topAppBarColors(
+                            containerColor = Color.Transparent,
+                            scrolledContainerColor = Color.Transparent,
+                        ),
                     scrollBehavior = scrollBehavior,
                 )
             },
@@ -230,29 +217,21 @@ internal fun LyricsSelectionPage(
                 )
             },
         ) { contentPadding ->
-            val cardColors = CardDefaults.cardColors(
-                containerColor = colorScheme.surface
-            )
+            val cardColors = CardDefaults.cardColors(containerColor = colorScheme.surface)
             LazyColumn(
                 state = resultsListState,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(contentPadding),
+                modifier = Modifier.fillMaxSize().padding(contentPadding),
                 contentPadding = PaddingValues(horizontal = 8.dp),
                 reverseLayout = true,
                 userScrollEnabled = interactive,
                 verticalArrangement = Arrangement.Bottom,
             ) {
-                materialGroup(
-                    lazyListState = resultsListState,
-                    gap = 3.dp,
-                    reverseLayout = true,
-                ) {
+                materialGroup(lazyListState = resultsListState, gap = 3.dp, reverseLayout = true) {
                     filteredItems.forEach { item ->
                         card(
                             key = "${item.extension}:${item.title}:${item.subtitle}",
                             contentType = "lyrics-selection",
-                            colors = cardColors
+                            colors = cardColors,
                         ) {
                             LyricsSelectionRow(
                                 item = item,
@@ -263,19 +242,16 @@ internal fun LyricsSelectionPage(
                         }
                     }
                 }
-                if (filteredItems.isEmpty()) {
+                if (filteredItems.isEmpty())
                     item {
                         Text(
                             text = "No lyrics found",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(24.dp),
+                            modifier = Modifier.fillMaxWidth().padding(24.dp),
                             style = typography.bodyLarge,
                             color = colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.Center,
                         )
                     }
-                }
             }
         }
     }
@@ -289,10 +265,10 @@ private fun LyricsSelectionRow(
     onClick: () -> Unit,
 ) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(enabled = enabled, onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+        modifier =
+            Modifier.fillMaxWidth()
+                .clickable(enabled = enabled, onClick = onClick)
+                .padding(horizontal = 16.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -309,14 +285,13 @@ private fun LyricsSelectionRow(
                 color = colorScheme.onSurfaceVariant,
             )
         }
-        if (selected) {
+        if (selected)
             Icon(
                 painter = painterResource(Res.drawable.ic_check_circle),
                 contentDescription = "Selected lyrics",
                 modifier = Modifier.size(24.dp),
                 tint = colorScheme.tertiary,
             )
-        }
     }
 }
 
@@ -343,21 +318,21 @@ private fun LyricsSelectionSearchBar(
     val extensionName = "Spotify"
     val widthMotion = motionScheme.fastSpatialSpec<IntSize>()
     val fadeMotion = motionScheme.fastEffectsSpec<Float>()
-    val searchButtonColors = if (isFocused) {
-        IconButtonDefaults.filledIconButtonColors()
-    } else {
-        IconButtonDefaults.iconButtonColors()
-    }
-    val searchButtonContainerColor by animateColorAsState(
-        targetValue = searchButtonColors.containerColor,
-        animationSpec = motionScheme.fastEffectsSpec(),
-        label = "LyricsSearchButtonContainer",
-    )
-    val searchButtonContentColor by animateColorAsState(
-        targetValue = searchButtonColors.contentColor,
-        animationSpec = motionScheme.fastEffectsSpec(),
-        label = "LyricsSearchButtonIconColor",
-    )
+    val searchButtonColors =
+        if (isFocused) IconButtonDefaults.filledIconButtonColors()
+        else IconButtonDefaults.iconButtonColors()
+    val searchButtonContainerColor by
+        animateColorAsState(
+            targetValue = searchButtonColors.containerColor,
+            animationSpec = motionScheme.fastEffectsSpec(),
+            label = "LyricsSearchButtonContainer",
+        )
+    val searchButtonContentColor by
+        animateColorAsState(
+            targetValue = searchButtonColors.contentColor,
+            animationSpec = motionScheme.fastEffectsSpec(),
+            label = "LyricsSearchButtonIconColor",
+        )
 
     suspend fun clearSearchFocusAfterImeCloses() {
         focusCloseMutex.withLock {
@@ -368,10 +343,11 @@ private fun LyricsSelectionSearchBar(
 
             keyboardController?.hide()
             snapshotFlow {
-                imeInsets.getBottom(density) == 0 &&
+                    imeInsets.getBottom(density) == 0 &&
                         imeAnimationSource.getBottom(density) == 0 &&
                         imeAnimationTarget.getBottom(density) == 0
-            }.first { it }
+                }
+                .first { it }
             focusManager.clearFocus(force = true)
         }
     }
@@ -380,48 +356,43 @@ private fun LyricsSelectionSearchBar(
         if (!interactive) {
             clearSearchFocusAfterImeCloses()
             fieldEnabled = false
-        } else {
-            fieldEnabled = true
-        }
+        } else fieldEnabled = true
     }
 
     LaunchedEffect(isFocused, interactive) {
         if (isFocused && interactive) {
             var imeWasVisible = false
             snapshotFlow {
-                Triple(
-                    imeInsets.getBottom(density),
-                    imeAnimationSource.getBottom(density),
-                    imeAnimationTarget.getBottom(density),
-                )
-            }.collect { (height, _, target) ->
-                if (height > 0) imeWasVisible = true
-                if (imeWasVisible && height == 0 && target == 0) {
-                    focusManager.clearFocus(force = true)
+                    Triple(
+                        imeInsets.getBottom(density),
+                        imeAnimationSource.getBottom(density),
+                        imeAnimationTarget.getBottom(density),
+                    )
                 }
-            }
+                .collect { (height, _, target) ->
+                    if (height > 0) imeWasVisible = true
+                    if (imeWasVisible && height == 0 && target == 0)
+                        focusManager.clearFocus(force = true)
+                }
         }
     }
 
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(8.dp),
+        modifier = modifier.fillMaxWidth().padding(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         AnimatedVisibility(
             visible = !isFocused,
-            enter = fadeIn(animationSpec = fadeMotion) +
+            enter =
+                fadeIn(animationSpec = fadeMotion) +
                     expandHorizontally(animationSpec = widthMotion, expandFrom = Alignment.Start),
-            exit = fadeOut(animationSpec = fadeMotion) +
-                    shrinkHorizontally(
-                        animationSpec = widthMotion,
-                        shrinkTowards = Alignment.Start
-                    ),
+            exit =
+                fadeOut(animationSpec = fadeMotion) +
+                    shrinkHorizontally(animationSpec = widthMotion, shrinkTowards = Alignment.Start),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(
-                    onClick = { },
+                    onClick = {},
                     enabled = interactive,
                     shapes = IconButtonDefaults.shapes(),
                 ) {
@@ -438,25 +409,27 @@ private fun LyricsSelectionSearchBar(
         }
 
         Row(
-            modifier = Modifier
-                .height(playerBottomBarControlSize)
-                .weight(1f)
-                .clip(RoundedCornerShape(playerBottomBarControlSize / 2))
-                .background(colorScheme.onSurface.copy(alpha = 0.08f))
-                .padding(horizontal = 4.dp),
+            modifier =
+                Modifier.height(playerBottomBarControlSize)
+                    .weight(1f)
+                    .clip(RoundedCornerShape(playerBottomBarControlSize / 2))
+                    .background(colorScheme.onSurface.copy(alpha = 0.08f))
+                    .padding(horizontal = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             AnimatedVisibility(
                 visible = isFocused,
-                enter = fadeIn(animationSpec = fadeMotion) +
+                enter =
+                    fadeIn(animationSpec = fadeMotion) +
                         expandHorizontally(
                             animationSpec = widthMotion,
-                            expandFrom = Alignment.Start
+                            expandFrom = Alignment.Start,
                         ),
-                exit = fadeOut(animationSpec = fadeMotion) +
+                exit =
+                    fadeOut(animationSpec = fadeMotion) +
                         shrinkHorizontally(
                             animationSpec = widthMotion,
-                            shrinkTowards = Alignment.Start
+                            shrinkTowards = Alignment.Start,
                         ),
             ) {
                 IconButton(
@@ -472,12 +445,10 @@ private fun LyricsSelectionSearchBar(
             }
 
             Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = 4.dp, vertical = 4.dp),
+                modifier = Modifier.weight(1f).padding(horizontal = 4.dp, vertical = 4.dp),
                 contentAlignment = Alignment.CenterStart,
             ) {
-                if (queryState.text.isEmpty()) {
+                if (queryState.text.isEmpty())
                     Crossfade(
                         targetState = isFocused,
                         animationSpec = fadeMotion,
@@ -487,43 +458,37 @@ private fun LyricsSelectionSearchBar(
                             text = if (focused) "Search lyrics" else extensionName,
                             modifier = Modifier.padding(start = if (focused) 0.dp else 8.dp),
                             style = typography.bodyLarge,
-                            color = if (focused) {
-                                colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                            } else {
-                                colorScheme.onSurfaceVariant
-                            },
+                            color =
+                                if (focused) colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                                else colorScheme.onSurfaceVariant,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                         )
                     }
-                }
 
                 BasicTextField(
                     state = queryState,
                     enabled = fieldEnabled,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .onFocusChanged {
-                            isFocused = it.isFocused
-                        }
-                        .onPreviewKeyEvent { event ->
-                            if (event.type != KeyEventType.KeyDown) {
-                                return@onPreviewKeyEvent false
-                            }
-                            when (event.key) {
-                                Key.Escape -> {
-                                    scope.launch { clearSearchFocusAfterImeCloses() }
-                                    true
-                                }
+                    modifier =
+                        Modifier.fillMaxWidth()
+                            .onFocusChanged { isFocused = it.isFocused }
+                            .onPreviewKeyEvent { event ->
+                                if (event.type != KeyEventType.KeyDown)
+                                    return@onPreviewKeyEvent false
+                                when (event.key) {
+                                    Key.Escape -> {
+                                        scope.launch { clearSearchFocusAfterImeCloses() }
+                                        true
+                                    }
 
-                                Key.Enter -> {
-                                    onSearch()
-                                    true
-                                }
+                                    Key.Enter -> {
+                                        onSearch()
+                                        true
+                                    }
 
-                                else -> false
-                            }
-                        },
+                                    else -> false
+                                }
+                            },
                     lineLimits = TextFieldLineLimits.SingleLine,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                     onKeyboardAction = { onSearch() },
@@ -532,7 +497,7 @@ private fun LyricsSelectionSearchBar(
                 )
             }
 
-            if (queryState.text.isNotEmpty()) {
+            if (queryState.text.isNotEmpty())
                 IconButton(
                     onClick = onClear,
                     enabled = interactive,
@@ -543,16 +508,16 @@ private fun LyricsSelectionSearchBar(
                         contentDescription = "Clear search",
                     )
                 }
-            }
 
             IconButton(
                 onClick = onSearch,
                 enabled = interactive,
                 modifier = Modifier.size(40.dp),
-                colors = IconButtonDefaults.iconButtonColors(
-                    containerColor = searchButtonContainerColor,
-                    contentColor = searchButtonContentColor,
-                ),
+                colors =
+                    IconButtonDefaults.iconButtonColors(
+                        containerColor = searchButtonContainerColor,
+                        contentColor = searchButtonContentColor,
+                    ),
             ) {
                 Icon(
                     painter = painterResource(Res.drawable.ic_search_outline),
@@ -563,9 +528,11 @@ private fun LyricsSelectionSearchBar(
 
         AnimatedVisibility(
             visible = !isFocused,
-            enter = fadeIn(animationSpec = fadeMotion) +
+            enter =
+                fadeIn(animationSpec = fadeMotion) +
                     expandHorizontally(animationSpec = widthMotion, expandFrom = Alignment.End),
-            exit = fadeOut(animationSpec = fadeMotion) +
+            exit =
+                fadeOut(animationSpec = fadeMotion) +
                     shrinkHorizontally(animationSpec = widthMotion, shrinkTowards = Alignment.End),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -574,21 +541,23 @@ private fun LyricsSelectionSearchBar(
                 FilledTonalIconButton(
                     onClick = onBack,
                     enabled = interactive,
-                    shape = animatedPolygonIconShape(
-                        shape = MaterialShapes.Circle,
-                        pressedShape = MaterialShapes.Square,
-                        interactionSource = backInteractionSource,
-                    ),
+                    shape =
+                        animatedPolygonIconShape(
+                            shape = MaterialShapes.Circle,
+                            pressedShape = MaterialShapes.Square,
+                            interactionSource = backInteractionSource,
+                        ),
                     interactionSource = backInteractionSource,
-                    colors = IconButtonDefaults.iconButtonColors(
-                        colorScheme.secondary,
-                        colorScheme.onSecondary
-                    ),
+                    colors =
+                        IconButtonDefaults.iconButtonColors(
+                            colorScheme.secondary,
+                            colorScheme.onSecondary,
+                        ),
                 ) {
                     PolygonIconRipple(backInteractionSource) {
                         Icon(
                             painterResource(Res.drawable.ic_back),
-                            contentDescription = "Close queue"
+                            contentDescription = "Close queue",
                         )
                     }
                 }

@@ -59,11 +59,11 @@ private fun queryHasTouchInput(): Boolean = memScoped {
 }
 
 @Composable
-internal actual fun imeAnimationInsetsOrNull(): Pair<WindowInsets, WindowInsets>? = null
+actual fun imeAnimationInsetsOrNull(): Pair<WindowInsets, WindowInsets>? = null
 
 @Composable
 @OptIn(ExperimentalForeignApi::class)
-internal actual fun KeepScreenAwake(enabled: Boolean) {
+actual fun KeepScreenAwake(enabled: Boolean) {
     DisposableEffect(enabled) {
         val wasEnabled = SDL_ScreenSaverEnabled()
         if (enabled) SDL_DisableScreenSaver()
@@ -72,6 +72,6 @@ internal actual fun KeepScreenAwake(enabled: Boolean) {
 }
 
 @OptIn(ExperimentalForeignApi::class)
-internal actual suspend fun Clipboard.setPlainText(text: String) {
+actual suspend fun Clipboard.setPlainText(text: String) {
     SDL_SetClipboardText(text)
 }

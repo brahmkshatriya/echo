@@ -46,15 +46,16 @@ fun LazyListScope.materialGroup(
     content: MaterialGroupScope.() -> Unit,
 ) {
     require(gap >= 0.dp) { "Material group gap must be non-negative" }
-    val scope = MaterialGroupScope(
-        radius = roundedCornerRadius,
-        gap = gap,
-        clipPadding = clipPadding,
-        lazyListState = lazyListState,
-        lazyListScope = this,
-        reverseLayout = reverseLayout,
-        ignoredStickyHeaderKeys = ignoredStickyHeaderKeys
-    )
+    val scope =
+        MaterialGroupScope(
+            radius = roundedCornerRadius,
+            gap = gap,
+            clipPadding = clipPadding,
+            lazyListState = lazyListState,
+            lazyListScope = this,
+            reverseLayout = reverseLayout,
+            ignoredStickyHeaderKeys = ignoredStickyHeaderKeys,
+        )
 
     scope.content()
     scope.emit()
@@ -94,54 +95,71 @@ class MaterialGroupScope(
             lazyListScope.item(params.key, params.contentType) {
                 val layoutDirection = LocalLayoutDirection.current
                 val density = LocalDensity.current
-                val clipPaddingPx = with(density) {
-                    MaterialGroupClipPadding(
-                        left = clipPadding.calculateLeftPadding(layoutDirection).roundToPx(),
-                        top = clipPadding.calculateTopPadding().roundToPx(),
-                        right = clipPadding.calculateRightPadding(layoutDirection).roundToPx(),
-                        bottom = clipPadding.calculateBottomPadding().roundToPx()
-                    )
-                }
-                Card(
-                    modifier = params.modifier
-                        .padding(
-                            top = when {
-                                reverseLayout && index == lastIndex -> clipPadding.calculateTopPadding()
-                                reverseLayout -> 0.dp
-                                index == 0 -> clipPadding.calculateTopPadding()
-                                else -> 0.dp
-                            },
-                            bottom = when {
-                                reverseLayout && index == 0 -> clipPadding.calculateBottomPadding()
-                                reverseLayout -> gap
-                                index != lastIndex -> gap
-                                else -> clipPadding.calculateBottomPadding()
-                            },
+                val clipPaddingPx =
+                    with(density) {
+                        MaterialGroupClipPadding(
+                            left = clipPadding.calculateLeftPadding(layoutDirection).roundToPx(),
+                            top = clipPadding.calculateTopPadding().roundToPx(),
+                            right = clipPadding.calculateRightPadding(layoutDirection).roundToPx(),
+                            bottom = clipPadding.calculateBottomPadding().roundToPx(),
                         )
-                        .clipToRoundedViewport(
-                            lazyListState = lazyListState,
-                            itemKey = params.key,
-                            clipPadding = clipPaddingPx,
-                            radius = radius,
-                            itemKeys = itemKeys,
-                            firstKey = firstKey,
-                            lastKey = lastKey,
-                            reverseLayout = reverseLayout,
-                            ignoredStickyHeaderKeys = ignoredStickyHeaderKeys
-                        ),
+                    }
+                Card(
+                    modifier =
+                        params.modifier
+                            .padding(
+                                top =
+                                    when {
+                                        reverseLayout && index == lastIndex ->
+                                            clipPadding.calculateTopPadding()
+                                        reverseLayout -> 0.dp
+                                        index == 0 -> clipPadding.calculateTopPadding()
+                                        else -> 0.dp
+                                    },
+                                bottom =
+                                    when {
+                                        reverseLayout && index == 0 ->
+                                            clipPadding.calculateBottomPadding()
+                                        reverseLayout -> gap
+                                        index != lastIndex -> gap
+                                        else -> clipPadding.calculateBottomPadding()
+                                    },
+                            )
+                            .clipToRoundedViewport(
+                                lazyListState = lazyListState,
+                                itemKey = params.key,
+                                clipPadding = clipPaddingPx,
+                                radius = radius,
+                                itemKeys = itemKeys,
+                                firstKey = firstKey,
+                                lastKey = lastKey,
+                                reverseLayout = reverseLayout,
+                                ignoredStickyHeaderKeys = ignoredStickyHeaderKeys,
+                            ),
                     colors = params.colors ?: CardDefaults.cardColors(),
                     elevation = params.elevation ?: CardDefaults.cardElevation(),
                     border = params.border,
-                    shape = if (gap > 0.dp) {
-                        RoundedCornerShape(
-                            topStart = if (if (reverseLayout) index < lastIndex else index > 0) gapCornerRadius else 0.dp,
-                            topEnd = if (if (reverseLayout) index < lastIndex else index > 0) gapCornerRadius else 0.dp,
-                            bottomStart = if (if (reverseLayout) index > 0 else index < lastIndex) gapCornerRadius else 0.dp,
-                            bottomEnd = if (if (reverseLayout) index > 0 else index < lastIndex) gapCornerRadius else 0.dp,
-                        )
-                    } else {
-                        RectangleShape
-                    }
+                    shape =
+                        if (gap > 0.dp)
+                            RoundedCornerShape(
+                                topStart =
+                                    if (if (reverseLayout) index < lastIndex else index > 0)
+                                        gapCornerRadius
+                                    else 0.dp,
+                                topEnd =
+                                    if (if (reverseLayout) index < lastIndex else index > 0)
+                                        gapCornerRadius
+                                    else 0.dp,
+                                bottomStart =
+                                    if (if (reverseLayout) index > 0 else index < lastIndex)
+                                        gapCornerRadius
+                                    else 0.dp,
+                                bottomEnd =
+                                    if (if (reverseLayout) index > 0 else index < lastIndex)
+                                        gapCornerRadius
+                                    else 0.dp,
+                            )
+                        else RectangleShape,
                 ) {
                     params.content(this)
                 }
@@ -171,60 +189,55 @@ private fun materialGroupClipInfo(
 ): Pair<Float?, Float?> {
     val layoutInfo = lazyListState.layoutInfo
     val visibleItems = layoutInfo.visibleItemsInfo
-    val currentItem = visibleItems.firstOrNull { it.key == itemKey }
-        ?: return null to null
+    val currentItem = visibleItems.firstOrNull { it.key == itemKey } ?: return null to null
 
     fun physicalOffset(itemOffset: Int, itemSize: Int): Int =
-        if (reverseLayout) {
-            layoutInfo.viewportSize.height - itemOffset - itemSize
-        } else {
-            itemOffset
-        }
+        if (reverseLayout) layoutInfo.viewportSize.height - itemOffset - itemSize else itemOffset
 
-    val stickyHeaderItem = visibleItems.asSequence().filter { item ->
-        item.index < currentItem.index &&
-                item.key !in itemKeys &&
-                item.key !in ignoredStickyHeaderKeys
-    }.maxByOrNull { item -> item.index }
-    val viewportStart = if (reverseLayout) {
-        layoutInfo.viewportSize.height - layoutInfo.viewportEndOffset
-    } else {
-        layoutInfo.viewportStartOffset
-    }
-    val viewportEnd = if (reverseLayout) {
-        layoutInfo.viewportSize.height - layoutInfo.viewportStartOffset
-    } else {
-        layoutInfo.viewportEndOffset
-    }
+    val stickyHeaderItem =
+        visibleItems
+            .asSequence()
+            .filter { item ->
+                item.index < currentItem.index &&
+                    item.key !in itemKeys &&
+                    item.key !in ignoredStickyHeaderKeys
+            }
+            .maxByOrNull { item -> item.index }
+    val viewportStart =
+        if (reverseLayout) layoutInfo.viewportSize.height - layoutInfo.viewportEndOffset
+        else layoutInfo.viewportStartOffset
+    val viewportEnd =
+        if (reverseLayout) layoutInfo.viewportSize.height - layoutInfo.viewportStartOffset
+        else layoutInfo.viewportEndOffset
     val stickyHeaderStart = stickyHeaderItem?.let { physicalOffset(it.offset, it.size) }
-    val stickyHeaderEnd = stickyHeaderItem?.let {
-        physicalOffset(it.offset, it.size) + it.size
-    }
+    val stickyHeaderEnd = stickyHeaderItem?.let { physicalOffset(it.offset, it.size) + it.size }
     val topGroupKey = if (reverseLayout) lastKey else firstKey
     val bottomGroupKey = if (reverseLayout) firstKey else lastKey
     val topGroupItem = visibleItems.firstOrNull { it.key == topGroupKey }
     val bottomGroupItem = visibleItems.firstOrNull { it.key == bottomGroupKey }
     val groupTop = topGroupItem?.let { physicalOffset(it.offset, it.size) }
-    val groupBottom = bottomGroupItem?.let {
-        physicalOffset(it.offset, it.size) + it.size
-    }
-    val visibleGroupTop = if (clipToGroupBounds) maxOf(
-        if (reverseLayout) viewportStart else stickyHeaderEnd ?: viewportStart,
-        groupTop ?: viewportStart,
-    ) else viewportStart
-    val visibleGroupBottom = if (clipToGroupBounds) minOf(
-        if (reverseLayout) stickyHeaderStart ?: viewportEnd else viewportEnd,
-        groupBottom ?: viewportEnd,
-    ) else viewportEnd
+    val groupBottom = bottomGroupItem?.let { physicalOffset(it.offset, it.size) + it.size }
+    val visibleGroupTop =
+        if (clipToGroupBounds)
+            maxOf(
+                if (reverseLayout) viewportStart else stickyHeaderEnd ?: viewportStart,
+                groupTop ?: viewportStart,
+            )
+        else viewportStart
+    val visibleGroupBottom =
+        if (clipToGroupBounds)
+            minOf(
+                if (reverseLayout) stickyHeaderStart ?: viewportEnd else viewportEnd,
+                groupBottom ?: viewportEnd,
+            )
+        else viewportEnd
     val currentItemOffset = physicalOffset(currentItem.offset, currentItem.size) + itemTranslationY
-    val top =
-        visibleGroupTop - currentItemOffset + clipPadding.top
-    val bottom =
-        visibleGroupBottom - currentItemOffset - clipPadding.bottom
+    val top = visibleGroupTop - currentItemOffset + clipPadding.top
+    val bottom = visibleGroupBottom - currentItemOffset - clipPadding.bottom
     return top to bottom
 }
 
-internal fun Modifier.clipToMaterialGroupViewport(
+fun Modifier.clipToMaterialGroupViewport(
     lazyListState: LazyListState,
     itemKey: Any,
     itemKeys: Set<Any>,
@@ -233,20 +246,21 @@ internal fun Modifier.clipToMaterialGroupViewport(
     radius: Dp,
     itemTranslationY: Float = 0f,
     clipToGroupBounds: Boolean = true,
-): Modifier = clipToRoundedViewport(
-    lazyListState = lazyListState,
-    itemKey = itemKey,
-    clipPadding = MaterialGroupClipPadding(0, 0, 0, 0),
-    radius = radius,
-    itemKeys = itemKeys,
-    firstKey = firstKey,
-    lastKey = lastKey,
-    reverseLayout = false,
-    ignoredStickyHeaderKeys = emptySet(),
-    itemTranslationY = itemTranslationY,
-    clipToGroupBounds = clipToGroupBounds,
-    consumeClippedPointers = false,
-)
+): Modifier =
+    clipToRoundedViewport(
+        lazyListState = lazyListState,
+        itemKey = itemKey,
+        clipPadding = MaterialGroupClipPadding(0, 0, 0, 0),
+        radius = radius,
+        itemKeys = itemKeys,
+        firstKey = firstKey,
+        lastKey = lastKey,
+        reverseLayout = false,
+        ignoredStickyHeaderKeys = emptySet(),
+        itemTranslationY = itemTranslationY,
+        clipToGroupBounds = clipToGroupBounds,
+        consumeClippedPointers = false,
+    )
 
 private fun Modifier.clipToRoundedViewport(
     lazyListState: LazyListState,
@@ -261,78 +275,89 @@ private fun Modifier.clipToRoundedViewport(
     itemTranslationY: Float = 0f,
     clipToGroupBounds: Boolean = true,
     consumeClippedPointers: Boolean = true,
-): Modifier = drawWithCache {
-    val path = Path()
-    onDrawWithContent {
-        val (topBoundary, bottomBoundary) = materialGroupClipInfo(
-            lazyListState = lazyListState,
-            itemKey = itemKey,
-            clipPadding = clipPadding,
-            itemKeys = itemKeys,
-            firstKey = firstKey,
-            lastKey = lastKey,
-            reverseLayout = reverseLayout,
-            ignoredStickyHeaderKeys = ignoredStickyHeaderKeys,
-            itemTranslationY = itemTranslationY,
-            clipToGroupBounds = clipToGroupBounds,
-        )
-        val hasNoBoundaries = topBoundary == null && bottomBoundary == null
-        if (hasNoBoundaries) return@onDrawWithContent drawContent()
+): Modifier =
+    drawWithCache {
+            val path = Path()
+            onDrawWithContent {
+                val (topBoundary, bottomBoundary) =
+                    materialGroupClipInfo(
+                        lazyListState = lazyListState,
+                        itemKey = itemKey,
+                        clipPadding = clipPadding,
+                        itemKeys = itemKeys,
+                        firstKey = firstKey,
+                        lastKey = lastKey,
+                        reverseLayout = reverseLayout,
+                        ignoredStickyHeaderKeys = ignoredStickyHeaderKeys,
+                        itemTranslationY = itemTranslationY,
+                        clipToGroupBounds = clipToGroupBounds,
+                    )
+                val hasNoBoundaries = topBoundary == null && bottomBoundary == null
+                if (hasNoBoundaries) return@onDrawWithContent drawContent()
 
-        val radiusPx = radius.toPx()
-        val top = topBoundary ?: (-radiusPx)
-        val bottom = bottomBoundary ?: (size.height + radiusPx)
-        if (top >= bottom) return@onDrawWithContent
+                val radiusPx = radius.toPx()
+                val top = topBoundary ?: (-radiusPx)
+                val bottom = bottomBoundary ?: (size.height + radiusPx)
+                if (top >= bottom) return@onDrawWithContent
 
-        val doesNotAffectItem = top <= -radiusPx && bottom >= size.height + radiusPx
-        if (doesNotAffectItem) return@onDrawWithContent drawContent()
-        val roundedViewportHeight = bottom - top
-        val visibleTop = top.coerceIn(0f, size.height)
-        val visibleBottom = bottom.coerceIn(0f, size.height)
-        if (visibleBottom - visibleTop <= 0f) return@onDrawWithContent
+                val doesNotAffectItem = top <= -radiusPx && bottom >= size.height + radiusPx
+                if (doesNotAffectItem) return@onDrawWithContent drawContent()
+                val roundedViewportHeight = bottom - top
+                val visibleTop = top.coerceIn(0f, size.height)
+                val visibleBottom = bottom.coerceIn(0f, size.height)
+                if (visibleBottom - visibleTop <= 0f) return@onDrawWithContent
 
-        val cornerRadius = if (roundedViewportHeight > radiusPx) radiusPx
-        else minOf(radiusPx, roundedViewportHeight / 2f, size.width / 2f)
+                val cornerRadius =
+                    if (roundedViewportHeight > radiusPx) radiusPx
+                    else minOf(radiusPx, roundedViewportHeight / 2f, size.width / 2f)
 
-        path.reset()
-        path.addRoundRect(
-            RoundRect(
-                left = clipPadding.left.toFloat(),
-                top = top,
-                right = size.width - clipPadding.right,
-                bottom = bottom,
-                topLeftCornerRadius = CornerRadius(cornerRadius),
-                topRightCornerRadius = CornerRadius(cornerRadius),
-                bottomLeftCornerRadius = CornerRadius(cornerRadius),
-                bottomRightCornerRadius = CornerRadius(cornerRadius),
-            )
-        )
-        clipPath(path) {
-            this@onDrawWithContent.drawContent()
-        }
-    }
-}.then(if (consumeClippedPointers) Modifier.pointerInput(Unit) {
-    awaitPointerEventScope {
-        while (true) {
-            val event = awaitPointerEvent(PointerEventPass.Initial)
-            val (topBoundary, bottomBoundary) = materialGroupClipInfo(
-                lazyListState = lazyListState,
-                itemKey = itemKey,
-                clipPadding = clipPadding,
-                itemKeys = itemKeys,
-                firstKey = firstKey,
-                lastKey = lastKey,
-                reverseLayout = reverseLayout,
-                ignoredStickyHeaderKeys = ignoredStickyHeaderKeys,
-                itemTranslationY = itemTranslationY,
-                clipToGroupBounds = clipToGroupBounds,
-            )
-            val isOutOfBounds = event.changes.any {
-                val isAbove = topBoundary?.let { top -> it.position.y < top } == true
-                val isBelow = bottomBoundary?.let { bottom -> it.position.y > bottom } == true
-                isAbove || isBelow
+                path.reset()
+                path.addRoundRect(
+                    RoundRect(
+                        left = clipPadding.left.toFloat(),
+                        top = top,
+                        right = size.width - clipPadding.right,
+                        bottom = bottom,
+                        topLeftCornerRadius = CornerRadius(cornerRadius),
+                        topRightCornerRadius = CornerRadius(cornerRadius),
+                        bottomLeftCornerRadius = CornerRadius(cornerRadius),
+                        bottomRightCornerRadius = CornerRadius(cornerRadius),
+                    )
+                )
+                clipPath(path) { this@onDrawWithContent.drawContent() }
             }
-            if (isOutOfBounds) event.changes.forEach { it.consume() }
         }
-    }
-} else Modifier)
+        .then(
+            if (consumeClippedPointers)
+                Modifier.pointerInput(Unit) {
+                    awaitPointerEventScope {
+                        while (true) {
+                            val event = awaitPointerEvent(PointerEventPass.Initial)
+                            val (topBoundary, bottomBoundary) =
+                                materialGroupClipInfo(
+                                    lazyListState = lazyListState,
+                                    itemKey = itemKey,
+                                    clipPadding = clipPadding,
+                                    itemKeys = itemKeys,
+                                    firstKey = firstKey,
+                                    lastKey = lastKey,
+                                    reverseLayout = reverseLayout,
+                                    ignoredStickyHeaderKeys = ignoredStickyHeaderKeys,
+                                    itemTranslationY = itemTranslationY,
+                                    clipToGroupBounds = clipToGroupBounds,
+                                )
+                            val isOutOfBounds =
+                                event.changes.any {
+                                    val isAbove =
+                                        topBoundary?.let { top -> it.position.y < top } == true
+                                    val isBelow =
+                                        bottomBoundary?.let { bottom -> it.position.y > bottom } ==
+                                            true
+                                    isAbove || isBelow
+                                }
+                            if (isOutOfBounds) event.changes.forEach { it.consume() }
+                        }
+                    }
+                }
+            else Modifier
+        )

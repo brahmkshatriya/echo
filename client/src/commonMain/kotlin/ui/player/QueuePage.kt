@@ -79,6 +79,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import dev.brahmkshatriya.echo.app.playback.PlayableMedia
+import dev.brahmkshatriya.echo.app.playback.PlayerSession
 import dev.brahmkshatriya.echo.app.playback.RepeatMode
 import dev.brahmkshatriya.echo.app.ui.components.BetterImage
 import dev.brahmkshatriya.echo.app.ui.components.PolygonIconRipple
@@ -112,14 +114,14 @@ private data class QueueDrag(
 )
 
 @Composable
-internal fun QueuePage(
+fun QueuePage(
+    controls: PlayerSession,
     modifier: Modifier = Modifier,
     currentEntryId: Int,
     onBack: () -> Unit,
     onEntrySelected: (Int) -> Unit,
     interactive: Boolean = true,
 ) {
-    val controls = LocalPlayerControls.current
     var heldOrder by remember { mutableStateOf<List<Int>?>(null) }
     val entriesInOrder = heldOrder ?: controls.playbackOrder
     val queueGroups = controls.queues
@@ -134,73 +136,90 @@ internal fun QueuePage(
     val maxAutoScrollPxPerSecond = with(LocalDensity.current) { 680.dp.toPx() }
     var stridePx by remember { mutableFloatStateOf(fallbackStride) }
     val movementSpring = motionScheme.defaultSpatialSpec<Float>()
-    val cornerSpring =
-        remember { spring<Dp>(dampingRatio = 0.4f, stiffness = Spring.StiffnessMedium) }
+    val cornerSpring = remember {
+        spring<Dp>(dampingRatio = 0.4f, stiffness = Spring.StiffnessMedium)
+    }
     val cardColors = CardDefaults.cardColors(containerColor = colorScheme.surface)
     val safeDrawing = WindowInsets.safeDrawing.asPaddingValues()
-    LaunchedEffect(drag?.entryId, drag?.settling, interactive) {
+    val currentQueueGroups by rememberUpdatedState(queueGroups)
+    val currentEdgeZonePx by rememberUpdatedState(edgeZonePx)
+    val currentStickyHeaderPx by rememberUpdatedState(stickyHeaderPx)
+    val currentMaxAutoScrollPxPerSecond by rememberUpdatedState(maxAutoScrollPxPerSecond)
+    LaunchedEffect(listState, drag?.entryId, drag?.settling, interactive) {
         if (!interactive || drag?.settling != false) return@LaunchedEffect
         var previousFrame = withFrameNanos { it }
         while (true) {
             val frame = withFrameNanos { it }
-            val elapsedSeconds = ((frame - previousFrame) / 1_000_000_000f)
-                .coerceIn(0f, 0.05f)
+            val elapsedSeconds = ((frame - previousFrame) / 1_000_000_000f).coerceIn(0f, 0.05f)
             previousFrame = frame
             val active = drag ?: break
             if (active.settling) break
             val pointerY = active.pointerY ?: continue
+            val groups = currentQueueGroups
             val viewportHeight = listState.layoutInfo.viewportSize.height.toFloat()
             if (viewportHeight <= 0f) continue
-            val upperEdge = stickyHeaderPx + edgeZonePx
-            val lowerEdge = viewportHeight - edgeZonePx
-            val speedFraction = when {
-                pointerY < upperEdge -> -((upperEdge - pointerY) / edgeZonePx).coerceIn(0f, 1f)
-                pointerY > lowerEdge -> ((pointerY - lowerEdge) / edgeZonePx).coerceIn(0f, 1f)
-                else -> 0f
-            }
+            val upperEdge = currentStickyHeaderPx + currentEdgeZonePx
+            val lowerEdge = viewportHeight - currentEdgeZonePx
+            val speedFraction =
+                when {
+                    pointerY < upperEdge ->
+                        -((upperEdge - pointerY) / currentEdgeZonePx).coerceIn(0f, 1f)
+                    pointerY > lowerEdge ->
+                        ((pointerY - lowerEdge) / currentEdgeZonePx).coerceIn(0f, 1f)
+                    else -> 0f
+                }
             if (speedFraction == 0f) continue
-            val groupIndex = queueGroups.indexOfFirst { active.entryId in it.entryIds }
+            val groupIndex = groups.indexOfFirst { active.entryId in it.entryIds }
             if (groupIndex < 0) continue
-            val group = queueGroups[groupIndex]
-            val headerIndex = 1 + queueGroups.take(groupIndex).sumOf { it.entryIds.size + 1 }
+            val group = groups[groupIndex]
+            val headerIndex = 1 + groups.take(groupIndex).sumOf { it.entryIds.size + 1 }
             val lastEntryIndex = headerIndex + group.entryIds.size
             val layoutInfo = listState.layoutInfo
-            val requestedScroll = speedFraction * maxAutoScrollPxPerSecond * elapsedSeconds
-            val boundedScroll = if (requestedScroll < 0f) {
-                when {
-                    listState.firstVisibleItemIndex < headerIndex -> 0f
-                    listState.firstVisibleItemIndex == headerIndex -> requestedScroll.coerceAtLeast(
-                        -listState.firstVisibleItemScrollOffset.toFloat()
-                    )
+            val requestedScroll = speedFraction * currentMaxAutoScrollPxPerSecond * elapsedSeconds
+            val boundedScroll =
+                if (requestedScroll < 0f)
+                    when {
+                        listState.firstVisibleItemIndex < headerIndex -> 0f
+                        listState.firstVisibleItemIndex == headerIndex ->
+                            requestedScroll.coerceAtLeast(
+                                -listState.firstVisibleItemScrollOffset.toFloat()
+                            )
 
-                    else -> requestedScroll
-                }
-            } else {
-                val lastItem = layoutInfo.visibleItemsInfo.firstOrNull {
-                    it.key == "queue-entry-${group.entryIds.last()}"
-                }
-                when {
-                    lastItem != null -> requestedScroll.coerceAtMost(
-                        (lastItem.offset + lastItem.size - layoutInfo.viewportEndOffset)
-                            .coerceAtLeast(0).toFloat()
-                    )
+                        else -> requestedScroll
+                    }
+                else {
+                    val lastItem =
+                        layoutInfo.visibleItemsInfo.firstOrNull {
+                            it.key == "queue-entry-${group.entryIds.last()}"
+                        }
+                    when {
+                        lastItem != null ->
+                            requestedScroll.coerceAtMost(
+                                (lastItem.offset + lastItem.size - layoutInfo.viewportEndOffset)
+                                    .coerceAtLeast(0)
+                                    .toFloat()
+                            )
 
-                    layoutInfo.visibleItemsInfo.any { it.index > lastEntryIndex } -> 0f
-                    else -> requestedScroll
+                        layoutInfo.visibleItemsInfo.any { it.index > lastEntryIndex } -> 0f
+                        else -> requestedScroll
+                    }
                 }
-            }
             if (boundedScroll == 0f) continue
             val scrolled = listState.scrollBy(boundedScroll)
             val currentDrag = drag
             if (scrolled != 0f && currentDrag?.entryId == active.entryId && !currentDrag.settling) {
                 val distance = currentDrag.distance + scrolled
                 val queueStart =
-                    queueGroups.takeWhile { active.entryId !in it.entryIds }.sumOf { it.entryIds.size }
+                    groups.takeWhile { active.entryId !in it.entryIds }.sumOf { it.entryIds.size }
                 val queueEnd =
-                    queueStart + (queueGroups.firstOrNull { active.entryId in it.entryIds }?.entryIds?.size
-                        ?: 1) - 1
-                val destination = (active.from + (distance / stridePx).roundToInt())
-                    .coerceIn(queueStart, queueEnd)
+                    queueStart +
+                        (groups.firstOrNull { active.entryId in it.entryIds }?.entryIds?.size
+                            ?: 1) - 1
+                val destination =
+                    (active.from + (distance / stridePx).roundToInt()).coerceIn(
+                        queueStart,
+                        queueEnd,
+                    )
                 drag = currentDrag.copy(distance = distance, to = destination)
             }
         }
@@ -210,10 +229,14 @@ internal fun QueuePage(
         containerColor = Color.Transparent,
         bottomBar = {
             QueueActionBar(
-                interactive,
-                onBack,
-                currentEntryId,
-                safeDrawing.calculateBottomPadding()
+                repeatMode = controls.repeatMode,
+                shuffle = controls.shuffleEnabled,
+                onShuffle = { controls.setShuffle(!controls.shuffleEnabled, currentEntryId) },
+                onRepeat = { controls.repeatMode = controls.repeatMode.next() },
+                onRadio = { controls.updateRadioEnabled(!controls.radioEnabled) },
+                interactive = interactive,
+                onBack = onBack,
+                bottomPadding = safeDrawing.calculateBottomPadding(),
             )
         },
     ) { padding ->
@@ -237,8 +260,9 @@ internal fun QueuePage(
                     val lastEntryKey = groupEntries.lastOrNull()?.let { "queue-entry-$it" } ?: ""
                     stickyHeader(key = "queue-group-${group.id}", contentType = "queue-group") {
                         Column(
-                            modifier = Modifier.fillMaxWidth()
-                                .padding(horizontal = 20.dp, vertical = 12.dp),
+                            modifier =
+                                Modifier.fillMaxWidth()
+                                    .padding(horizontal = 20.dp, vertical = 12.dp),
                             verticalArrangement = Arrangement.spacedBy(4.dp),
                         ) {
                             Text(group.title, style = typography.titleMedium)
@@ -247,7 +271,8 @@ internal fun QueuePage(
                                     append("${group.entryIds.size} songs")
                                     if (currentEntryId in group.entryIds) append(" · Playing")
                                     if (group.shuffleEnabled) append(" · Shuffled")
-                                    if (group.repeatMode != RepeatMode.Off) append(" · Repeat ${group.repeatMode.name}")
+                                    if (group.repeatMode != RepeatMode.Off)
+                                        append(" · Repeat ${group.repeatMode.name}")
                                 },
                                 style = typography.labelMedium,
                                 color = colorScheme.onSurfaceVariant,
@@ -263,87 +288,109 @@ internal fun QueuePage(
                         val active = drag
                         val pinnableContainer = LocalPinnableContainer.current
                         DisposableEffect(active?.entryId == entryId, pinnableContainer) {
-                            val pin = if (active?.entryId == entryId) pinnableContainer?.pin() else null
+                            val pin =
+                                if (active?.entryId == entryId) pinnableContainer?.pin() else null
                             onDispose { pin?.release() }
                         }
-                        val neighborOffset = when {
-                            active == null || entryId == active.entryId -> 0f
-                            active.to > active.from && index in (active.from + 1)..active.to -> -stridePx
-                            active.to < active.from && index in active.to until active.from -> stridePx
-                            else -> 0f
-                        }
-                        val neighborY by key(active?.entryId) {
-                            animateFloatAsState(
-                                targetValue = neighborOffset,
-                                animationSpec = movementSpring,
-                                label = "Queue neighbor",
-                            )
-                        }
+                        val neighborOffset =
+                            when {
+                                active == null || entryId == active.entryId -> 0f
+                                active.to > active.from && index in (active.from + 1)..active.to ->
+                                    -stridePx
+                                active.to < active.from && index in active.to until active.from ->
+                                    stridePx
+                                else -> 0f
+                            }
+                        val neighborY by
+                            key(active?.entryId) {
+                                animateFloatAsState(
+                                    targetValue = neighborOffset,
+                                    animationSpec = movementSpring,
+                                    label = "Queue neighbor",
+                                )
+                            }
                         val landingOrder =
-                            if (active?.settling == true && active.from in groupStart until groupEnd) {
+                            if (
+                                active?.settling == true && active.from in groupStart until groupEnd
+                            )
                                 entriesInOrder.toMutableList().apply {
                                     add(active.to, removeAt(active.from))
                                 }
-                            } else null
-                        val topEdge = (landingOrder ?: entriesInOrder).getOrNull(groupStart) == entryId
+                            else null
+                        val topEdge =
+                            (landingOrder ?: entriesInOrder).getOrNull(groupStart) == entryId
                         val bottomEdge =
                             (landingOrder ?: entriesInOrder).getOrNull(groupEnd - 1) == entryId
-                        val topCorner by animateDpAsState(
-                            targetValue = if ((active == null || active.settling) && topEdge) 20.dp else 6.dp,
-                            animationSpec = cornerSpring,
-                            label = "Queue top corner",
-                        )
-                        val bottomCorner by animateDpAsState(
-                            targetValue = if ((active == null || active.settling) && bottomEdge) 20.dp else 6.dp,
-                            animationSpec = cornerSpring,
-                            label = "Queue bottom corner",
-                        )
+                        val topCorner by
+                            animateDpAsState(
+                                targetValue =
+                                    if ((active == null || active.settling) && topEdge) 20.dp
+                                    else 6.dp,
+                                animationSpec = cornerSpring,
+                                label = "Queue top corner",
+                            )
+                        val bottomCorner by
+                            animateDpAsState(
+                                targetValue =
+                                    if ((active == null || active.settling) && bottomEdge) 20.dp
+                                    else 6.dp,
+                                animationSpec = cornerSpring,
+                                label = "Queue bottom corner",
+                            )
                         val rowTranslationY =
                             if (active?.entryId == entryId) active.distance else neighborY
                         Card(
-                            modifier = Modifier
-                                .padding(horizontal = 12.dp)
-                                .zIndex(if (active?.entryId == entryId) 1f else 0f)
-                                .graphicsLayer {
-                                    translationY = rowTranslationY
-                                }
-                                .padding(bottom = 3.dp)
-                                .clipToMaterialGroupViewport(
-                                    lazyListState = listState,
-                                    itemKey = "queue-entry-$entryId",
-                                    itemKeys = groupKeys,
-                                    firstKey = firstEntryKey,
-                                    lastKey = lastEntryKey,
-                                    radius = 20.dp,
-                                    itemTranslationY = rowTranslationY,
-                                    clipToGroupBounds = active?.entryId != entryId,
-                                ),
+                            modifier =
+                                Modifier.padding(horizontal = 12.dp)
+                                    .zIndex(if (active?.entryId == entryId) 1f else 0f)
+                                    .graphicsLayer { translationY = rowTranslationY }
+                                    .padding(bottom = 3.dp)
+                                    .clipToMaterialGroupViewport(
+                                        lazyListState = listState,
+                                        itemKey = "queue-entry-$entryId",
+                                        itemKeys = groupKeys,
+                                        firstKey = firstEntryKey,
+                                        lastKey = lastEntryKey,
+                                        radius = 20.dp,
+                                        itemTranslationY = rowTranslationY,
+                                        clipToGroupBounds = active?.entryId != entryId,
+                                    ),
                             colors = cardColors,
-                            shape = RoundedCornerShape(
-                                topStart = topCorner, topEnd = topCorner,
-                                bottomStart = bottomCorner, bottomEnd = bottomCorner,
-                            ),
+                            shape =
+                                RoundedCornerShape(
+                                    topStart = topCorner,
+                                    topEnd = topCorner,
+                                    bottomStart = bottomCorner,
+                                    bottomEnd = bottomCorner,
+                                ),
                         ) {
                             QueueEntryRow(
+                                media = controls.mediaFor(entryId),
                                 index = entryId,
                                 listCoordinates = listCoordinates,
                                 playing = entryId == currentEntryId,
                                 enabled = interactive,
-                                onClick = { if (entryId != currentEntryId) onEntrySelected(entryId) },
+                                onClick = {
+                                    if (entryId != currentEntryId) onEntrySelected(entryId)
+                                },
                                 onDragStart = {
                                     val previous = drag
                                     if (previous == null || previous.settling) {
                                         val previousOrder = heldOrder ?: entriesInOrder
                                         val completingMove =
-                                            previous?.settling == true && previous.to != previous.from
-                                        val nextOrder = if (completingMove) {
-                                            previousOrder.toMutableList().apply {
-                                                add(previous.to, removeAt(previous.from))
-                                            }
-                                        } else previousOrder
+                                            previous?.settling == true &&
+                                                previous.to != previous.from
+                                        val nextOrder =
+                                            if (completingMove)
+                                                previousOrder.toMutableList().apply {
+                                                    add(previous.to, removeAt(previous.from))
+                                                }
+                                            else previousOrder
                                         val nextIndex = nextOrder.indexOf(entryId)
-                                        val item = listState.layoutInfo.visibleItemsInfo
-                                            .firstOrNull { it.key == "queue-entry-$entryId" }
+                                        val item =
+                                            listState.layoutInfo.visibleItemsInfo.firstOrNull {
+                                                it.key == "queue-entry-$entryId"
+                                            }
                                         if (nextIndex >= 0) {
                                             val visibleIndex = listState.firstVisibleItemIndex
                                             val visibleOffset =
@@ -351,25 +398,27 @@ internal fun QueuePage(
                                             settleJob.value?.cancel()
                                             settleJob.value = null
                                             Snapshot.withMutableSnapshot {
-                                                if (completingMove) controls.moveQueueEntry(
-                                                    previous.entryId,
-                                                    previous.to
-                                                )
-                                                stridePx = item?.size?.toFloat()?.coerceAtLeast(1f)
-                                                    ?: fallbackStride
+                                                if (completingMove)
+                                                    controls.moveQueueEntry(
+                                                        previous.entryId,
+                                                        previous.to,
+                                                    )
+                                                stridePx =
+                                                    item?.size?.toFloat()?.coerceAtLeast(1f)
+                                                        ?: fallbackStride
                                                 heldOrder = nextOrder
-                                                drag = QueueDrag(
-                                                    entryId = entryId,
-                                                    from = nextIndex,
-                                                    to = nextIndex
-                                                )
+                                                drag =
+                                                    QueueDrag(
+                                                        entryId = entryId,
+                                                        from = nextIndex,
+                                                        to = nextIndex,
+                                                    )
                                             }
-                                            if (completingMove) {
+                                            if (completingMove)
                                                 listState.requestScrollToItem(
                                                     visibleIndex,
-                                                    visibleOffset
+                                                    visibleOffset,
                                                 )
-                                            }
                                         }
                                     }
                                 },
@@ -380,11 +429,12 @@ internal fun QueuePage(
                                         val destination =
                                             (gesture.from + (distance / stridePx).roundToInt())
                                                 .coerceIn(groupStart, groupEnd - 1)
-                                        drag = gesture.copy(
-                                            distance = distance,
-                                            to = destination,
-                                            pointerY = pointerY
-                                        )
+                                        drag =
+                                            gesture.copy(
+                                                distance = distance,
+                                                to = destination,
+                                                pointerY = pointerY,
+                                            )
                                     }
                                 },
                                 onDragEnd = {
@@ -395,37 +445,45 @@ internal fun QueuePage(
                                             heldOrder = null
                                         } else {
                                             drag = gesture.copy(settling = true)
-                                            settleJob.value = scope.launch {
-                                                val destination =
-                                                    (gesture.to - gesture.from) * stridePx
-                                                Animatable(gesture.distance).animateTo(
-                                                    destination,
-                                                    movementSpring
-                                                ) {
-                                                    if (drag?.entryId == entryId && drag?.settling == true) {
-                                                        drag = drag?.copy(distance = value)
-                                                    }
-                                                }
-                                                if (drag?.entryId == entryId && drag?.settling == true) {
-                                                    val moved = gesture.to != gesture.from
-                                                    val visibleIndex =
-                                                        listState.firstVisibleItemIndex
-                                                    val scrollOffset =
-                                                        listState.firstVisibleItemScrollOffset
-                                                    Snapshot.withMutableSnapshot {
-                                                        if (moved) controls.moveQueueEntry(
-                                                            entryId,
-                                                            gesture.to
+                                            settleJob.value =
+                                                scope.launch {
+                                                    val destination =
+                                                        (gesture.to - gesture.from) * stridePx
+                                                    Animatable(gesture.distance).animateTo(
+                                                        destination,
+                                                        movementSpring,
+                                                    ) {
+                                                        if (
+                                                            drag?.entryId == entryId &&
+                                                                drag?.settling == true
                                                         )
-                                                        drag = null
-                                                        heldOrder = null
+                                                            drag = drag?.copy(distance = value)
                                                     }
-                                                    if (moved) listState.requestScrollToItem(
-                                                        visibleIndex,
-                                                        scrollOffset
-                                                    )
+                                                    if (
+                                                        drag?.entryId == entryId &&
+                                                            drag?.settling == true
+                                                    ) {
+                                                        val moved = gesture.to != gesture.from
+                                                        val visibleIndex =
+                                                            listState.firstVisibleItemIndex
+                                                        val scrollOffset =
+                                                            listState.firstVisibleItemScrollOffset
+                                                        Snapshot.withMutableSnapshot {
+                                                            if (moved)
+                                                                controls.moveQueueEntry(
+                                                                    entryId,
+                                                                    gesture.to,
+                                                                )
+                                                            drag = null
+                                                            heldOrder = null
+                                                        }
+                                                        if (moved)
+                                                            listState.requestScrollToItem(
+                                                                visibleIndex,
+                                                                scrollOffset,
+                                                            )
+                                                    }
                                                 }
-                                            }
                                         }
                                     }
                                 },
@@ -440,15 +498,15 @@ internal fun QueuePage(
 
 @Composable
 private fun QueueActionBar(
+    repeatMode: RepeatMode,
+    shuffle: Boolean,
+    onShuffle: () -> Unit,
+    onRepeat: () -> Unit,
+    onRadio: () -> Unit,
     interactive: Boolean,
     onBack: () -> Unit,
-    currentEntryId: Int,
     bottomPadding: Dp,
 ) {
-    val controls = LocalPlayerControls.current
-    val repeatMode = controls.repeatMode
-    val shuffle = controls.shuffleEnabled
-    val radio = controls.radioEnabled
     val editInteractionSource = remember { MutableInteractionSource() }
     val backInteractionSource = remember { MutableInteractionSource() }
 
@@ -460,29 +518,26 @@ private fun QueueActionBar(
         val isEditMode = remember { mutableStateOf(false) }
         FilledIconToggleButton(
             checked = isEditMode.value,
-            onCheckedChange = {
-                isEditMode.value = it
-            },
-            colors = IconButtonDefaults.filledIconToggleButtonColors(
-                colorScheme.secondaryContainer,
-                colorScheme.onSecondaryContainer,
-                checkedContainerColor = colorScheme.secondary,
-                checkedContentColor = colorScheme.onSecondary,
-            ),
-            shape = animatedPolygonIconShape(
-                shape = MaterialShapes.Pill,
-                pressedShape = MaterialShapes.Square,
-                checkedShape = MaterialShapes.Pill,
-                checked = isEditMode.value,
-                interactionSource = editInteractionSource,
-            ),
+            onCheckedChange = { isEditMode.value = it },
+            colors =
+                IconButtonDefaults.filledIconToggleButtonColors(
+                    colorScheme.secondaryContainer,
+                    colorScheme.onSecondaryContainer,
+                    checkedContainerColor = colorScheme.secondary,
+                    checkedContentColor = colorScheme.onSecondary,
+                ),
+            shape =
+                animatedPolygonIconShape(
+                    shape = MaterialShapes.Pill,
+                    pressedShape = MaterialShapes.Square,
+                    checkedShape = MaterialShapes.Pill,
+                    checked = isEditMode.value,
+                    interactionSource = editInteractionSource,
+                ),
             interactionSource = editInteractionSource,
         ) {
             PolygonIconRipple(editInteractionSource) {
-                Icon(
-                    painterResource(Res.drawable.ic_edit),
-                    "Edit"
-                )
+                Icon(painterResource(Res.drawable.ic_edit), "Edit")
             }
         }
 
@@ -493,87 +548,101 @@ private fun QueueActionBar(
             modifier = Modifier.weight(1f),
         ) {
             listOf(
-                Pair(
-                    "Shuffle", if (shuffle) Res.drawable.ic_shuffle_on else Res.drawable.ic_shuffle
-                ),
-                Pair(
-                    "Repeat", when (repeatMode) {
-                        RepeatMode.Off -> Res.drawable.ic_repeat
-                        RepeatMode.All -> Res.drawable.ic_repeat_on
-                        RepeatMode.One -> Res.drawable.ic_repeat_one_on
-                    }
-                ),
-                Pair("Timer", Res.drawable.ic_timer),
-            ).forEachIndexed { index, (label, icon) ->
-                val onActivate: () -> Unit = {
-                    when (index) {
-                        0 -> controls.setShuffle(!shuffle, currentEntryId)
-                        1 -> controls.repeatMode = when (repeatMode) {
-                            RepeatMode.Off -> RepeatMode.All
-                            RepeatMode.All -> RepeatMode.One
-                            RepeatMode.One -> RepeatMode.Off
-                        }
-
-                        else -> controls.radioEnabled = !radio
-                    }
-                }
-                customItem({
-                    val source = remember { MutableInteractionSource() }
-                    val buttonShape = when (index) {
-                        0 -> RoundedCornerShape(
-                            topStart = 24.dp, bottomStart = 24.dp,
-                            topEnd = 8.dp, bottomEnd = 8.dp,
-                        )
-
-                        2 -> RoundedCornerShape(
-                            topStart = 8.dp, bottomStart = 8.dp,
-                            topEnd = 24.dp, bottomEnd = 24.dp,
-                        )
-
-                        else -> RoundedCornerShape(8.dp)
-                    }
-                    Button(
-                        onClick = onActivate,
-                        enabled = interactive,
-                        interactionSource = source,
-                        shape = buttonShape,
-                        modifier = Modifier.weight(1f).height(playerBottomBarControlSize)
-                            .animateWidth(source),
-                        contentPadding = when (index) {
-                            0 -> PaddingValues(start = 4.dp)
-                            2 -> PaddingValues(end = 4.dp)
-                            else -> PaddingValues(0.dp)
+                    Pair(
+                        "Shuffle",
+                        if (shuffle) Res.drawable.ic_shuffle_on else Res.drawable.ic_shuffle,
+                    ),
+                    Pair(
+                        "Repeat",
+                        when (repeatMode) {
+                            RepeatMode.Off -> Res.drawable.ic_repeat
+                            RepeatMode.All -> Res.drawable.ic_repeat_on
+                            RepeatMode.One -> Res.drawable.ic_repeat_one_on
                         },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = colorScheme.primaryContainer,
-                            contentColor = colorScheme.onPrimaryContainer
-                        )
-                    ) {
-                        SwitchingIcon(icon = icon, contentDescription = label)
+                    ),
+                    Pair("Timer", Res.drawable.ic_timer),
+                )
+                .forEachIndexed { index, (label, icon) ->
+                    val onActivate: () -> Unit = {
+                        when (index) {
+                            0 -> onShuffle()
+                            1 -> onRepeat()
+                            else -> onRadio()
+                        }
                     }
-                }, {
-                    DropdownMenuItem(
-                        text = { Text(label) },
-                        onClick = { onActivate(); it.dismiss() },
-                        enabled = interactive,
+                    customItem(
+                        {
+                            val source = remember { MutableInteractionSource() }
+                            val buttonShape =
+                                when (index) {
+                                    0 ->
+                                        RoundedCornerShape(
+                                            topStart = 24.dp,
+                                            bottomStart = 24.dp,
+                                            topEnd = 8.dp,
+                                            bottomEnd = 8.dp,
+                                        )
+
+                                    2 ->
+                                        RoundedCornerShape(
+                                            topStart = 8.dp,
+                                            bottomStart = 8.dp,
+                                            topEnd = 24.dp,
+                                            bottomEnd = 24.dp,
+                                        )
+
+                                    else -> RoundedCornerShape(8.dp)
+                                }
+                            Button(
+                                onClick = onActivate,
+                                enabled = interactive,
+                                interactionSource = source,
+                                shape = buttonShape,
+                                modifier =
+                                    Modifier.weight(1f)
+                                        .height(playerBottomBarControlSize)
+                                        .animateWidth(source),
+                                contentPadding =
+                                    when (index) {
+                                        0 -> PaddingValues(start = 4.dp)
+                                        2 -> PaddingValues(end = 4.dp)
+                                        else -> PaddingValues(0.dp)
+                                    },
+                                colors =
+                                    ButtonDefaults.buttonColors(
+                                        containerColor = colorScheme.primaryContainer,
+                                        contentColor = colorScheme.onPrimaryContainer,
+                                    ),
+                            ) {
+                                SwitchingIcon(icon = icon, contentDescription = label)
+                            }
+                        },
+                        {
+                            DropdownMenuItem(
+                                text = { Text(label) },
+                                onClick = {
+                                    onActivate()
+                                    it.dismiss()
+                                },
+                                enabled = interactive,
+                            )
+                        },
                     )
-                })
-            }
+                }
         }
 
         FilledTonalIconButton(
             onClick = onBack,
             enabled = interactive,
-            shape = animatedPolygonIconShape(
-                shape = MaterialShapes.Circle,
-                pressedShape = MaterialShapes.Square,
-                interactionSource = backInteractionSource,
-            ),
+            shape =
+                animatedPolygonIconShape(
+                    shape = MaterialShapes.Circle,
+                    pressedShape = MaterialShapes.Square,
+                    interactionSource = backInteractionSource,
+                ),
             interactionSource = backInteractionSource,
-            colors = IconButtonDefaults.iconButtonColors(
-                colorScheme.secondary,
-                colorScheme.onSecondary
-            ),
+            colors =
+                IconButtonDefaults.iconButtonColors(colorScheme.secondary, colorScheme.onSecondary),
         ) {
             PolygonIconRipple(backInteractionSource) {
                 Icon(painterResource(Res.drawable.ic_back), contentDescription = "Close queue")
@@ -584,6 +653,7 @@ private fun QueueActionBar(
 
 @Composable
 private fun QueueEntryRow(
+    media: PlayableMedia?,
     index: Int,
     listCoordinates: LayoutCoordinates?,
     playing: Boolean,
@@ -593,8 +663,7 @@ private fun QueueEntryRow(
     onDrag: (Float, Float?) -> Unit = { _, _ -> },
     onDragEnd: () -> Unit = {},
 ) {
-    val coverUrl = LocalPlayerControls.current.mediaFor(index)?.artworkUri
-    val media = LocalPlayerControls.current.mediaFor(index)
+    val coverUrl = media?.artworkUri
     val coverModel = remember(coverUrl) { { coverUrl } }
     val latestDragStart by rememberUpdatedState(onDragStart)
     val latestDrag by rememberUpdatedState(onDrag)
@@ -602,20 +671,19 @@ private fun QueueEntryRow(
     val latestListCoordinates by rememberUpdatedState(listCoordinates)
     var handleCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
     Row(
-        modifier = Modifier.fillMaxWidth()
-            .clickable(enabled = enabled && !playing, onClick = onClick)
-            .padding(12.dp),
+        modifier =
+            Modifier.fillMaxWidth()
+                .clickable(enabled = enabled && !playing, onClick = onClick)
+                .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Box(
-            modifier = Modifier.size(48.dp)
-                .clip(RoundedCornerShape(4.dp))
-                .background(colorScheme.surfaceVariant)
-                .grayCoverOutline(
-                    outlineColor = Color.Gray,
-                    outlineRadius = 4.dp,
-                ),
+            modifier =
+                Modifier.size(48.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(colorScheme.surfaceVariant)
+                    .grayCoverOutline(outlineColor = Color.Gray, outlineRadius = 4.dp),
             contentAlignment = Alignment.Center,
         ) {
             Icon(
@@ -623,19 +691,21 @@ private fun QueueEntryRow(
                 contentDescription = null,
                 tint = colorScheme.onSurfaceVariant,
             )
-            if (coverUrl != null) {
+            if (coverUrl != null)
                 BetterImage(
                     model = coverModel,
-                    contentDescription = "${media?.album ?: "Album"} cover art",
+                    contentDescription = "${media.album} cover art",
                     modifier = Modifier.fillMaxSize(),
                 )
-            }
         }
         Column(Modifier.weight(1f)) {
             val mergedStyle = LocalTextStyle.current.merge(typography.labelLarge)
             Text(
-                media?.title ?: "Unknown track", fontWeight = FontWeight.Bold, style = mergedStyle,
-                maxLines = 1, overflow = TextOverflow.Ellipsis,
+                media?.title ?: "Unknown track",
+                fontWeight = FontWeight.Bold,
+                style = mergedStyle,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
             Text(
                 (media?.artist ?: "Unknown artist") + if (playing) " · Playing now" else "",
@@ -647,37 +717,37 @@ private fun QueueEntryRow(
             )
         }
         Box(
-            modifier = Modifier
-                .height(48.dp).width(32.dp)
-                .semantics { contentDescription = "Drag to reorder ${media?.title ?: "track"}" }
-                .onGloballyPositioned { handleCoordinates = it }
-                .pointerInput(index, enabled) {
-                    if (enabled) {
-                        detectDragGestures(
-                            orientationLock = null,
-                            shouldAwaitTouchSlop = { false },
-                            onDragStart = { _, _, _ -> latestDragStart() },
-                            onDragEnd = { latestDragEnd() },
-                            onDragCancel = { latestDragEnd() },
-                            onDrag = { change, amount ->
-                                change.consume()
-                                val list = latestListCoordinates
-                                val handle = handleCoordinates
-                                val pointerY =
-                                    if (list?.isAttached == true && handle?.isAttached == true) {
-                                        list.localPositionOf(handle, change.position).y
-                                    } else null
-                                latestDrag(amount.y, pointerY)
-                            },
-                        )
-                    }
-                },
+            modifier =
+                Modifier.height(48.dp)
+                    .width(32.dp)
+                    .semantics { contentDescription = "Drag to reorder ${media?.title ?: "track"}" }
+                    .onGloballyPositioned { handleCoordinates = it }
+                    .pointerInput(index, enabled) {
+                        if (enabled)
+                            detectDragGestures(
+                                orientationLock = null,
+                                shouldAwaitTouchSlop = { false },
+                                onDragStart = { _, _, _ -> latestDragStart() },
+                                onDragEnd = { latestDragEnd() },
+                                onDragCancel = { latestDragEnd() },
+                                onDrag = { change, amount ->
+                                    change.consume()
+                                    val list = latestListCoordinates
+                                    val handle = handleCoordinates
+                                    val pointerY =
+                                        if (list?.isAttached == true && handle?.isAttached == true)
+                                            list.localPositionOf(handle, change.position).y
+                                        else null
+                                    latestDrag(amount.y, pointerY)
+                                },
+                            )
+                    },
             contentAlignment = Alignment.Center,
         ) {
             Icon(
                 painter = painterResource(Res.drawable.ic_drag_indicator),
                 contentDescription = null,
-                tint = colorScheme.onSurfaceVariant.copy(0.5f)
+                tint = colorScheme.onSurfaceVariant.copy(0.5f),
             )
         }
     }

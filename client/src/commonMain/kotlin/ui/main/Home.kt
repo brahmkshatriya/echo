@@ -1,7 +1,6 @@
 package dev.brahmkshatriya.echo.app.ui.main
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -155,7 +154,6 @@ fun Header(i: String) {
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Home() {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
@@ -194,7 +192,7 @@ fun Home() {
                 },
                 navigationIcon = {
                     val backStack = LocalMainBackStack.current
-                    val visible = if (backStack != null) backStack.size > 1 else false
+                    val visible = backStack != null && backStack.size > 1
                     AnimatedVisibility(visible) {
                         IconButton({
                             backStack?.removeLastOrNull()

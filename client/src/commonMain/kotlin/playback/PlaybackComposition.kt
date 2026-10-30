@@ -6,33 +6,35 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.withFrameNanos
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
 
-internal val LocalPlayerTimelineState = staticCompositionLocalOf<PlayerTimelineState?> { null }
-internal val LocalPlayerEntryId = staticCompositionLocalOf<Int> { error("A player item must provide its queue entry") }
-
-/** Attaches presentation to an existing service session; disposal only stops display interpolation. */
+/**
+ * Attaches presentation to an existing service session; disposal only stops display interpolation.
+ */
 @Composable
-internal fun ProvidePlaybackSession(
+fun ProvidePlaybackSession(
     session: PlayerSession,
     pagerState: PagerState,
     content: @Composable () -> Unit,
 ) {
     LaunchedEffect(session, pagerState) {
         var initial = true
-        snapshotFlow { session.selection }.collectLatest { selection ->
-            val page = session.indexOfEntry(selection.entryId)
-            if (page < 0) return@collectLatest
-            if (!initial && selection.reason == SelectionReason.Automatic) {
-                pagerState.animateScrollToPage(page, animationSpec = tween(450, easing = FastOutSlowInEasing))
-            } else if (pagerState.settledPage != page) pagerState.scrollToPage(page)
-            initial = false
-        }
+        snapshotFlow { session.selection }
+            .collectLatest { selection ->
+                val page = session.indexOfEntry(selection.entryId)
+                if (page < 0) return@collectLatest
+                if (!initial && selection.reason == SelectionReason.Automatic)
+                    pagerState.animateScrollToPage(
+                        page,
+                        animationSpec = tween(450, easing = FastOutSlowInEasing),
+                    )
+                else if (pagerState.settledPage != page) pagerState.scrollToPage(page)
+                initial = false
+            }
     }
     LaunchedEffect(session, pagerState) {
         pagerState.interactionSource.interactions
@@ -41,9 +43,11 @@ internal fun ProvidePlaybackSession(
                 val revision = session.selection.revision
                 snapshotFlow { pagerState.isScrollInProgress }.first { it }
                 snapshotFlow { pagerState.isScrollInProgress }.first { !it }
-                if (session.selection.revision == revision) {
-                    session.entryIdAt(pagerState.settledPage).takeIf { it >= 0 }?.let { session.selectEntry(it) }
-                }
+                if (session.selection.revision == revision)
+                    session
+                        .entryIdAt(pagerState.settledPage)
+                        .takeIf { it >= 0 }
+                        ?.let { session.selectEntry(it) }
             }
     }
     LaunchedEffect(session, session.currentEntryId, session.isPlaying) {

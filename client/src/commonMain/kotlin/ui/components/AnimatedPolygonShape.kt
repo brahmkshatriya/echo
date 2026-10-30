@@ -28,20 +28,22 @@ import androidx.graphics.shapes.Morph
 import androidx.graphics.shapes.RoundedPolygon
 
 /**
- * Keep the press ripple's indication independent of the changing polygon Shape.
- * The parent icon button clips it to the currently animated polygon outline.
+ * Keep the press ripple's indication independent of the changing polygon Shape. The parent icon
+ * button clips it to the currently animated polygon outline.
  */
 @Composable
-internal fun PolygonIconRipple(
+fun PolygonIconRipple(
     interactionSource: MutableInteractionSource,
     content: @Composable () -> Unit,
 ) {
     val rippleColor = LocalContentColor.current
     Box(
-        modifier = Modifier.fillMaxSize().indication(
-            interactionSource = interactionSource,
-            indication = ripple(color = rippleColor),
-        ),
+        modifier =
+            Modifier.fillMaxSize()
+                .indication(
+                    interactionSource = interactionSource,
+                    indication = ripple(color = rippleColor),
+                ),
         contentAlignment = Alignment.Center,
     ) {
         content()
@@ -50,7 +52,7 @@ internal fun PolygonIconRipple(
 
 /** A polygon morph that can be used as the clickable surface of an icon button. */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
-internal class MorphingPolygonShape(morph: Morph, progress: Float) : Shape {
+class MorphingPolygonShape(morph: Morph, progress: Float) : Shape {
     private val normalizedPath = morph.toPath(progress)
 
     override fun createOutline(
@@ -66,14 +68,14 @@ internal class MorphingPolygonShape(morph: Morph, progress: Float) : Shape {
 }
 
 /**
- * Material 3's built-in icon button shapes only interpolate CornerBasedShapes.
- * MaterialShapes polygons need a Morph to animate between their actual outlines.
+ * Material 3's built-in icon button shapes only interpolate CornerBasedShapes. MaterialShapes
+ * polygons need a Morph to animate between their actual outlines.
  *
- * Progress 0 = rest, 1 = pressed, 2 = checked. Keeping pressed in the middle
- * makes press/release smooth whether the toggle is checked or unchecked.
+ * Progress 0 = rest, 1 = pressed, 2 = checked. Keeping pressed in the middle makes press/release
+ * smooth whether the toggle is checked or unchecked.
  */
 @Composable
-internal fun animatedPolygonIconShape(
+fun animatedPolygonIconShape(
     shape: RoundedPolygon,
     pressedShape: RoundedPolygon,
     interactionSource: MutableInteractionSource,
@@ -81,25 +83,24 @@ internal fun animatedPolygonIconShape(
     checkedShape: RoundedPolygon? = null,
 ): Shape {
     val pressed by interactionSource.collectIsPressedAsState()
-    val target = when {
-        pressed -> 1f
-        checked && checkedShape != null -> 2f
-        else -> 0f
-    }
-    val progress by animateFloatAsState(
-        targetValue = target,
-        animationSpec = motionScheme.fastEffectsSpec(),
-        label = "Material polygon icon button shape",
-    )
-    val morphToPressed = remember(shape, pressedShape) { Morph(shape, pressedShape) }
-    val morphToChecked = remember(pressedShape, checkedShape) {
-        checkedShape?.let { Morph(pressedShape, it) }
-    }
-    return remember(morphToPressed, morphToChecked, progress) {
-        if (progress > 1f && morphToChecked != null) {
-            MorphingPolygonShape(morphToChecked, (progress - 1f).coerceIn(0f, 1f))
-        } else {
-            MorphingPolygonShape(morphToPressed, progress.coerceIn(0f, 1f))
+    val target =
+        when {
+            pressed -> 1f
+            checked && checkedShape != null -> 2f
+            else -> 0f
         }
+    val progress by
+        animateFloatAsState(
+            targetValue = target,
+            animationSpec = motionScheme.fastEffectsSpec(),
+            label = "Material polygon icon button shape",
+        )
+    val morphToPressed = remember(shape, pressedShape) { Morph(shape, pressedShape) }
+    val morphToChecked =
+        remember(pressedShape, checkedShape) { checkedShape?.let { Morph(pressedShape, it) } }
+    return remember(morphToPressed, morphToChecked, progress) {
+        if (progress > 1f && morphToChecked != null)
+            MorphingPolygonShape(morphToChecked, (progress - 1f).coerceIn(0f, 1f))
+        else MorphingPolygonShape(morphToPressed, progress.coerceIn(0f, 1f))
     }
 }

@@ -44,7 +44,6 @@ import com.skydoves.landscapist.image.LandscapistImage
 import com.skydoves.landscapist.image.convertToImageBitmap
 import com.skydoves.landscapist.image.getLandscapist
 import dev.brahmkshatriya.echo.app.playback.PlayerSession
-import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerControls
 import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerSheet
 import dev.brahmkshatriya.echo.app.ui.player.PlayerItemHost
 import kotlinx.coroutines.Dispatchers
@@ -54,45 +53,46 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @Composable
-internal fun PreloadAdjacentArtwork(pagerState: PagerState, controls: PlayerSession) {
+fun PreloadAdjacentArtwork(pagerState: PagerState, controls: PlayerSession) {
     val landscapist = getLandscapist()
-    val requestSize = with(LocalDensity.current) {
-        MaxPlayerArtworkSize.dp.roundToPx().coerceAtLeast(1)
-    }
+    val requestSize =
+        with(LocalDensity.current) { MaxPlayerArtworkSize.dp.roundToPx().coerceAtLeast(1) }
 
     LaunchedEffect(pagerState, controls, landscapist, requestSize) {
-        snapshotFlow { pagerState.currentPage to controls.playbackOrder }.collectLatest { (currentPage, order) ->
-            val adjacentPages = listOf(currentPage - 1, currentPage + 1)
-                .mapNotNull { order.getOrNull(it) }
+        snapshotFlow { pagerState.currentPage to controls.playbackOrder }
+            .collectLatest { (currentPage, order) ->
+                val adjacentPages =
+                    listOf(currentPage - 1, currentPage + 1).mapNotNull { order.getOrNull(it) }
 
-
-            coroutineScope {
-                adjacentPages.forEach { page ->
-                    launch {
-                        val artworkModel = controls.mediaFor(page)?.artworkUri ?: return@launch
-                        landscapist.load(
-                            ImageRequest.builder()
-                                .model(artworkModel)
-                                .size(requestSize, requestSize)
-                                .priority(DecodePriority.LOW)
-                                .build()
-                        ).collect { result ->
-                            if (result is ImageResult.Success && result.isFinal) {
-                                val artwork = convertToImageBitmap(result.data) ?: return@collect
-                                cachePlayerArtwork(artworkModel, artwork)
-                                if (cachedPlayerArtworkPalette(artworkModel) == null) {
-                                    prefetchPlayerArtworkPalette(artworkModel, artwork)
+                coroutineScope {
+                    adjacentPages.forEach { page ->
+                        launch {
+                            val artworkModel = controls.mediaFor(page)?.artworkUri ?: return@launch
+                            landscapist
+                                .load(
+                                    ImageRequest.builder()
+                                        .model(artworkModel)
+                                        .size(requestSize, requestSize)
+                                        .priority(DecodePriority.LOW)
+                                        .build()
+                                )
+                                .collect { result ->
+                                    if (result is ImageResult.Success && result.isFinal) {
+                                        val artwork =
+                                            convertToImageBitmap(result.data) ?: return@collect
+                                        cachePlayerArtwork(artworkModel, artwork)
+                                        if (cachedPlayerArtworkPalette(artworkModel) == null)
+                                            prefetchPlayerArtworkPalette(artworkModel, artwork)
+                                    }
                                 }
-                            }
                         }
                     }
                 }
             }
-        }
     }
 }
 
-internal const val MaxPlayerArtworkSize = 360
+const val MaxPlayerArtworkSize = 360
 
 private data class PlayerArtworkCacheEntry(
     val artwork: ImageBitmap? = null,
@@ -121,9 +121,7 @@ private object PlayerArtworkMemoryCache {
 
     fun putPalette(model: String, palette: Palette) {
         palettes[model] = palette
-        while (palettes.size > MAX_PALETTE_ENTRIES) {
-            palettes.remove(palettes.keys.first())
-        }
+        while (palettes.size > MAX_PALETTE_ENTRIES) palettes.remove(palettes.keys.first())
         put(model, (entries[model] ?: PlayerArtworkCacheEntry()).copy(palette = palette))
     }
 
@@ -137,37 +135,36 @@ private object PlayerArtworkMemoryCache {
     }
 }
 
-/** Precompute the same 64-swatch palette that a player page would create.
- * Separate palette storage keeps it available after bitmap LRU eviction. */
-internal suspend fun prefetchPlayerArtworkPalette(model: String, artwork: ImageBitmap) {
+/**
+ * Precompute the same 64-swatch palette that a player page would create. Separate palette storage
+ * keeps it available after bitmap LRU eviction.
+ */
+suspend fun prefetchPlayerArtworkPalette(model: String, artwork: ImageBitmap) {
     if (PlayerArtworkMemoryCache.getPalette(model) != null) return
-    val palette = withContext(Dispatchers.Default) {
-        artwork.generatePalette {
-            maximumColorCount(64)
-            clearFilters()
+    val palette =
+        withContext(Dispatchers.Default) {
+            artwork.generatePalette {
+                maximumColorCount(64)
+                clearFilters()
+            }
         }
-    }
     PlayerArtworkMemoryCache.putPalette(model, palette)
 }
 
-internal fun cachedPlayerArtworkPalette(model: String): Palette? =
-    PlayerArtworkMemoryCache.getPalette(model)
+fun cachedPlayerArtworkPalette(model: String): Palette? = PlayerArtworkMemoryCache.getPalette(model)
 
-internal fun cachePlayerArtwork(model: String, artwork: ImageBitmap) {
+fun cachePlayerArtwork(model: String, artwork: ImageBitmap) {
     PlayerArtworkMemoryCache.putArtwork(model, artwork)
 }
 
 @Composable
-internal fun PlayerArtworkHost(
-    index: Int,
+fun PlayerArtworkHost(
+    artworkModel: String?,
     artworkMaxSize: Dp,
     coloredBackground: Boolean = true,
     content: @Composable () -> Unit,
 ) {
-    val artworkModel = LocalPlayerControls.current.mediaFor(index)?.artworkUri
-    val cachedArtwork = remember(artworkModel) {
-        artworkModel?.let(PlayerArtworkMemoryCache::get)
-    }
+    val cachedArtwork = remember(artworkModel) { artworkModel?.let(PlayerArtworkMemoryCache::get) }
     var artwork by remember(artworkModel) { mutableStateOf(cachedArtwork?.artwork) }
     var locallyLoadedPalette by remember(artworkModel) { mutableStateOf(cachedArtwork?.palette) }
     // Prefetch may finish after an offscreen pager page was first composed.
@@ -184,23 +181,19 @@ internal fun PlayerArtworkHost(
             }
         }
     }
-    val artworkRequestSize = with(LocalDensity.current) {
-        artworkMaxSize.roundToPx().coerceAtLeast(1)
-    }
+    val artworkRequestSize =
+        with(LocalDensity.current) { artworkMaxSize.roundToPx().coerceAtLeast(1) }
 
     if (
-        artworkModel != null &&
-        (artwork == null || palette == null) &&
-        !LocalInspectionMode.current
-    ) {
+        artworkModel != null && (artwork == null || palette == null) && !LocalInspectionMode.current
+    )
         LandscapistImage(
             imageModel = { artworkModel },
             modifier = Modifier.size(0.dp),
             requestBuilder = { size(artworkRequestSize, artworkRequestSize) },
             success = { state, _ ->
-                val loadedArtwork = remember(state.data) {
-                    state.data?.let { convertToImageBitmap(it) }
-                }
+                val loadedArtwork =
+                    remember(state.data) { state.data?.let { convertToImageBitmap(it) } }
                 LaunchedEffect(artworkModel, loadedArtwork) {
                     if (loadedArtwork != null) {
                         artwork = loadedArtwork
@@ -212,19 +205,17 @@ internal fun PlayerArtworkHost(
                 println("PLAYER ARTWORK FAILED: ${state.reason?.stackTraceToString()}")
             },
         )
-    }
 
     val isDark = isSystemInDarkTheme()
-    val scheme = remember(palette, isDark, artworkModel) {
-        palette.artworkColorScheme(isDark, artworkModel.hashCode())
-    }
-    val favouriteAccent = remember(palette, artworkModel) {
-        palette.favouriteArtworkAccent(artworkModel.hashCode())
-    }
+    val scheme =
+        remember(palette, isDark, artworkModel) {
+            palette.artworkColorScheme(isDark, artworkModel.hashCode())
+        }
+    val favouriteAccent =
+        remember(palette, artworkModel) { palette.favouriteArtworkAccent(artworkModel.hashCode()) }
     val sheet = LocalPlayerSheet.current
-    val animateArtworkColors by remember(sheet) {
-        derivedStateOf { sheet == null || sheet.progressState.value > 0f }
-    }
+    val animateArtworkColors by
+        remember(sheet) { derivedStateOf { sheet == null || sheet.progressState.value > 0f } }
     // A cold artwork load should not recompose all retained, hidden controls
     // for every intermediate palette color while the compact player is shown.
     val displayedScheme = if (animateArtworkColors) animateColorScheme(scheme) else scheme
@@ -235,19 +226,22 @@ internal fun PlayerArtworkHost(
         MaterialExpressiveTheme(displayedScheme) {
             PlayerItemHost(
                 backgroundColor = if (coloredBackground) colorScheme.primaryContainer else null,
-                outlineColor = if (coloredBackground) colorScheme.primary.copy(alpha = 0.1f) else null,
-            ) { content() }
+                outlineColor =
+                    if (coloredBackground) colorScheme.primary.copy(alpha = 0.1f) else null,
+            ) {
+                content()
+            }
         }
     }
 }
 
-internal const val PlayerArtworkCrossfadeDurationMs = 250
+const val PlayerArtworkCrossfadeDurationMs = 250
 
-internal val LocalPlayerArtwork = staticCompositionLocalOf<ImageBitmap?> { null }
-internal val LocalPlayerFavouriteAccent = staticCompositionLocalOf { Color(0xFFE47796) }
+val LocalPlayerArtwork = staticCompositionLocalOf<ImageBitmap?> { null }
+val LocalPlayerFavouriteAccent = staticCompositionLocalOf { Color(0xFFE47796) }
 
 /** Draw the inset outline as a single stroke; cache its geometry between redraws. */
-internal fun Modifier.grayCoverOutline(
+fun Modifier.grayCoverOutline(
     outlineColor: Color,
     outlineWidth: Dp = 0.5.dp,
     outlineRadius: Dp = 8.dp,
@@ -275,7 +269,7 @@ internal fun Modifier.grayCoverOutline(
 }
 
 @Composable
-internal fun PlayerArtwork(
+fun PlayerArtwork(
     contentDescription: String?,
     modifier: Modifier = Modifier,
     contentScale: ContentScale = ContentScale.Crop,
@@ -289,16 +283,14 @@ internal fun PlayerArtwork(
             modifier = Modifier.matchParentSize(),
             animationSpec = tween(PlayerArtworkCrossfadeDurationMs),
         ) { bitmap ->
-            if (bitmap != null) {
+            if (bitmap != null)
                 Image(
                     bitmap = bitmap,
                     contentDescription = contentDescription,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = contentScale,
                 )
-            } else {
-                Box(Modifier.fillMaxSize())
-            }
+            else Box(Modifier.fillMaxSize())
         }
     }
 }

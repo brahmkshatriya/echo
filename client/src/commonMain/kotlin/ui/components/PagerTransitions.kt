@@ -13,22 +13,22 @@ fun Modifier.blurFadePagerTransition(
     pagerState: PagerState,
     page: Int,
     blurProgress: () -> Float = { 1f },
-) = run {
+): Modifier {
     val pageZIndex = if (pagerState.currentPage == page) 1f else 0f
-    zIndex(pageZIndex).graphicsLayer {
+    return zIndex(pageZIndex).graphicsLayer {
         val offset = (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
         val progress = offset.absoluteValue.coerceIn(0f, 1f)
         translationX = offset * size.width
         val pageAlpha = 1f - progress
         alpha = pageAlpha
 
-        if (progress <= 0f || pageAlpha <= 0f) {
-            renderEffect = null
-        } else {
+        if (progress <= 0f || pageAlpha <= 0f) renderEffect = null
+        else {
             val transformedBlurProgress = progress * blurProgress().coerceIn(0f, 1f)
             val radiusPixels = 24.dp.toPx() * transformedBlurProgress
-            renderEffect = if (radiusPixels <= 0f) null else
-                BlurEffect(radiusPixels, radiusPixels, TileMode.Decal)
+            renderEffect =
+                if (radiusPixels <= 0f) null
+                else BlurEffect(radiusPixels, radiusPixels, TileMode.Decal)
         }
     }
 }

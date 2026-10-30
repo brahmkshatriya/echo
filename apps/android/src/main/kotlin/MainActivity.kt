@@ -18,10 +18,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.Wallpapers
-import dev.brahmkshatriya.echo.app.playback.PlaybackComponentOwner
+import com.skydoves.landscapist.image.LocalLandscapist
 import dev.brahmkshatriya.echo.app.playback.PlaybackComponent
+import dev.brahmkshatriya.echo.app.playback.PlaybackComponentOwner
 import dev.brahmkshatriya.echo.app.playback.createPlaybackComponent
 import dev.brahmkshatriya.echo.app.ui.App
+import dev.brahmkshatriya.echo.app.ui.LocalPlaybackComponent
 import dev.brahmkshatriya.echo.app.ui.theme.LocalCustomTheme
 
 class MainActivity : ComponentActivity() {
@@ -29,12 +31,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val darkMode =
             resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK ==
-                    Configuration.UI_MODE_NIGHT_YES
-        val transparentNavigationBar = if (darkMode) {
-            SystemBarStyle.dark(Color.TRANSPARENT)
-        } else {
-            SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
-        }
+                Configuration.UI_MODE_NIGHT_YES
+        val transparentNavigationBar =
+            if (darkMode) SystemBarStyle.dark(Color.TRANSPARENT)
+            else SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
         enableEdgeToEdge(navigationBarStyle = transparentNavigationBar)
         val playback = (application as PlaybackComponentOwner).playbackComponent
         setContent { AppContent(playback) }
@@ -43,21 +43,29 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun AppContent(playback: PlaybackComponent) {
-    val scheme = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        val context = LocalContext.current
-        val isDark = isSystemInDarkTheme()
-        remember(context, isDark) {
-            if (isDark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-    } else null
-    CompositionLocalProvider(LocalCustomTheme provides scheme) { App(playback) }
+    val scheme =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val context = LocalContext.current
+            val isDark = isSystemInDarkTheme()
+            remember(context, isDark) {
+                if (isDark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+            }
+        } else null
+    CompositionLocalProvider(
+        LocalCustomTheme provides scheme,
+        LocalPlaybackComponent provides playback,
+        LocalLandscapist provides playback.imageLoader,
+    ) {
+        App()
+    }
 }
 
 @Preview(
     showBackground = false,
-    wallpaper = Wallpapers.BLUE_DOMINATED_EXAMPLE, showSystemUi = false,
+    wallpaper = Wallpapers.BLUE_DOMINATED_EXAMPLE,
+    showSystemUi = false,
     uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL,
-    device = "spec:parent=pixel_5,navigation=buttons"
+    device = "spec:parent=pixel_5,navigation=buttons",
 )
 @Composable
 fun AppAndroidPreview() {

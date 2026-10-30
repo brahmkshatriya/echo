@@ -1,18 +1,21 @@
 package dev.brahmkshatriya.echo.app.playback
 
-import kotlinx.coroutines.CoroutineDispatcher
 import com.skydoves.landscapist.core.Landscapist
+import dev.brahmkshatriya.kaudiooutput.AudioOutputs
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 
 /** One instance per application. Views and platform services share its session. */
-class PlaybackComponent internal constructor(
+class PlaybackComponent(
     dispatcher: CoroutineDispatcher,
     val imageLoader: Landscapist,
     createSystemMediaSession: (PlayerSession) -> SystemMediaSession,
     seedQueues: () -> List<QueueSeed> = ::demoQueueSeeds,
+    createAudioOutputs: (CoroutineScope) -> AudioOutputs,
 ) : AutoCloseable {
     private var closed = false
     private val sessionDelegate = lazy {
-        PlayerSession(seedQueues, dispatcher, createSystemMediaSession)
+        PlayerSession(seedQueues, dispatcher, createSystemMediaSession, createAudioOutputs)
     }
 
     val session: PlayerSession
@@ -21,13 +24,16 @@ class PlaybackComponent internal constructor(
             return sessionDelegate.value
         }
 
-    internal val notification get() = session.systemMedia.notification
+    val notification
+        get() = session.systemMedia.notification
 
     override fun close() {
         if (closed) return
         closed = true
-        if (sessionDelegate.isInitialized()) sessionDelegate.value.close()
-        imageLoader.cancelAll()
-        imageLoader.clearMemoryCache()
+        closeAll(
+            { if (sessionDelegate.isInitialized()) sessionDelegate.value.close() },
+            { imageLoader.cancelAll() },
+            { imageLoader.clearMemoryCache() },
+        )
     }
 }

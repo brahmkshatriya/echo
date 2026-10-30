@@ -12,7 +12,7 @@ import org.jetbrains.compose.resources.painterResource
 
 /** Crossfade changing icons with the fast spatial motion used by the extension FAB. */
 @Composable
-internal fun SwitchingIcon(
+fun SwitchingIcon(
     icon: DrawableResource,
     contentDescription: String?,
     modifier: Modifier = Modifier,

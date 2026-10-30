@@ -20,6 +20,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -38,32 +39,31 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.graphics.shapes.RoundedPolygon
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.NavigationEventTransitionState
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
-import androidx.graphics.shapes.RoundedPolygon
+import kotlin.math.roundToInt
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import kotlin.math.roundToInt
 
-internal class PlayerPillTransition(openState: MutableState<Boolean>) {
+class PlayerPillTransition(openState: MutableState<Boolean>) {
     var open by openState
         private set
+
     var mounted by mutableStateOf(openState.value)
-        internal set
     var restoring by mutableStateOf(openState.value)
-        internal set
     var source by mutableStateOf<Rect?>(null)
         private set
+
     var alternateSource by mutableStateOf<Rect?>(null)
     var onAlternateClick: (() -> Unit)? = null
     // Rotation can settle bottom-bar placement over multiple layout passes.
     private var trackingRestoredAnchor = openState.value
     var backGestureActive by mutableStateOf(false)
-        internal set
 
     val backProgress = Animatable(0f)
     val center = Animatable(Offset.Zero, Offset.VectorConverter)
@@ -79,9 +79,7 @@ internal class PlayerPillTransition(openState: MutableState<Boolean>) {
     }
 
     fun updateAnchor(bounds: Rect) {
-        if ((trackingRestoredAnchor || open || mounted) && source != bounds) {
-            source = bounds
-        }
+        if ((trackingRestoredAnchor || open || mounted) && source != bounds) source = bounds
     }
 
     fun close() {
@@ -96,14 +94,14 @@ internal class PlayerPillTransition(openState: MutableState<Boolean>) {
 }
 
 @Composable
-internal fun rememberPlayerPillTransition(key: String): PlayerPillTransition {
+fun rememberPlayerPillTransition(key: String): PlayerPillTransition {
     val savedOpen = rememberSaveable(key) { mutableStateOf(false) }
     return remember(key, savedOpen) { PlayerPillTransition(savedOpen) }
 }
 
 /** Reusable animation wrapper. Each caller provides its own real page and pill content. */
 @Composable
-internal fun PlayerPillOverlay(
+fun PlayerPillOverlay(
     transition: PlayerPillTransition,
     viewport: Size,
     isCurrentPage: Boolean,
@@ -130,22 +128,26 @@ internal fun PlayerPillOverlay(
     // a window resize should still animate from the pill, not snap open.
     var previousViewport by remember(transition) { mutableStateOf(viewport) }
 
-    val navigationState = rememberNavigationEventState(
-        currentInfo = if (transition.open) openInfo else closedInfo,
-        backInfo = if (transition.open) listOf(closedInfo) else emptyList(),
-    )
-    LaunchedEffect(navigationState) {
+    val navigationState =
+        rememberNavigationEventState(
+            currentInfo = if (transition.open) openInfo else closedInfo,
+            backInfo = if (transition.open) listOf(closedInfo) else emptyList(),
+        )
+    val currentIsCurrentPage by rememberUpdatedState(isCurrentPage)
+    val currentAnchorSource by rememberUpdatedState(currentSource)
+    LaunchedEffect(navigationState, transition) {
         snapshotFlow {
-            when (val state = navigationState.transitionState) {
-                NavigationEventTransitionState.Idle -> null
-                is NavigationEventTransitionState.InProgress -> state.latestEvent.progress
+                when (val state = navigationState.transitionState) {
+                    NavigationEventTransitionState.Idle -> null
+                    is NavigationEventTransitionState.InProgress -> state.latestEvent.progress
+                }
             }
-        }.collectLatest { progress ->
-            if (progress != null && isCurrentPage) {
-                transition.backGestureActive = true
-                transition.backProgress.snapTo(progress.coerceIn(0f, 1f))
+            .collectLatest { progress ->
+                if (progress != null && currentIsCurrentPage) {
+                    transition.backGestureActive = true
+                    transition.backProgress.snapTo(progress.coerceIn(0f, 1f))
+                }
             }
-        }
     }
     if (LocalNavigationEventDispatcherOwner.current != null) {
         NavigationBackHandler(
@@ -170,10 +172,21 @@ internal fun PlayerPillOverlay(
     }
 
     val viewportChanged = previousViewport != viewport
-    LaunchedEffect(transition.open, viewport, collapsedRadiusPx) {
+    LaunchedEffect(
+        transition,
+        transition.open,
+        viewport,
+        collapsedRadiusPx,
+        spatial,
+        sizeSpec,
+        radiusSpec,
+        fadeSpec,
+    ) {
         if (viewportChanged && transition.open && transition.mounted) {
             coroutineScope {
-                launch { transition.center.snapTo(Offset(viewport.width / 2f, viewport.height / 2f)) }
+                launch {
+                    transition.center.snapTo(Offset(viewport.width / 2f, viewport.height / 2f))
+                }
                 launch { transition.size.snapTo(viewport) }
                 launch { transition.radius.snapTo(0f) }
                 launch { transition.reveal.snapTo(1f) }
@@ -184,15 +197,18 @@ internal fun PlayerPillOverlay(
             return@LaunchedEffect
         }
         previousViewport = viewport
-        val source = if (!transition.open) {
-            (currentSource?.invoke() ?: transition.source).also { bounds ->
-                if (bounds != null) transition.updateAnchor(bounds)
-            }
-        } else transition.source
+        val source =
+            if (!transition.open) {
+                (currentAnchorSource?.invoke() ?: transition.source).also { bounds ->
+                    if (bounds != null) transition.updateAnchor(bounds)
+                }
+            } else transition.source
         if (transition.open) {
             if (transition.restoring) {
                 coroutineScope {
-                    launch { transition.center.snapTo(Offset(viewport.width / 2f, viewport.height / 2f)) }
+                    launch {
+                        transition.center.snapTo(Offset(viewport.width / 2f, viewport.height / 2f))
+                    }
                     launch { transition.size.snapTo(viewport) }
                     launch { transition.radius.snapTo(0f) }
                     launch { transition.reveal.snapTo(1f) }
@@ -212,21 +228,35 @@ internal fun PlayerPillOverlay(
                 }
             }
             coroutineScope {
-                launch { transition.center.animateTo(Offset(viewport.width / 2f, viewport.height / 2f), spatial) }
+                launch {
+                    transition.center.animateTo(
+                        Offset(viewport.width / 2f, viewport.height / 2f),
+                        spatial,
+                    )
+                }
                 launch { transition.size.animateTo(viewport, sizeSpec) }
                 launch { transition.radius.animateTo(0f, radiusSpec) }
                 launch { transition.reveal.animateTo(1f, fadeSpec) }
                 launch { transition.contentScale.animateTo(1f, fadeSpec) }
             }
         } else if (transition.mounted) {
-            val exitSource = source ?: Rect(
-                viewport.width / 2f - 24f, viewport.height - 64f,
-                viewport.width / 2f + 24f, viewport.height - 16f,
-            )
+            val exitSource =
+                source
+                    ?: Rect(
+                        viewport.width / 2f - 24f,
+                        viewport.height - 64f,
+                        viewport.width / 2f + 24f,
+                        viewport.height - 16f,
+                    )
             coroutineScope {
                 launch { transition.center.animateTo(exitSource.center, spatial) }
                 launch { transition.size.animateTo(exitSource.size, sizeSpec) }
-                launch { transition.radius.animateTo(collapsedRadiusPx ?: (exitSource.height / 2f), radiusSpec) }
+                launch {
+                    transition.radius.animateTo(
+                        collapsedRadiusPx ?: (exitSource.height / 2f),
+                        radiusSpec,
+                    )
+                }
                 launch { transition.reveal.animateTo(0f, fadeSpec) }
                 launch { transition.contentScale.animateTo(0.66f, fadeSpec) }
             }
@@ -240,10 +270,12 @@ internal fun PlayerPillOverlay(
     // bounds and waiting for its snapTo calls.
     val resizeSnap = viewportChanged && transition.open
     val progress = if (resizeSnap) 1f else transition.reveal.value.coerceIn(0f, 1f)
-    val back = if (transition.backGestureActive) {
-        transition.backProgress.value.coerceIn(0f, 1f)
-    } else 0f
-    val center = if (resizeSnap) Offset(viewport.width / 2f, viewport.height / 2f)
+    val back =
+        if (transition.backGestureActive) {
+            transition.backProgress.value.coerceIn(0f, 1f)
+        } else 0f
+    val center =
+        if (resizeSnap) Offset(viewport.width / 2f, viewport.height / 2f)
         else transition.center.value
     val size = if (resizeSnap) viewport else transition.size.value
     val left = center.x - size.width / 2f
@@ -253,25 +285,25 @@ internal fun PlayerPillOverlay(
     val source = transition.source ?: Rect(left, top, left + size.width, top + size.height)
     val shapeChangeEnd = 0.5f
     val silhouetteBlend = (progress / shapeChangeEnd).coerceIn(0f, 1f)
-    val pageCornerProgress = ((progress - shapeChangeEnd) / (1f - shapeChangeEnd))
-        .coerceIn(0f, 1f)
-    val roundedShape = RoundedCornerShape(
-        if (collapsedShape != null) {
-            (collapsedCornerRadius ?: 12.dp) * (1f - pageCornerProgress)
-        } else {
-            with(density) { transition.radius.value.coerceAtLeast(0f).toDp() }
-        }
-    )
+    val pageCornerProgress = ((progress - shapeChangeEnd) / (1f - shapeChangeEnd)).coerceIn(0f, 1f)
+    val roundedShape =
+        RoundedCornerShape(
+            if (collapsedShape != null) {
+                (collapsedCornerRadius ?: 12.dp) * (1f - pageCornerProgress)
+            } else {
+                with(density) { transition.radius.value.coerceAtLeast(0f).toDp() }
+            }
+        )
     val fadingSilhouettes = collapsedShape != null && progress < shapeChangeEnd
-    val backgroundColor = if (collapsedShape != null) {
-        lerp(pillColor, colorScheme.surfaceContainer, silhouetteBlend)
-    } else {
-        lerp(pillColor, colorScheme.surfaceContainer, progress)
-    }
+    val backgroundColor =
+        if (collapsedShape != null) {
+            lerp(pillColor, colorScheme.surfaceContainer, silhouetteBlend)
+        } else {
+            lerp(pillColor, colorScheme.surfaceContainer, progress)
+        }
 
-    Box(Modifier.fillMaxSize()
-        .zIndex(if (transition.open) 2f else 1f)
-        .graphicsLayer {
+    Box(
+        Modifier.fillMaxSize().zIndex(if (transition.open) 2f else 1f).graphicsLayer {
             val scale = 1f - 0.1f * back
             scaleX = scale
             scaleY = scale
@@ -296,12 +328,16 @@ internal fun PlayerPillOverlay(
                 .clickable(interactionSource = null, indication = null) {
                     // Consume background taps without dismissing the expanded page.
                     if (!transition.open) transition.openFrom(source)
-                },
+                }
         ) {
             if (collapsedShape != null && progress < shapeChangeEnd) {
                 Box(
                     Modifier.align(Alignment.Center)
-                        .size(with(density) { minOf(size.width, size.height).coerceAtLeast(1f).toDp() })
+                        .size(
+                            with(density) {
+                                minOf(size.width, size.height).coerceAtLeast(1f).toDp()
+                            }
+                        )
                         .graphicsLayer { alpha = 1f - silhouetteBlend }
                         .clip(collapsedShape)
                         .background(backgroundColor)
@@ -320,8 +356,10 @@ internal fun PlayerPillOverlay(
                             with(density) { source.width.coerceAtLeast(1f).toDp() },
                             with(density) { source.height.coerceAtLeast(1f).toDp() },
                         )
-                        .graphicsLayer { alpha = pillAlpha },
-                ) { pillContent() }
+                        .graphicsLayer { alpha = pillAlpha }
+                ) {
+                    pillContent()
+                }
             }
             if (pageAlpha > 0f) {
                 Box(
@@ -334,8 +372,10 @@ internal fun PlayerPillOverlay(
                             alpha = pageAlpha
                             scaleX = if (resizeSnap) 1f else transition.contentScale.value
                             scaleY = if (resizeSnap) 1f else transition.contentScale.value
-                        },
-                ) { pageContent(transition.open) }
+                        }
+                ) {
+                    pageContent(transition.open)
+                }
             }
         }
         if (!transition.open || progress < 0.5f) {
@@ -347,17 +387,26 @@ internal fun PlayerPillOverlay(
                     )
                     .clickable(interactionSource = null, indication = null) {
                         if (!transition.open) transition.openFrom(source)
-                    },
+                    }
             )
         }
         if (!transition.open && alternateSource != null) {
             Box(
                 Modifier.offset {
-                    IntOffset(alternateSource.left.roundToInt(), alternateSource.top.roundToInt())
-                }.size(
-                    with(density) { alternateSource.width.coerceAtLeast(1f).toDp() },
-                    with(density) { alternateSource.height.coerceAtLeast(1f).toDp() },
-                ).clickable(interactionSource = null, indication = null, onClick = onAlternateClick),
+                        IntOffset(
+                            alternateSource.left.roundToInt(),
+                            alternateSource.top.roundToInt(),
+                        )
+                    }
+                    .size(
+                        with(density) { alternateSource.width.coerceAtLeast(1f).toDp() },
+                        with(density) { alternateSource.height.coerceAtLeast(1f).toDp() },
+                    )
+                    .clickable(
+                        interactionSource = null,
+                        indication = null,
+                        onClick = onAlternateClick,
+                    )
             )
         }
     }

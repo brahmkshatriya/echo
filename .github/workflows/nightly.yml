@@ -99,6 +99,8 @@ jobs:
             sudo apt-get install --yes build-essential cmake ninja-build pkg-config patchelf \
               gcc-aarch64-linux-gnu g++-aarch64-linux-gnu binutils-aarch64-linux-gnu \
               libdbus-1-dev:arm64 libfontconfig1-dev:arm64 libfreetype6-dev:arm64 \
+              libglib2.0-dev:arm64 libgstreamer1.0-dev:arm64 \
+              libgstreamer-plugins-base1.0-dev:arm64 libpulse-dev:arm64 \
               libgl1-mesa-dev:arm64 libegl1-mesa-dev:arm64 libwayland-dev:arm64 \
               libx11-dev:arm64 libxext-dev:arm64 libxrandr-dev:arm64 libxcursor-dev:arm64 \
               libxi-dev:arm64 libxinerama-dev:arm64 libxss-dev:arm64 libxkbcommon-dev:arm64 \
@@ -106,11 +108,20 @@ jobs:
           else
             sudo apt-get update
             sudo apt-get install --yes build-essential cmake ninja-build pkg-config libdbus-1-dev \
+              libglib2.0-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libpulse-dev \
               libfontconfig1-dev libfreetype6-dev libgl1-mesa-dev libegl1-mesa-dev \
               libwayland-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev \
               libxi-dev libxinerama-dev libxss-dev libxkbcommon-dev libpng-dev libxtst-dev \
               zlib1g-dev patchelf
           fi
+      - name: Verify native link dependencies
+        env:
+          TARGET_ARCH: ${{ matrix.arch }}
+        run: |
+          if [[ "$TARGET_ARCH" == "arm64" ]]; then
+            export PKG_CONFIG_LIBDIR=/usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig
+          fi
+          pkg-config --print-errors --exists gio-2.0 gstreamer-app-1.0 gstreamer-video-1.0 libpulse
       - name: Install SDL 3
         env:
           TARGET_ARCH: ${{ matrix.arch }}
@@ -163,7 +174,9 @@ jobs:
           chmod +x "$RUNNER_TEMP/appimagetool"
           echo "APPIMAGETOOL=$RUNNER_TEMP/appimagetool" >> "$GITHUB_ENV"
           echo 'APPIMAGE_EXTRACT_AND_RUN=1' >> "$GITHUB_ENV"
-      - run: ./gradlew :apps:desktop:${{ matrix.task }}
+      # Compose Native beta01's AppDir task captures Project in a provider.
+      # Disable configuration caching only for Linux packaging until the plugin is fixed.
+      - run: ./gradlew --no-configuration-cache :apps:desktop:${{ matrix.task }}
       - uses: actions/upload-artifact@v4
         with:
           name: echo-linux-${{ matrix.arch }}

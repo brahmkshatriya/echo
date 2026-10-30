@@ -6,21 +6,26 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.DragInteraction
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -29,9 +34,15 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.semantics.disabled
 import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.setProgress
@@ -93,25 +104,34 @@ fun SquigglySlider(
     val waveOffset = remember { Animatable(0f) }
     val isDragged by source.collectIsDraggedAsState()
     val isHovered by source.collectIsHoveredAsState()
-    val animatedThumbWidth by animateDpAsState(
-        targetValue = if (isDragged) thumbSize.width / 2f else thumbSize.width,
-        animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
-        label = "Squiggly slider thumb width",
-    )
-    val animatedTrackStrokeWidth by animateDpAsState(
-        targetValue = if (isDragged || (isHovered && enabled)) {
-            draggedTrackStrokeWidth
-        } else {
-            trackStrokeWidth
-        },
-        animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
-        label = "Squiggly slider track width",
-    )
-    val animatedSquiggleAmplitude by animateFloatAsState(
-        targetValue = squiggleAmplitude.coerceIn(0f, 1f),
-        animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec(),
-        label = "Squiggly slider amplitude",
-    )
+    val isFocused by source.collectIsFocusedAsState()
+    var keyboardSeeking by remember { mutableStateOf(false) }
+
+    fun finishKeyboardSeek() {
+        if (!keyboardSeeking) return
+        keyboardSeeking = false
+        currentOnValueChangeFinished.value?.invoke()
+    }
+    val animatedThumbWidth by
+        animateDpAsState(
+            targetValue = if (isDragged) thumbSize.width / 2f else thumbSize.width,
+            animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
+            label = "Squiggly slider thumb width",
+        )
+    val animatedTrackStrokeWidth by
+        animateDpAsState(
+            targetValue =
+                if (isDragged || ((isHovered || isFocused) && enabled)) draggedTrackStrokeWidth
+                else trackStrokeWidth,
+            animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
+            label = "Squiggly slider track width",
+        )
+    val animatedSquiggleAmplitude by
+        animateFloatAsState(
+            targetValue = squiggleAmplitude.coerceIn(0f, 1f),
+            animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec(),
+            label = "Squiggly slider amplitude",
+        )
 
     LaunchedEffect(squiggleAmplitude, squiggleWavelength, waveSpeed) {
         if (squiggleWavelength <= 0.dp || waveSpeed <= 0.dp) {
@@ -121,9 +141,8 @@ fun SquigglySlider(
 
         if (squiggleAmplitude <= 0f) return@LaunchedEffect
 
-        val durationMillis = ((squiggleWavelength / waveSpeed) * 1_000f)
-            .roundToInt()
-            .coerceAtLeast(1)
+        val durationMillis =
+            ((squiggleWavelength / waveSpeed) * 1_000f).roundToInt().coerceAtLeast(1)
         while (true) {
             val start = waveOffset.value % 1f
             waveOffset.snapTo(start)
@@ -134,9 +153,8 @@ fun SquigglySlider(
         }
     }
 
-    val segmentGapFractions = remember(segmentGaps, valueRange) {
-        segmentGaps.map { valueFraction(it, valueRange) }
-    }
+    val segmentGapFractions =
+        remember(segmentGaps, valueRange) { segmentGaps.map { valueFraction(it, valueRange) } }
 
     fun valueAt(x: Float, width: Float, thumbWidth: Float): Float {
         val trackStart = thumbWidth / 2f
@@ -147,97 +165,146 @@ fun SquigglySlider(
         return valueForFraction(fraction, currentValueRange.value)
     }
 
-    val inputModifier = if (!enabled) Modifier else Modifier
-        .pointerInput(source, layoutDirection) {
-            detectTapGestures(
-                onTap = { offset ->
-                    currentOnValueChange.value(
-                        valueAt(offset.x, size.width.toFloat(), thumbSize.width.toPx()),
-                    )
-                    currentOnValueChangeFinished.value?.invoke()
-                },
-            )
-        }
-        .pointerInput(source, layoutDirection) {
-            var dragInteraction: DragInteraction.Start? = null
-
-            fun finishDrag(cancelled: Boolean) {
-                dragInteraction?.let { start ->
-                    source.tryEmit(
-                        if (cancelled) DragInteraction.Cancel(start)
-                        else DragInteraction.Stop(start),
+    val inputModifier =
+        if (!enabled) Modifier
+        else
+            Modifier.pointerInput(source, layoutDirection) {
+                    detectTapGestures(
+                        onTap = { offset ->
+                            currentOnValueChange.value(
+                                valueAt(offset.x, size.width.toFloat(), thumbSize.width.toPx())
+                            )
+                            currentOnValueChangeFinished.value?.invoke()
+                        }
                     )
                 }
-                dragInteraction = null
-                if (!cancelled) currentOnValueChangeFinished.value?.invoke()
-            }
+                .pointerInput(source, layoutDirection) {
+                    var dragInteraction: DragInteraction.Start? = null
 
-            detectDragGestures(
-                onDragStart = { offset ->
-                    val start = DragInteraction.Start()
-                    dragInteraction = start
-                    source.tryEmit(start)
-                    currentOnValueChange.value(
-                        valueAt(offset.x, size.width.toFloat(), thumbSize.width.toPx()),
+                    fun finishDrag(cancelled: Boolean) {
+                        dragInteraction?.let { start ->
+                            source.tryEmit(
+                                if (cancelled) DragInteraction.Cancel(start)
+                                else DragInteraction.Stop(start)
+                            )
+                        }
+                        dragInteraction = null
+                        if (!cancelled) currentOnValueChangeFinished.value?.invoke()
+                    }
+
+                    detectDragGestures(
+                        onDragStart = { offset ->
+                            val start = DragInteraction.Start()
+                            dragInteraction = start
+                            source.tryEmit(start)
+                            currentOnValueChange.value(
+                                valueAt(offset.x, size.width.toFloat(), thumbSize.width.toPx())
+                            )
+                        },
+                        onDragEnd = { finishDrag(cancelled = false) },
+                        onDragCancel = { finishDrag(cancelled = true) },
+                        onDrag = { change, _ ->
+                            change.consume()
+                            currentOnValueChange.value(
+                                valueAt(
+                                    change.position.x,
+                                    size.width.toFloat(),
+                                    thumbSize.width.toPx(),
+                                )
+                            )
+                        },
                     )
-                },
-                onDragEnd = { finishDrag(cancelled = false) },
-                onDragCancel = { finishDrag(cancelled = true) },
-                onDrag = { change, _ ->
-                    change.consume()
-                    currentOnValueChange.value(
-                        valueAt(change.position.x, size.width.toFloat(), thumbSize.width.toPx()),
-                    )
-                },
-            )
-        }
+                }
+
+    val keyboardModifier =
+        Modifier.onFocusChanged { if (!it.isFocused) finishKeyboardSeek() }
+            .onKeyEvent { event ->
+                if (!enabled) return@onKeyEvent false
+                val range = currentValueRange.value
+                val step = (range.endInclusive - range.start) / 100f
+                val direction = if (layoutDirection == LayoutDirection.Rtl) -1f else 1f
+                val target =
+                    when (event.key) {
+                        Key.DirectionRight,
+                        Key.NumPadDirectionRight -> value() + step * direction
+                        Key.DirectionLeft,
+                        Key.NumPadDirectionLeft -> value() - step * direction
+                        Key.DirectionUp,
+                        Key.NumPadDirectionUp -> value() + step
+                        Key.DirectionDown,
+                        Key.NumPadDirectionDown -> value() - step
+                        Key.PageUp,
+                        Key.NumPadPageUp -> value() + step * 10f
+                        Key.PageDown,
+                        Key.NumPadPageDown -> value() - step * 10f
+                        Key.MoveHome,
+                        Key.NumPadMoveHome -> range.start
+                        Key.MoveEnd,
+                        Key.NumPadMoveEnd -> range.endInclusive
+                        else -> return@onKeyEvent false
+                    }
+                when (event.type) {
+                    KeyEventType.KeyDown -> {
+                        keyboardSeeking = true
+                        currentOnValueChange.value(target.coerceIn(range.start, range.endInclusive))
+                    }
+                    KeyEventType.KeyUp -> finishKeyboardSeek()
+                    else -> return@onKeyEvent false
+                }
+                true
+            }
+            .focusable(enabled = enabled, interactionSource = source)
 
     Canvas(
-        modifier = modifier
-            .defaultMinSize(minHeight = thumbSize.height)
-            .hoverable(source, enabled = enabled)
-            .semantics {
-                progressBarRangeInfo = ProgressBarRangeInfo(
-                    current = value().coerceIn(valueRange.start, valueRange.endInclusive),
-                    range = valueRange,
-                    steps = 0,
-                )
-                if (enabled) {
-                    setProgress { targetValue ->
-                        currentOnValueChange.value(
-                            targetValue.coerceIn(valueRange.start, valueRange.endInclusive),
+        modifier =
+            modifier
+                .defaultMinSize(minHeight = thumbSize.height)
+                .hoverable(source, enabled = enabled)
+                .semantics {
+                    progressBarRangeInfo =
+                        ProgressBarRangeInfo(
+                            current = value().coerceIn(valueRange.start, valueRange.endInclusive),
+                            range = valueRange,
+                            steps = 0,
                         )
-                        currentOnValueChangeFinished.value?.invoke()
-                        true
-                    }
+                    if (enabled)
+                        setProgress { targetValue ->
+                            currentOnValueChange.value(
+                                targetValue.coerceIn(valueRange.start, valueRange.endInclusive)
+                            )
+                            currentOnValueChangeFinished.value?.invoke()
+                            true
+                        }
+                    else disabled()
                 }
-            }
-            .then(inputModifier),
+                .then(inputModifier)
+                .then(keyboardModifier)
     ) {
-        val progress = valueFraction(
-            value().coerceIn(valueRange.start, valueRange.endInclusive),
-            valueRange,
-        )
-        val bufferedProgress = bufferedValue?.invoke()?.takeIf(Float::isFinite)
-            ?.let { valueFraction(it.coerceIn(valueRange.start, valueRange.endInclusive), valueRange) }
+        val progress =
+            valueFraction(value().coerceIn(valueRange.start, valueRange.endInclusive), valueRange)
+        val bufferedProgress =
+            bufferedValue?.invoke()?.takeIf(Float::isFinite)?.let {
+                valueFraction(it.coerceIn(valueRange.start, valueRange.endInclusive), valueRange)
+            }
         val halfThumbTravelInset = thumbSize.width.toPx() / 2f
         val trackEnd = max(halfThumbTravelInset, size.width - halfThumbTravelInset)
         val trackLength = trackEnd - halfThumbTravelInset
         val strokeWidth = animatedTrackStrokeWidth.toPx().coerceAtLeast(0f)
         val maxCornerRadius = strokeWidth / 2f
-        val outerCornerRadius = if (trackCornerSize == Dp.Unspecified) {
-            maxCornerRadius
-        } else {
-            trackCornerSize.toPx().coerceIn(0f, maxCornerRadius)
-        }
+        val outerCornerRadius =
+            if (trackCornerSize == Dp.Unspecified) maxCornerRadius
+            else trackCornerSize.toPx().coerceIn(0f, maxCornerRadius)
         val stopIndicatorRadius = stopIndicatorSize.toPx().coerceAtLeast(0f) / 2f
-        val stopIndicatorCenter =
-            (trackEnd - outerCornerRadius).coerceAtLeast(halfThumbTravelInset)
+        val stopIndicatorCenter = (trackEnd - outerCornerRadius).coerceAtLeast(halfThumbTravelInset)
         val thumbCenter = halfThumbTravelInset + trackLength * progress
-        val stopIndicatorVisibility = if (
-            thumbCenter + animatedThumbWidth.toPx().coerceAtLeast(0f) / 2f +
-            thumbTrackGap.toPx() < stopIndicatorCenter - stopIndicatorRadius
-        ) 1f else 0f
+        val stopIndicatorVisibility =
+            if (
+                thumbCenter +
+                    animatedThumbWidth.toPx().coerceAtLeast(0f) / 2f +
+                    thumbTrackGap.toPx() < stopIndicatorCenter - stopIndicatorRadius
+            )
+                1f
+            else 0f
 
         drawSlider(
             progress = progress,
@@ -302,30 +369,33 @@ private fun DrawScope.drawSlider(
     val gapWidth = segmentGapWidthPx.coerceAtLeast(0f)
     val physicalProgress = progress.coerceIn(0f, 1f)
     val maxCornerRadius = strokeWidth / 2f
-    val outerCornerRadius = if (trackCornerSize == Dp.Unspecified) {
-        maxCornerRadius
-    } else {
-        trackCornerSize.toPx().coerceIn(0f, maxCornerRadius)
-    }
+    val outerCornerRadius =
+        if (trackCornerSize == Dp.Unspecified) maxCornerRadius
+        else trackCornerSize.toPx().coerceIn(0f, maxCornerRadius)
     val insideCornerRadius = trackInsideCornerSize.toPx().coerceIn(0f, maxCornerRadius)
     val thumbCenterLogicalX = halfThumbTravelInset + trackLength * physicalProgress
     val thumbHalfWidth = thumbWidthPx.coerceAtLeast(0f) / 2f
     val resolvedThumbTrackGap = thumbTrackGapPx.coerceAtLeast(0f)
 
     if (trackLength > 0f && strokeWidth > 0f) {
-        val ranges = visibleTrackRanges(
-            trackStart = halfThumbTravelInset,
-            trackEnd = trackEnd,
-            segmentGaps = segmentGaps,
-            gapWidthPx = gapWidth,
-        )
+        val ranges =
+            visibleTrackRanges(
+                trackStart = halfThumbTravelInset,
+                trackEnd = trackEnd,
+                segmentGaps = segmentGaps,
+                gapWidthPx = gapWidth,
+            )
 
-        val activeEnd = (
-            thumbCenterLogicalX - thumbHalfWidth - resolvedThumbTrackGap
-        ).coerceIn(halfThumbTravelInset, trackEnd)
-        val inactiveStart = (
-            thumbCenterLogicalX + thumbHalfWidth + resolvedThumbTrackGap
-        ).coerceIn(halfThumbTravelInset, trackEnd)
+        val activeEnd =
+            (thumbCenterLogicalX - thumbHalfWidth - resolvedThumbTrackGap).coerceIn(
+                halfThumbTravelInset,
+                trackEnd,
+            )
+        val inactiveStart =
+            (thumbCenterLogicalX + thumbHalfWidth + resolvedThumbTrackGap).coerceIn(
+                halfThumbTravelInset,
+                trackEnd,
+            )
 
         ranges.forEach { range ->
             val start = max(range.start, inactiveStart)
@@ -338,7 +408,8 @@ private fun DrawScope.drawSlider(
                 trackEnd = trackEnd,
                 centerY = centerY,
                 strokeWidthPx = strokeWidth,
-                startCornerRadiusPx = if (start <= halfThumbTravelInset) outerCornerRadius else insideCornerRadius,
+                startCornerRadiusPx =
+                    if (start <= halfThumbTravelInset) outerCornerRadius else insideCornerRadius,
                 endCornerRadiusPx = if (end >= trackEnd) outerCornerRadius else insideCornerRadius,
                 color = inactiveColor,
                 layoutDirection = layoutDirection,
@@ -346,8 +417,7 @@ private fun DrawScope.drawSlider(
         }
 
         if (bufferedProgress != null) {
-            val bufferedEnd = halfThumbTravelInset + trackLength *
-                bufferedProgress.coerceIn(0f, 1f)
+            val bufferedEnd = halfThumbTravelInset + trackLength * bufferedProgress.coerceIn(0f, 1f)
             ranges.forEach { range ->
                 val start = max(range.start, inactiveStart)
                 val end = min(range.endInclusive, bufferedEnd)
@@ -359,18 +429,21 @@ private fun DrawScope.drawSlider(
                     trackEnd = trackEnd,
                     centerY = centerY,
                     strokeWidthPx = strokeWidth,
-                    startCornerRadiusPx = if (start <= halfThumbTravelInset) outerCornerRadius else insideCornerRadius,
-                    endCornerRadiusPx = if (end >= trackEnd) outerCornerRadius else insideCornerRadius,
+                    startCornerRadiusPx =
+                        if (start <= halfThumbTravelInset) outerCornerRadius
+                        else insideCornerRadius,
+                    endCornerRadiusPx =
+                        if (end >= trackEnd) outerCornerRadius else insideCornerRadius,
                     color = bufferedColor,
                     layoutDirection = layoutDirection,
                 )
             }
         }
 
-        val amplitudePx = (
-            (trackHeightPx.coerceAtLeast(strokeWidth) - strokeWidth) / 2f *
-                squiggleAmplitude.coerceIn(0f, 1f)
-            ).coerceAtLeast(0f)
+        val amplitudePx =
+            ((trackHeightPx.coerceAtLeast(strokeWidth) - strokeWidth) / 2f *
+                    squiggleAmplitude.coerceIn(0f, 1f))
+                .coerceAtLeast(0f)
         val wavelengthPx = squiggleWavelengthPx.coerceAtLeast(1f)
 
         ranges.forEach { range ->
@@ -388,7 +461,8 @@ private fun DrawScope.drawSlider(
                 wavelengthPx = wavelengthPx,
                 phase = squigglePhase,
                 strokeWidthPx = strokeWidth,
-                startCornerRadiusPx = if (start <= halfThumbTravelInset) outerCornerRadius else insideCornerRadius,
+                startCornerRadiusPx =
+                    if (start <= halfThumbTravelInset) outerCornerRadius else insideCornerRadius,
                 endCornerRadiusPx = if (end >= trackEnd) outerCornerRadius else insideCornerRadius,
                 color = activeColor,
                 layoutDirection = layoutDirection,
@@ -400,36 +474,34 @@ private fun DrawScope.drawSlider(
     val stopIndicatorCenterLogicalX =
         (trackEnd - outerCornerRadius).coerceAtLeast(halfThumbTravelInset)
     val stopIndicatorScale = stopIndicatorVisibility.coerceIn(0f, 1f)
-    if (stopIndicatorRadius > 0f && stopIndicatorScale > 0f) {
+    if (stopIndicatorRadius > 0f && stopIndicatorScale > 0f)
         drawCircle(
             color = stopIndicatorColor.copy(alpha = stopIndicatorColor.alpha * stopIndicatorScale),
             radius = stopIndicatorRadius * stopIndicatorScale,
-            center = Offset(
-                x = logicalToPhysicalX(
-                    stopIndicatorCenterLogicalX,
-                    halfThumbTravelInset,
-                    trackEnd,
-                    layoutDirection,
+            center =
+                Offset(
+                    x =
+                        logicalToPhysicalX(
+                            stopIndicatorCenterLogicalX,
+                            halfThumbTravelInset,
+                            trackEnd,
+                            layoutDirection,
+                        ),
+                    y = centerY,
                 ),
-                y = centerY,
-            ),
         )
-    }
 
-    val thumbCenterX = logicalToPhysicalX(
-        thumbCenterLogicalX,
-        halfThumbTravelInset,
-        trackEnd,
-        layoutDirection,
-    )
+    val thumbCenterX =
+        logicalToPhysicalX(thumbCenterLogicalX, halfThumbTravelInset, trackEnd, layoutDirection)
     val resolvedThumbWidth = thumbWidthPx.coerceAtLeast(0f)
     val resolvedThumbHeight = min(thumbHeightPx.coerceAtLeast(0f), size.height)
     drawRoundRect(
         color = thumbColor,
-        topLeft = Offset(
-            x = thumbCenterX - resolvedThumbWidth / 2f,
-            y = centerY - resolvedThumbHeight / 2f,
-        ),
+        topLeft =
+            Offset(
+                x = thumbCenterX - resolvedThumbWidth / 2f,
+                y = centerY - resolvedThumbHeight / 2f,
+            ),
         size = Size(resolvedThumbWidth, resolvedThumbHeight),
         cornerRadius = CornerRadius(resolvedThumbWidth / 2f),
     )
@@ -479,13 +551,11 @@ private fun DrawScope.drawSquiggleTrackSegment(
     val circleKappa = 0.5522848f
     val angularFrequency = 2f * PI.toFloat() / wavelengthPx
 
-    fun angleAt(x: Float): Float =
-        ((x - trackStart) / wavelengthPx + phase) * 2f * PI.toFloat()
+    fun angleAt(x: Float): Float = ((x - trackStart) / wavelengthPx + phase) * 2f * PI.toFloat()
 
     fun waveY(x: Float): Float = centerY + sin(angleAt(x)) * amplitudePx
 
-    fun physicalX(x: Float): Float =
-        logicalToPhysicalX(x, trackStart, trackEnd, layoutDirection)
+    fun physicalX(x: Float): Float = logicalToPhysicalX(x, trackStart, trackEnd, layoutDirection)
 
     fun edgePoint(x: Float, top: Boolean): Offset {
         val slope = cos(angleAt(x)) * amplitudePx * angularFrequency
@@ -527,9 +597,7 @@ private fun DrawScope.drawSquiggleTrackSegment(
             endBoundaryX,
             endUpperY,
         )
-    } else {
-        path.lineTo(endBoundaryX, endCenterY - halfThickness)
-    }
+    } else path.lineTo(endBoundaryX, endCenterY - halfThickness)
     path.lineTo(endBoundaryX, endCenterY + halfThickness - endRadius)
     if (endRadius > 0f) {
         val endLowerY = endCenterY + halfThickness - endRadius
@@ -541,9 +609,7 @@ private fun DrawScope.drawSquiggleTrackSegment(
             endBottom.x,
             endBottom.y,
         )
-    } else {
-        path.lineTo(endBottom.x, endBottom.y)
-    }
+    } else path.lineTo(endBottom.x, endBottom.y)
 
     x = bodyEndX - step
     while (x > bodyStartX) {
@@ -563,9 +629,7 @@ private fun DrawScope.drawSquiggleTrackSegment(
             startBoundaryX,
             startLowerY,
         )
-    } else {
-        path.lineTo(startBoundaryX, startCenterY + halfThickness)
-    }
+    } else path.lineTo(startBoundaryX, startCenterY + halfThickness)
     path.lineTo(startBoundaryX, startCenterY - halfThickness + startRadius)
     if (startRadius > 0f) {
         val startUpperY = startCenterY - halfThickness + startRadius
@@ -577,9 +641,7 @@ private fun DrawScope.drawSquiggleTrackSegment(
             startTop.x,
             startTop.y,
         )
-    } else {
-        path.lineTo(startTop.x, startTop.y)
-    }
+    } else path.lineTo(startTop.x, startTop.y)
     path.close()
 
     drawPath(path = path, color = color)
@@ -607,29 +669,24 @@ private fun DrawScope.drawStraightTrackSegment(
     val maxRadius = min(halfHeight, (right - left) / 2f)
     val logicalStartRadius = startCornerRadiusPx.coerceIn(0f, maxRadius)
     val logicalEndRadius = endCornerRadiusPx.coerceIn(0f, maxRadius)
-    val leftRadius = if (layoutDirection == LayoutDirection.Ltr) {
-        logicalStartRadius
-    } else {
-        logicalEndRadius
-    }
-    val rightRadius = if (layoutDirection == LayoutDirection.Ltr) {
-        logicalEndRadius
-    } else {
-        logicalStartRadius
-    }
+    val leftRadius =
+        if (layoutDirection == LayoutDirection.Ltr) logicalStartRadius else logicalEndRadius
+    val rightRadius =
+        if (layoutDirection == LayoutDirection.Ltr) logicalEndRadius else logicalStartRadius
     val leftCorner = CornerRadius(leftRadius, leftRadius)
     val rightCorner = CornerRadius(rightRadius, rightRadius)
-    val trackPath = Path().apply {
-        addRoundRect(
-            RoundRect(
-                rect = Rect(left, centerY - halfHeight, right, centerY + halfHeight),
-                topLeft = leftCorner,
-                bottomLeft = leftCorner,
-                topRight = rightCorner,
-                bottomRight = rightCorner,
-            ),
-        )
-    }
+    val trackPath =
+        Path().apply {
+            addRoundRect(
+                RoundRect(
+                    rect = Rect(left, centerY - halfHeight, right, centerY + halfHeight),
+                    topLeft = leftCorner,
+                    bottomLeft = leftCorner,
+                    topRight = rightCorner,
+                    bottomRight = rightCorner,
+                )
+            )
+        }
     drawPath(trackPath, color)
 }
 
@@ -643,12 +700,13 @@ private fun visibleTrackRanges(
 
     val trackLength = trackEnd - trackStart
     val halfCut = gapWidthPx / 2f
-    val gaps = segmentGaps
-        .asSequence()
-        .filter { it > 0f && it < 1f }
-        .map { trackStart + trackLength * it }
-        .sorted()
-        .toList()
+    val gaps =
+        segmentGaps
+            .asSequence()
+            .filter { it > 0f && it < 1f }
+            .map { trackStart + trackLength * it }
+            .sorted()
+            .toList()
 
     if (gaps.isEmpty()) return listOf(trackStart..trackEnd)
 
@@ -668,22 +726,17 @@ private fun logicalToPhysicalX(
     trackStart: Float,
     trackEnd: Float,
     layoutDirection: LayoutDirection,
-): Float = when (layoutDirection) {
-    LayoutDirection.Ltr -> x
-    LayoutDirection.Rtl -> trackEnd - (x - trackStart)
-}
+): Float =
+    when (layoutDirection) {
+        LayoutDirection.Ltr -> x
+        LayoutDirection.Rtl -> trackEnd - (x - trackStart)
+    }
 
-private fun valueFraction(
-    value: Float,
-    valueRange: ClosedFloatingPointRange<Float>,
-): Float {
+private fun valueFraction(value: Float, valueRange: ClosedFloatingPointRange<Float>): Float {
     val length = valueRange.endInclusive - valueRange.start
     if (length <= 0f) return 0f
     return ((value - valueRange.start) / length).coerceIn(0f, 1f)
 }
 
-private fun valueForFraction(
-    fraction: Float,
-    valueRange: ClosedFloatingPointRange<Float>,
-): Float = valueRange.start +
-    (valueRange.endInclusive - valueRange.start) * fraction.coerceIn(0f, 1f)
+private fun valueForFraction(fraction: Float, valueRange: ClosedFloatingPointRange<Float>): Float =
+    valueRange.start + (valueRange.endInclusive - valueRange.start) * fraction.coerceIn(0f, 1f)

@@ -18,24 +18,23 @@ import androidx.compose.ui.unit.times
 @Composable
 fun Modifier.expandingButton(
     interactionSource: MutableInteractionSource,
-    increase: Float = 1.1f
-) = run {
+    increase: Float = 1.1f,
+): Modifier {
     val isPressed by interactionSource.collectIsPressedAsState()
     val widthState = remember { mutableStateOf<Dp?>(null) }
-    val animatedWidth by animateDpAsState(
-        targetValue = widthState.value?.let {
-            if (isPressed) increase * it else it
-        } ?: Dp.Unspecified,
-        animationSpec = motionScheme.fastSpatialSpec(),
-        label = "PressExpansion"
-    )
+    val animatedWidth by
+        animateDpAsState(
+            targetValue =
+                widthState.value?.let { if (isPressed) increase * it else it } ?: Dp.Unspecified,
+            animationSpec = motionScheme.fastSpatialSpec(),
+            label = "PressExpansion",
+        )
 
     val density = LocalDensity.current
     val modifier = onSizeChanged {
         if (widthState.value != null) return@onSizeChanged
         widthState.value = density.run { it.width.toDp() }
     }
-    if (animatedWidth == Dp.Unspecified) return@run modifier
-    modifier.width(maxOf(animatedWidth, widthState.value ?: Dp.Unspecified))
+    if (animatedWidth == Dp.Unspecified) return modifier
+    return modifier.width(maxOf(animatedWidth, widthState.value ?: Dp.Unspecified))
 }
-

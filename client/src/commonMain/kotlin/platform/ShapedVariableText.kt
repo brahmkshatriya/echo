@@ -10,7 +10,9 @@ import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontVariation
@@ -21,13 +23,14 @@ import androidx.compose.ui.unit.TextUnit
 import echo.client.generated.resources.GoogleSansFlex
 import echo.client.generated.resources.Res
 import org.jetbrains.compose.resources.Font
+import kotlin.math.roundToInt
 
 /** A line is shaped as a complete run: UTF-16 units are never drawn as individual glyphs. */
 private data class ShapedLine(val start: Int, val end: Int, val baseline: Float, val x: Float)
 
 /** Complex scripts retain native shaping, fallback fonts, bidi order, and complete emoji clusters. */
 @Composable
-internal fun ShapedVariableText(
+fun ShapedVariableText(
     text: String,
     peakPosition: () -> Float?,
     glyphXPositions: FloatArray,
@@ -48,18 +51,17 @@ internal fun ShapedVariableText(
     lineHeight: TextUnit,
     modifier: Modifier,
 ) {
-    val fontFamily = FontFamily(
-        Font(Res.font.GoogleSansFlex, weight = FontWeight.Normal,
-            variationSettings = FontVariation.Settings(FontVariation.weight(400), FontVariation.Setting("ROND", 100f))),
-        Font(Res.font.GoogleSansFlex, weight = FontWeight.Bold,
-            variationSettings = FontVariation.Settings(FontVariation.weight(700), FontVariation.Setting("ROND", 100f))),
-        Font(Res.font.GoogleSansFlex, weight = FontWeight.Black,
-            variationSettings = FontVariation.Settings(FontVariation.weight(900), FontVariation.Setting("ROND", 100f))),
-    )
+    val weights = remember(uniformWeight != null) {
+        if (uniformWeight != null) listOf(1) + (8..1000 step 8).toList()
+        else (LyricsMinWeight.toInt()..LyricsMaxWeight.toInt() step LyricsWeightStep).toList() + LyricsMaxWeight.toInt()
+    }
+    val fontFamily = FontFamily(weights.map { weight ->
+        Font(Res.font.GoogleSansFlex, weight = FontWeight(weight),
+            variationSettings = FontVariation.Settings(FontVariation.weight(weight), FontVariation.Setting("ROND", LyricsMaxRoundness)))
+    })
     val measurer = rememberTextMeasurer(cacheSize = 64)
     val baseStyle = TextStyle(fontFamily = fontFamily, fontWeight = FontWeight.Normal,
         fontSize = fontSize, lineHeight = lineHeight)
-    val heavyStyle = baseStyle.copy(fontWeight = FontWeight.Bold)
     val lines = remember(text, glyphXPositions, glyphBaselines) {
         buildList {
             var start = 0
@@ -76,25 +78,19 @@ internal fun ShapedVariableText(
     Canvas(modifier) {
         val resolvedScale = fontScale().coerceAtLeast(0f)
         if (uniformWeight != null || uniformWidth != null) {
-            val weight = (uniformWeight?.invoke() ?: 400f).toInt().coerceIn(1, 1000)
+            val weight = (((uniformWeight?.invoke() ?: 400f) / 8f).roundToInt() * 8).coerceIn(1, 1000)
             val width = (uniformWidth?.invoke() ?: 100f).coerceIn(25f, 200f) / 100f
             val renderedLines = uniformLines?.invoke() ?: listOf(text)
-            val blend = ((weight - 400f) / 500f).coerceIn(0f, 1f)
             val baseline = glyphBaselines.firstOrNull() ?: 0f
             val origin = Offset(offsetX + (glyphXPositions.firstOrNull() ?: 0f),
                 if (scaleFromBottom) size.height - (size.height - offsetY - baseline) * resolvedScale
                 else offsetY + baseline * resolvedScale)
             var y = 0f
             for (line in renderedLines) {
-                val layout = measurer.measure(line, baseStyle, softWrap = false,
-                    constraints = Constraints(maxWidth = Constraints.Infinity))
-                val bold = measurer.measure(line, baseStyle.copy(fontWeight = FontWeight.Black), softWrap = false,
+                val layout = measurer.measure(line, baseStyle.copy(fontWeight = FontWeight(weight)), softWrap = false,
                     constraints = Constraints(maxWidth = Constraints.Infinity))
                 scale(width * resolvedScale, resolvedScale, pivot = origin) {
                     drawText(layout, color, topLeft = Offset(origin.x, origin.y - layout.firstBaseline + y))
-                    scale(layout.size.width.toFloat() / bold.size.width.coerceAtLeast(1), 1f, pivot = origin) {
-                        drawText(bold, color, topLeft = Offset(origin.x, origin.y - bold.firstBaseline + y), alpha = blend)
-                    }
                 }
                 y += if (lineHeight.isSp) lineHeight.toPx() else layout.size.height.toFloat()
             }
@@ -107,65 +103,60 @@ internal fun ShapedVariableText(
             val value = text.substring(start, end1)
             val base = measurer.measure(value, baseStyle, softWrap = false,
                 constraints = Constraints(maxWidth = Constraints.Infinity))
-            val heavy = measurer.measure(value, heavyStyle, softWrap = false,
-                constraints = Constraints(maxWidth = Constraints.Infinity))
-            val origin = Offset(offsetX + x, offsetY + baseline - base.firstBaseline)
-            val alpha = if (reveal != null) unrevealedAlpha().coerceIn(0f, 1f) else 1f
-            drawText(base, color, topLeft = origin, alpha = alpha)
-            if (reveal != null) {
-                val visible = (reveal - start).coerceIn(0f, value.length.toFloat())
-                val end = visible.toInt()
-                if (end > 0) {
-                    val path = base.getPathForRange(0, end).apply { translate(origin) }
-                    clipPath(path) { drawText(base, color, topLeft = origin) }
-                }
-                if (end < value.length && visible > end) {
-                    val box = base.getBoundingBox(end)
-                    val fraction = visible - end
-                    val rtl = base.getBidiRunDirection(end) == androidx.compose.ui.text.style.ResolvedTextDirection.Rtl
-                    val left = if (rtl) box.right - box.width * fraction else box.left
-                    val right = if (rtl) box.right else box.left + box.width * fraction
-                    clipRect(
-                        left = origin.x + left, top = origin.y + box.top,
-                        right = origin.x + right, bottom = origin.y + box.bottom,
-                    ) { drawText(base, color, topLeft = origin) }
-                }
-            }
-            if (halo != null && halo.strength > 0f) {
-                val from = (halo.startPosition - start).coerceIn(0, value.length)
-                val to = (halo.endPositionExclusive - start).coerceIn(from, value.length)
-                if (to > from) {
-                    val bounds = base.getPathForRange(from, to).getBounds()
-                    val radius = baseStyle.fontSize.toPx() * 0.18f * halo.strength
-                    clipRect(origin.x + bounds.left - radius, origin.y + bounds.top - radius,
-                        origin.x + bounds.right + radius, origin.y + bounds.bottom + radius) {
-                        drawText(base, color, topLeft = origin, alpha = halo.strength * 0.4f,
-                            shadow = Shadow(color, blurRadius = radius))
+            // Shape one variable-weight run. The dim text, reveal and bloom all
+            // reuse these glyphs instead of overlaying a second, static font.
+            val layout = if (peak == null) base else {
+                val styled = buildAnnotatedString {
+                    append(value)
+                    var cursor = 0
+                    while (cursor < value.length) {
+                        val end = base.getWordBoundary(cursor).end.coerceIn(cursor + 1, value.length)
+                        val center = start + (cursor + end - 1) / 2
+                        val position = glyphPeakPositions?.getOrNull(center) ?: center.toFloat()
+                        val weight = quantizeLyricsWeight(lyricsWeightAt(position, peak, text.lastIndex.toFloat()))
+                        addStyle(SpanStyle(fontWeight = FontWeight(weight)), cursor, end)
+                        cursor = end
                     }
                 }
+                measurer.measure(styled, baseStyle, softWrap = false,
+                    constraints = Constraints(maxWidth = Constraints.Infinity))
             }
-            if (peak == null) continue
-            // Blend fully shaped runs through word masks. Changing an animation
-            // mask never changes Unicode segmentation or tears apart a ligature.
-            var cursor = 0
-            while (cursor < value.length) {
-                val range = base.getWordBoundary(cursor)
-                val end = range.end.coerceAtLeast(cursor + 1).coerceAtMost(value.length)
-                val center = start + (cursor + end - 1) / 2
-                val position = glyphPeakPositions?.getOrNull(center) ?: center.toFloat()
-                val influence = lyricsWeightProgress(quantizeLyricsWeight(
-                    lyricsWeightAt(position, peak, text.lastIndex.toFloat())))
-                if (influence > 0f && value.substring(cursor, end).isNotBlank()) {
-                    val path = base.getPathForRange(cursor, end).apply { translate(origin) }
-                    val revealedAlpha = if (reveal == null || reveal >= start + end) 1f else alpha
-                    clipPath(path) {
-                        scale(base.size.width.toFloat() / heavy.size.width.coerceAtLeast(1), 1f, pivot = origin) {
-                            drawText(heavy, color, topLeft = Offset(origin.x,
-                                origin.y + base.firstBaseline - heavy.firstBaseline), alpha = influence * revealedAlpha)
+            val origin = Offset(offsetX + x, offsetY + baseline - layout.firstBaseline)
+            val alpha = if (reveal != null) unrevealedAlpha().coerceIn(0f, 1f) else 1f
+            scale(base.size.width.toFloat().coerceAtLeast(1f) / layout.size.width.coerceAtLeast(1), 1f, pivot = origin) {
+                drawText(layout, color, topLeft = origin, alpha = alpha)
+                if (reveal != null) {
+                    val visible = (reveal - start).coerceIn(0f, value.length.toFloat())
+                    val end = visible.toInt()
+                    if (end > 0) {
+                        val path = layout.getPathForRange(0, end).apply { translate(origin) }
+                        clipPath(path) { drawText(layout, color, topLeft = origin) }
+                    }
+                    if (end < value.length && visible > end) {
+                        val box = layout.getBoundingBox(end)
+                        val fraction = visible - end
+                        val rtl = layout.getBidiRunDirection(end) == androidx.compose.ui.text.style.ResolvedTextDirection.Rtl
+                        val left = if (rtl) box.right - box.width * fraction else box.left
+                        val right = if (rtl) box.right else box.left + box.width * fraction
+                        clipRect(
+                            left = origin.x + left, top = origin.y + box.top,
+                            right = origin.x + right, bottom = origin.y + box.bottom,
+                        ) { drawText(layout, color, topLeft = origin) }
+                    }
+                }
+                if (halo != null && halo.strength > 0f) {
+                    val from = (halo.startPosition - start).coerceIn(0, value.length)
+                    val to = (halo.endPositionExclusive - start).coerceIn(from, value.length)
+                    if (to > from) {
+                        val bounds = layout.getPathForRange(from, to).getBounds()
+                        val radius = baseStyle.fontSize.toPx() * 0.18f * halo.strength
+                        clipRect(origin.x + bounds.left - radius, origin.y + bounds.top - radius,
+                            origin.x + bounds.right + radius, origin.y + bounds.bottom + radius) {
+                            drawText(layout, color, topLeft = origin, alpha = halo.strength * 0.4f,
+                                shadow = Shadow(color, blurRadius = radius))
                         }
                     }
                 }
-                cursor = end
             }
         }
     }

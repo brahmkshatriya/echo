@@ -55,22 +55,25 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 object Content : NavigationEventInfo()
-object BottomSheet : NavigationEventInfo()
 
+object BottomSheet : NavigationEventInfo()
 
 @Composable
 fun rememberBetterSheet(
     peekHeight: Dp = BottomSheetDefaults.SheetPeekHeight,
-    initialSheetValue: SheetValue = PartiallyExpanded
+    initialSheetValue: SheetValue = PartiallyExpanded,
 ): BetterSheet {
-    val scaffoldState = rememberBottomSheetScaffoldState(
-        rememberBottomSheetState(
-            initialValue = initialSheetValue,
-            enabledValues = setOf(Hidden, PartiallyExpanded, Expanded)
+    val scaffoldState =
+        rememberBottomSheetScaffoldState(
+            rememberBottomSheetState(
+                initialValue = initialSheetValue,
+                enabledValues = setOf(Hidden, PartiallyExpanded, Expanded),
+            )
         )
-    )
     val scope = rememberCoroutineScope()
-    return remember(scaffoldState, peekHeight, scope) { BetterSheet(scaffoldState, peekHeight, scope) }
+    return remember(scaffoldState, peekHeight, scope) {
+        BetterSheet(scaffoldState, peekHeight, scope)
+    }
 }
 
 @Stable
@@ -81,36 +84,40 @@ class BetterSheet(
     val backProgressState: MutableFloatState = mutableFloatStateOf(0f),
     val midPointState: MutableIntState = mutableIntStateOf(0),
     val sheetState: SheetState = scaffoldState.bottomSheetState,
-    val snackBarHostState: SnackbarHostState = scaffoldState.snackbarHostState
+    val snackBarHostState: SnackbarHostState = scaffoldState.snackbarHostState,
 ) {
-    internal val layoutHeightState = mutableIntStateOf(0)
+    val layoutHeightState = mutableIntStateOf(0)
+
     // Compact/expanded content may be replaced while the sheet is moving.
     // Its animations must outlive the child that initiated them.
     fun expand() = scope.launch { sheetState.expand() }
+
     fun collapse() = scope.launch { sheetState.show() }
+
     fun hide() = scope.launch { sheetState.hide() }
 
     // Observe the sheet animation directly. Mirroring its offset in placement
     // invalidates the enclosing scaffold's placement on every animation frame,
     // including the navigation/content tree underneath the player.
     val offsetState = derivedStateOf {
-        runCatching { sheetState.requireOffset() }.getOrElse {
-            when (sheetState.currentValue) {
-                Expanded -> 0f
-                PartiallyExpanded -> midPointState.intValue.toFloat()
-                Hidden -> layoutHeightState.intValue.toFloat()
+        runCatching { sheetState.requireOffset() }
+            .getOrElse {
+                when (sheetState.currentValue) {
+                    Expanded -> 0f
+                    PartiallyExpanded -> midPointState.intValue.toFloat()
+                    Hidden -> layoutHeightState.intValue.toFloat()
+                }
             }
-        }
     }
     val progressState = derivedStateOf {
         val height = layoutHeightState.intValue
-        if (height <= 0) {
+        if (height <= 0)
             when (sheetState.currentValue) {
                 Expanded -> 1f
                 PartiallyExpanded -> 0f
                 Hidden -> -1f
             }
-        } else {
+        else {
             val midPoint = midPointState.intValue
             val offset = offsetState.value
             if (offset < midPoint) 1f - offset / midPoint.coerceAtLeast(1)
@@ -145,27 +152,30 @@ fun BetterSheetScaffold(
 
     BetterSheetBackHandler(betterSheet)
 
-    Layout(contents = listOf({
-        BottomSheetScaffold(
-            sheetContent = { Box(Modifier.fillMaxSize()) { sheetContent() } },
-            modifier = modifier,
-            scaffoldState = betterSheet.scaffoldState,
-            sheetPeekHeight = newPeekHeight,
-            sheetShape = sheetShape,
-            sheetContainerColor = sheetContainerColor,
-            sheetContentColor = sheetContentColor,
-            sheetDragHandle = sheetDragHandle,
-            sheetMaxWidth = sheetMaxWidth,
-            sheetShadowElevation = sheetShadowElevation,
-            sheetTonalElevation = sheetTonalElevation,
-            sheetSwipeEnabled = sheetSwipeEnabled,
-            topBar = topBar,
-            snackbarHost = snackBarHost,
-            containerColor = containerColor,
-            contentColor = contentColor,
-            content = content
-        )
-    })) { (measurables), constraints ->
+    Layout(
+        contents =
+            listOf({
+                BottomSheetScaffold(
+                    sheetContent = { Box(Modifier.fillMaxSize()) { sheetContent() } },
+                    modifier = modifier,
+                    scaffoldState = betterSheet.scaffoldState,
+                    sheetPeekHeight = newPeekHeight,
+                    sheetShape = sheetShape,
+                    sheetContainerColor = sheetContainerColor,
+                    sheetContentColor = sheetContentColor,
+                    sheetDragHandle = sheetDragHandle,
+                    sheetMaxWidth = sheetMaxWidth,
+                    sheetShadowElevation = sheetShadowElevation,
+                    sheetTonalElevation = sheetTonalElevation,
+                    sheetSwipeEnabled = sheetSwipeEnabled,
+                    topBar = topBar,
+                    snackbarHost = snackBarHost,
+                    containerColor = containerColor,
+                    contentColor = contentColor,
+                    content = content,
+                )
+            })
+    ) { (measurables), constraints ->
         val layoutHeight = constraints.maxHeight
         val placeables = measurables.fastMap { it.measure(constraints) }
 
@@ -183,10 +193,11 @@ fun BetterSheetScaffold(
 private fun BetterSheetBackHandler(betterSheet: BetterSheet) {
     val sheetState = betterSheet.sheetState
     val isExpanded by betterSheet.isExpandedState
-    val navigationEventState = rememberNavigationEventState(
-        currentInfo = if (isExpanded) BottomSheet else Content,
-        backInfo = if (isExpanded) listOf(Content) else emptyList()
-    )
+    val navigationEventState =
+        rememberNavigationEventState(
+            currentInfo = if (isExpanded) BottomSheet else Content,
+            backInfo = if (isExpanded) listOf(Content) else emptyList(),
+        )
     val completeAnimatable = remember { Animatable(0f) }
     val scope = rememberCoroutineScope()
     NavigationBackHandler(
@@ -202,18 +213,18 @@ private fun BetterSheetBackHandler(betterSheet: BetterSheet) {
         onBackCancelled = {
             scope.launch { sheetState.expand() }
             scope.launch { completeAnimatable.snapTo(0f) }
-        }
+        },
     )
 
     LaunchedEffect(navigationEventState, completeAnimatable) {
         snapshotFlow {
-            val progress = when (val state = navigationEventState.transitionState) {
-                NavigationEventTransitionState.Idle -> 0f
-                is NavigationEventTransitionState.InProgress -> state.latestEvent.progress
+                val progress =
+                    when (val state = navigationEventState.transitionState) {
+                        NavigationEventTransitionState.Idle -> 0f
+                        is NavigationEventTransitionState.InProgress -> state.latestEvent.progress
+                    }
+                maxOf(progress, completeAnimatable.value)
             }
-            maxOf(progress, completeAnimatable.value)
-        }.collectLatest {
-            betterSheet.backProgressState.floatValue = it
-        }
+            .collectLatest { betterSheet.backProgressState.floatValue = it }
     }
 }

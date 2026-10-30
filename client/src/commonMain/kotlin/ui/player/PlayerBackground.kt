@@ -33,18 +33,19 @@ class ClippedShape(
     val topPadding: Dp,
     val startPadding: Dp,
     val endPadding: Dp,
-    val radius: Dp = 16.dp
+    val radius: Dp = 16.dp,
 ) : Shape {
 
     override fun createOutline(
         size: Size,
         layoutDirection: LayoutDirection,
-        density: Density
+        density: Density,
     ): Outline {
-        val height = density.run {
-            val minHeightPx = minHeight.toPx()
-            minHeightPx + (size.height - minHeightPx) * progress
-        }
+        val height =
+            density.run {
+                val minHeightPx = minHeight.toPx()
+                minHeightPx + (size.height - minHeightPx) * progress
+            }
         val offset = 1 - progress
         val startPadPx = density.run { startPadding.toPx() * offset }
         val endPadPx = density.run { endPadding.toPx() * offset }
@@ -54,15 +55,16 @@ class ClippedShape(
 
         val rectWidth = max(0f, size.width - leftPadding - rightPadding)
 
-        val cornerRadius = density.run {
-            val radiusPx = radius.toPx()
-            max(radiusPx * offset, radiusPx * 2 * backProgress)
-        }
+        val cornerRadius =
+            density.run {
+                val radiusPx = radius.toPx()
+                max(radiusPx * offset, radiusPx * 2 * backProgress)
+            }
 
         return Outline.Rounded(
             RoundRect(
                 Rect(Offset(leftPadding, topPadPx), Size(rectWidth, height - topPadPx)),
-                CornerRadius(cornerRadius)
+                CornerRadius(cornerRadius),
             )
         )
     }
@@ -79,64 +81,62 @@ fun Modifier.playerBackground(
     val layoutDirection = LocalLayoutDirection.current
     val startPadding = playerPadding.calculateStartPadding(layoutDirection)
     val endPadding = playerPadding.calculateEndPadding(layoutDirection)
-    val animatedStart = animateDpAsState(
-        startPadding + collapsedHorizontalPadding.dp, tween()
-    )
-    val animatedEnd = animateDpAsState(
-        endPadding + collapsedHorizontalPadding.dp, tween()
-    )
+    val animatedStart = animateDpAsState(startPadding + collapsedHorizontalPadding.dp, tween())
+    val animatedEnd = animateDpAsState(endPadding + collapsedHorizontalPadding.dp, tween())
 
-    return fillMaxSize().graphicsLayer {
-        val sheetProgress = playerSheet?.progressState?.value ?: 0f
-        val positiveProgress = sheetProgress.coerceIn(0f, 1f)
-        val backProgress = playerSheet?.backProgressState?.floatValue ?: 0f
-        clip = true
-        shape = ClippedShape(
-            peekHeight - 8.dp,
-            positiveProgress,
-            backProgress,
-            8.dp,
-            animatedStart.value,
-            animatedEnd.value
-        )
-    }.run {
-        val color = backgroundColor ?: return@run this
-        val withBackground = background(color)
-        if (outlineColor != null) withBackground.drawWithCache {
-            val minHeightPx = (peekHeight - 8.dp).toPx()
-            val topPaddingPx = 8.dp.toPx()
-            val cornerRadiusPx = 16.dp.toPx()
-            val maxStrokePx = 0.5.dp.toPx()
-            onDrawWithContent {
-                drawContent()
-                val progress = (playerSheet?.progressState?.value ?: 0f).coerceIn(0f, 1f)
-                val collapsed = 1f - progress
-                val strokeWidth = maxStrokePx * collapsed
-                if (strokeWidth <= 0f) return@onDrawWithContent
-
-                // Same bounds/radius as ClippedShape, without allocating a
-                // second Shape and Outline on every drag frame.
-                val startInset = animatedStart.value.toPx() * collapsed
-                val endInset = animatedEnd.value.toPx() * collapsed
-                val leftInset = if (layoutDirection == LayoutDirection.Ltr) startInset else endInset
-                val rightInset = if (layoutDirection == LayoutDirection.Ltr) endInset else startInset
-                val topInset = topPaddingPx * collapsed
-                val height = minHeightPx + (size.height - minHeightPx) * progress
-                val width = size.width - leftInset - rightInset - strokeWidth
-                val outlineHeight = height - topInset - strokeWidth
-                if (width <= 0f || outlineHeight <= 0f) return@onDrawWithContent
-
-                val backProgress = playerSheet?.backProgressState?.floatValue ?: 0f
-                val radius = max(cornerRadiusPx * collapsed, cornerRadiusPx * 2f * backProgress)
-                val halfStroke = strokeWidth / 2f
-                drawRoundRect(
-                    color = outlineColor,
-                    topLeft = Offset(leftInset + halfStroke, topInset + halfStroke),
-                    size = Size(width, outlineHeight),
-                    cornerRadius = CornerRadius((radius - halfStroke).coerceAtLeast(0f)),
-                    style = Stroke(width = strokeWidth),
+    val clippedModifier =
+        fillMaxSize().graphicsLayer {
+            val sheetProgress = playerSheet?.progressState?.value ?: 0f
+            val positiveProgress = sheetProgress.coerceIn(0f, 1f)
+            val backProgress = playerSheet?.backProgressState?.floatValue ?: 0f
+            clip = true
+            shape =
+                ClippedShape(
+                    peekHeight - 8.dp,
+                    positiveProgress,
+                    backProgress,
+                    8.dp,
+                    animatedStart.value,
+                    animatedEnd.value,
                 )
-            }
-        } else withBackground
+        }
+    val color = backgroundColor ?: return clippedModifier
+    val withBackground = clippedModifier.background(color)
+    if (outlineColor == null) return withBackground
+    return withBackground.drawWithCache {
+        val minHeightPx = (peekHeight - 8.dp).toPx()
+        val topPaddingPx = 8.dp.toPx()
+        val cornerRadiusPx = 16.dp.toPx()
+        val maxStrokePx = 0.5.dp.toPx()
+        onDrawWithContent {
+            drawContent()
+            val progress = (playerSheet?.progressState?.value ?: 0f).coerceIn(0f, 1f)
+            val collapsed = 1f - progress
+            val strokeWidth = maxStrokePx * collapsed
+            if (strokeWidth <= 0f) return@onDrawWithContent
+
+            // Same bounds/radius as ClippedShape, without allocating a
+            // second Shape and Outline on every drag frame.
+            val startInset = animatedStart.value.toPx() * collapsed
+            val endInset = animatedEnd.value.toPx() * collapsed
+            val leftInset = if (layoutDirection == LayoutDirection.Ltr) startInset else endInset
+            val rightInset = if (layoutDirection == LayoutDirection.Ltr) endInset else startInset
+            val topInset = topPaddingPx * collapsed
+            val height = minHeightPx + (size.height - minHeightPx) * progress
+            val width = size.width - leftInset - rightInset - strokeWidth
+            val outlineHeight = height - topInset - strokeWidth
+            if (width <= 0f || outlineHeight <= 0f) return@onDrawWithContent
+
+            val backProgress = playerSheet?.backProgressState?.floatValue ?: 0f
+            val radius = max(cornerRadiusPx * collapsed, cornerRadiusPx * 2f * backProgress)
+            val halfStroke = strokeWidth / 2f
+            drawRoundRect(
+                color = outlineColor,
+                topLeft = Offset(leftInset + halfStroke, topInset + halfStroke),
+                size = Size(width, outlineHeight),
+                cornerRadius = CornerRadius((radius - halfStroke).coerceAtLeast(0f)),
+                style = Stroke(width = strokeWidth),
+            )
+        }
     }
 }

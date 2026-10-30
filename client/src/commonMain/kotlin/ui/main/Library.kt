@@ -15,7 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.materialkolor.ktx.animateColorScheme
-import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerControls
+import dev.brahmkshatriya.echo.app.ui.LocalPlaybackComponent
 import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerSheet
 import dev.brahmkshatriya.echo.app.ui.player.artwork.LocalPlayerFavouriteAccent
 import dev.brahmkshatriya.echo.app.ui.player.artwork.artworkColorScheme
@@ -29,9 +29,10 @@ import dev.brahmkshatriya.echo.app.ui.player.song.lyrics.rememberMotionLyricsPos
 /** Full-page physics playground, using the same rounded page frame as Test(). */
 @Composable
 fun Library() {
+    val session = LocalPlaybackComponent.current.session
     val playerExpanded = LocalPlayerSheet.current?.isExpandedState?.value == true
-    val currentEntryId = LocalPlayerControls.current.currentEntryId
-    val artwork = LocalPlayerControls.current.mediaFor(currentEntryId)?.artworkUri
+    val currentEntryId = session.currentEntryId
+    val artwork = session.mediaFor(currentEntryId)?.artworkUri
     val palette = artwork?.let(::cachedPlayerArtworkPalette)
     val seed = artwork.hashCode()
     val dark = isSystemInDarkTheme()
@@ -41,9 +42,9 @@ fun Library() {
     val favouriteAccent = remember(palette, seed) { palette.favouriteArtworkAccent(seed) }
     val lyricsSelections = rememberLyricsSelections()
     val selectedIndex = dev.brahmkshatriya.echo.app.ui.player.LocalPlayerPresentation.current
-        .lyricsSource(LocalPlayerControls.current.mediaFor(currentEntryId)?.id)
+        .lyricsSource(session.mediaFor(currentEntryId)?.id)
     val lyrics = selectedIndex?.let(lyricsSelections::getOrNull)?.lyrics
-    val positionMs = rememberMotionLyricsPosition(currentEntryId, active = !playerExpanded)
+    val positionMs = rememberMotionLyricsPosition(session.currentMedia?.let { session.timelineFor(currentEntryId) }, active = !playerExpanded)
 
     CompositionLocalProvider(LocalPlayerFavouriteAccent provides favouriteAccent) {
         MaterialExpressiveTheme(animateColorScheme(scheme)) {
@@ -53,7 +54,7 @@ fun Library() {
                     .padding(8.dp)
                     .clip(shapes.large),
             ) {
-                KineticShapesBackground(artworkKey = artwork.orEmpty(), active = !playerExpanded)
+                KineticShapesBackground(bassLevel = session.bassLevel, artworkKey = artwork.orEmpty(), active = !playerExpanded)
                 MotionLyrics(
                     lyrics = lyrics,
                     positionMs = positionMs,

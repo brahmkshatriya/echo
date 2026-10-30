@@ -11,7 +11,7 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 import kotlin.random.Random
 
-internal class KineticShapeContour(polygon: RoundedPolygon) {
+class KineticShapeContour(polygon: RoundedPolygon) {
     val vertices: FloatArray
     val boundRadius: Float
 
@@ -28,34 +28,37 @@ internal class KineticShapeContour(polygon: RoundedPolygon) {
             val y3 = cubic.anchor1Y
             fun sample(t: Float) {
                 val u = 1f - t
-                val x = u * u * u * x0 + 3f * u * u * t * x1 +
-                        3f * u * t * t * x2 + t * t * t * x3
-                val y = u * u * u * y0 + 3f * u * u * t * y1 +
-                        3f * u * t * t * y2 + t * t * t * y3
+                val x = u * u * u * x0 + 3f * u * u * t * x1 + 3f * u * t * t * x2 + t * t * t * x3
+                val y = u * u * u * y0 + 3f * u * u * t * y1 + 3f * u * t * t * y2 + t * t * t * y3
                 val px = (x - 0.5f) * 2f
                 val py = (y - 0.5f) * 2f
                 val n = samples.size
-                if (n >= 2 && (px - samples[n - 2]) * (px - samples[n - 2]) +
-                    (py - samples[n - 1]) * (py - samples[n - 1]) < 0.00001f
-                ) return
+                if (
+                    n >= 2 &&
+                        (px - samples[n - 2]) * (px - samples[n - 2]) +
+                            (py - samples[n - 1]) * (py - samples[n - 1]) < 0.00001f
+                )
+                    return
                 samples.add(px)
                 samples.add(py)
             }
             for (step in 0..6) sample(step / 6f)
         }
-        var hull = listOf(
-            floatArrayOf(-2f, -2f), floatArrayOf(2f, -2f),
-            floatArrayOf(2f, 2f), floatArrayOf(-2f, 2f),
-        )
+        var hull =
+            listOf(
+                floatArrayOf(-2f, -2f),
+                floatArrayOf(2f, -2f),
+                floatArrayOf(2f, 2f),
+                floatArrayOf(-2f, 2f),
+            )
         val axisCount = 20
         for (axis in 0 until axisCount) {
             val angle = 2f * PI.toFloat() * axis / axisCount
             val nx = cos(angle)
             val ny = sin(angle)
             var support = Float.NEGATIVE_INFINITY
-            for (i in samples.indices step 2) {
-                support = max(support, samples[i] * nx + samples[i + 1] * ny)
-            }
+            for (i in samples.indices step 2) support =
+                max(support, samples[i] * nx + samples[i + 1] * ny)
             support += 0.016f
             val clipped = ArrayList<FloatArray>(hull.size + 2)
             var previous = hull.last()
@@ -79,31 +82,41 @@ internal class KineticShapeContour(polygon: RoundedPolygon) {
         }
         vertices = FloatArray(hull.size * 2) { i -> hull[i / 2][i % 2] }
         var maxDistanceSquared = 0f
-        for (i in vertices.indices step 2) {
-            maxDistanceSquared = max(
-                maxDistanceSquared,
-                vertices[i] * vertices[i] + vertices[i + 1] * vertices[i + 1]
-            )
-        }
+        for (i in vertices.indices step 2) maxDistanceSquared =
+            max(maxDistanceSquared, vertices[i] * vertices[i] + vertices[i + 1] * vertices[i + 1])
         boundRadius = sqrt(maxDistanceSquared)
     }
 }
 
-internal fun kineticShapePolygons(): List<RoundedPolygon> = listOf(
-    // Broad, smooth silhouettes rather than dozens of detailed, angular icons.
-    // The flatter, organic outlines are closer to the wallpaper reference.
-    MaterialShapes.Circle, MaterialShapes.Oval, MaterialShapes.Pill,
-    MaterialShapes.Puffy, MaterialShapes.PuffyDiamond, MaterialShapes.Bun,
-    MaterialShapes.ClamShell, MaterialShapes.Ghostish, MaterialShapes.Clover4Leaf,
-    MaterialShapes.Cookie4Sided, MaterialShapes.SoftBurst,
-)
+fun kineticShapePolygons(): List<RoundedPolygon> =
+    listOf(
+        // Broad, smooth silhouettes rather than dozens of detailed, angular icons.
+        // The flatter, organic outlines are closer to the wallpaper reference.
+        MaterialShapes.Circle,
+        MaterialShapes.Oval,
+        MaterialShapes.Pill,
+        MaterialShapes.Puffy,
+        MaterialShapes.PuffyDiamond,
+        MaterialShapes.Bun,
+        MaterialShapes.ClamShell,
+        MaterialShapes.Ghostish,
+        MaterialShapes.Clover4Leaf,
+        MaterialShapes.Cookie4Sided,
+        MaterialShapes.SoftBurst,
+    )
 
+enum class KineticShapeLayer {
+    PrimarySecondary,
+    Tertiary,
+}
 
-internal enum class KineticShapeLayer { PrimarySecondary, Tertiary }
+enum class KineticShapeSize {
+    Small,
+    Medium,
+    Large,
+}
 
-internal enum class KineticShapeSize { Small, Medium, Large }
-
-internal class KineticShapeBody(
+class KineticShapeBody(
     var x: Float,
     var y: Float,
     var vx: Float,
@@ -119,10 +132,17 @@ internal class KineticShapeBody(
 ) {
     var sizeScale = 1f
         private set
-    val effectiveRadius get() = radius * sizeScale
+
+    val effectiveRadius
+        get() = radius * sizeScale
+
     val inverseMass = 1f / (radius * radius)
-    val inverseInertia get() = 2f * inverseMass / (effectiveRadius * effectiveRadius)
-    val broadRadius get() = effectiveRadius * contour.boundRadius
+    val inverseInertia
+        get() = 2f * inverseMass / (effectiveRadius * effectiveRadius)
+
+    val broadRadius
+        get() = effectiveRadius * contour.boundRadius
+
     val points = FloatArray(contour.vertices.size)
     val normals = FloatArray(contour.vertices.size)
     var minX = 0f
@@ -315,7 +335,8 @@ private fun resolve(a: KineticShapeBody, b: KineticShapeBody, hit: ShapeContact,
     if (normalSpeed >= 0f) return
     // In weightlessness even slow collisions should gently rebound.
     val restitution = if (normalSpeed < -0.8f * dp) 0.65f else 0f
-    val impulse = -(1f + restitution) * normalSpeed /
+    val impulse =
+        -(1f + restitution) * normalSpeed /
             (sumMass + crossA * crossA * a.inverseInertia + crossB * crossB * b.inverseInertia)
     a.vx -= hit.nx * impulse * a.inverseMass
     a.vy -= hit.ny * impulse * a.inverseMass
@@ -328,11 +349,15 @@ private fun resolve(a: KineticShapeBody, b: KineticShapeBody, hit: ShapeContact,
     val ty = hit.nx
     val tangentA = ax * ty - ay * tx
     val tangentB = bx * ty - by * tx
-    val tangentSpeed = ((b.vx - b.spin * by) - (a.vx - a.spin * ay)) * tx +
+    val tangentSpeed =
+        ((b.vx - b.spin * by) - (a.vx - a.spin * ay)) * tx +
             ((b.vy + b.spin * bx) - (a.vy + a.spin * ax)) * ty
-    val friction = (-tangentSpeed /
-            (sumMass + tangentA * tangentA * a.inverseInertia + tangentB * tangentB * b.inverseInertia))
-        .coerceIn(-impulse * 0.16f, impulse * 0.16f)
+    val friction =
+        (-tangentSpeed /
+                (sumMass +
+                    tangentA * tangentA * a.inverseInertia +
+                    tangentB * tangentB * b.inverseInertia))
+            .coerceIn(-impulse * 0.16f, impulse * 0.16f)
     a.vx -= tx * friction * a.inverseMass
     a.vy -= ty * friction * a.inverseMass
     a.spin -= tangentA * friction * a.inverseInertia
@@ -353,7 +378,7 @@ private const val PrimarySpawnIntervalSeconds = 3.8f
 // The faster tertiary layer still spawns 25% less frequently than the first.
 private const val TertiarySpawnIntervalSeconds = PrimarySpawnIntervalSeconds / 0.75f
 
-internal class KineticShapesSimulation(
+class KineticShapesSimulation(
     var width: Float,
     var height: Float,
     private val dp: Float,
@@ -365,8 +390,10 @@ internal class KineticShapesSimulation(
     val bodies = ArrayList<KineticShapeBody>(MaxVisibleFieldBodies)
     var cameraOffset = 0f
         private set
+
     var tertiaryCameraOffset = 0f
         private set
+
     private val hit = ShapeContact()
     private var elapsed = 0f
     private var primarySpawnTimer = 0f
@@ -375,12 +402,17 @@ internal class KineticShapesSimulation(
     private var shapes = contours.indices.shuffled(random)
 
     // The camera's visible rectangle is not a physical boundary.
-    private val visibleLeft get() = (width - width / zoom) / 2f
-    private val visibleRight get() = (width + width / zoom) / 2f
-    fun cameraOffsetFor(layer: KineticShapeLayer): Float = when (layer) {
-        KineticShapeLayer.PrimarySecondary -> cameraOffset
-        KineticShapeLayer.Tertiary -> tertiaryCameraOffset
-    }
+    private val visibleLeft
+        get() = (width - width / zoom) / 2f
+
+    private val visibleRight
+        get() = (width + width / zoom) / 2f
+
+    fun cameraOffsetFor(layer: KineticShapeLayer): Float =
+        when (layer) {
+            KineticShapeLayer.PrimarySecondary -> cameraOffset
+            KineticShapeLayer.Tertiary -> tertiaryCameraOffset
+        }
 
     private fun visibleTop(layer: KineticShapeLayer) =
         (height - height / zoom) / 2f - cameraOffsetFor(layer)
@@ -391,8 +423,9 @@ internal class KineticShapesSimulation(
         // Fewer large shapes and generous negative space, like the reference.
         // Preserve the tertiary layer's 25% lower starting population.
         repeat(InitialPrimaryBodies + InitialTertiaryBodies) { attemptIndex ->
-            val layer = if (attemptIndex < InitialPrimaryBodies)
-                KineticShapeLayer.PrimarySecondary else KineticShapeLayer.Tertiary
+            val layer =
+                if (attemptIndex < InitialPrimaryBodies) KineticShapeLayer.PrimarySecondary
+                else KineticShapeLayer.Tertiary
             val shapeIndex = shapes[nextShape % shapes.size]
             val radius = nextRadius(shapeIndex, layer)
             val bound = radius * contours[shapeIndex].boundRadius
@@ -400,7 +433,8 @@ internal class KineticShapesSimulation(
             val top = visibleTop(layer)
             val worldHeight = height / zoom
             if (worldWidth <= 0f || worldHeight <= 0f) return@repeat
-            for (attempt in 0 until 35) {
+            var attemptsRemaining = 35
+            while (attemptsRemaining-- > 0) {
                 // Include partially offscreen shapes for a continuous, unbounded field.
                 val x =
                     visibleLeft - bound * 0.7f + random.nextFloat() * (worldWidth + bound * 1.4f)
@@ -419,35 +453,33 @@ internal class KineticShapesSimulation(
         for (body in bodies) body.translateBy(dx, dy)
     }
 
-    private fun nextRadius(
-        shapeIndex: Int, layer: KineticShapeLayer,
-    ): Float {
+    private fun nextRadius(shapeIndex: Int, layer: KineticShapeLayer): Float {
         val choice = random.nextFloat()
-        val category = when (layer) {
-            KineticShapeLayer.PrimarySecondary -> when {
-                choice < 0.16f -> KineticShapeSize.Small
-                choice < 0.66f -> KineticShapeSize.Medium
-                else -> KineticShapeSize.Large
-            }
+        val category =
+            when (layer) {
+                KineticShapeLayer.PrimarySecondary ->
+                    when {
+                        choice < 0.16f -> KineticShapeSize.Small
+                        choice < 0.66f -> KineticShapeSize.Medium
+                        else -> KineticShapeSize.Large
+                    }
 
-            KineticShapeLayer.Tertiary ->
-                if (choice < 0.42f) KineticShapeSize.Medium else KineticShapeSize.Large
-        }
-        val raw = when (category) {
-            KineticShapeSize.Small -> 7f + random.nextFloat() * 8f
-            KineticShapeSize.Medium -> 16f + random.nextFloat() * 12f
-            KineticShapeSize.Large -> 30f + random.nextFloat() * 20f
-        } * dp
+                KineticShapeLayer.Tertiary ->
+                    if (choice < 0.42f) KineticShapeSize.Medium else KineticShapeSize.Large
+            }
+        val raw =
+            when (category) {
+                KineticShapeSize.Small -> 7f + random.nextFloat() * 8f
+                KineticShapeSize.Medium -> 16f + random.nextFloat() * 12f
+                KineticShapeSize.Large -> 30f + random.nextFloat() * 20f
+            } * dp
         val radius =
             min(raw, (visibleRight - visibleLeft) * 0.34f / contours[shapeIndex].boundRadius) *
-                    ShapeSizeMultiplier
+                ShapeSizeMultiplier
         return radius
     }
 
-    private fun place(
-        x: Float, y: Float, radius: Float,
-        layer: KineticShapeLayer,
-    ): Boolean {
+    private fun place(x: Float, y: Float, radius: Float, layer: KineticShapeLayer): Boolean {
         if (bodies.size >= MaxVisibleFieldBodies) return false
         val shapeIndex = shapes[nextShape % shapes.size]
         val bound = radius * contours[shapeIndex].boundRadius
@@ -458,18 +490,21 @@ internal class KineticShapesSimulation(
             val sum = (bound + other.broadRadius) * 0.92f + 2f * dp
             if (dx * dx + dy * dy < sum * sum) return false
         }
-        val body = KineticShapeBody(
-            x, y,
-            (random.nextFloat() - 0.5f) * 23f * dp,
-            (random.nextFloat() - 0.5f) * 21f * dp,
-            radius, shapeIndex,
-            random.nextInt(if (layer == KineticShapeLayer.PrimarySecondary) 8 else 4),
-            layer,
-            random.nextFloat() * (2 * PI).toFloat(),
-            (random.nextFloat() - 0.5f) * 0.23f,
-            contours[shapeIndex],
-            0.75f + random.nextFloat() * 0.5f,
-        )
+        val body =
+            KineticShapeBody(
+                x,
+                y,
+                (random.nextFloat() - 0.5f) * 23f * dp,
+                (random.nextFloat() - 0.5f) * 21f * dp,
+                radius,
+                shapeIndex,
+                random.nextInt(if (layer == KineticShapeLayer.PrimarySecondary) 8 else 4),
+                layer,
+                random.nextFloat() * (2 * PI).toFloat(),
+                (random.nextFloat() - 0.5f) * 0.23f,
+                contours[shapeIndex],
+                0.75f + random.nextFloat() * 0.5f,
+            )
         body.rebuild()
         bodies.add(body)
         nextShape++
@@ -543,7 +578,7 @@ internal class KineticShapesSimulation(
         // The upward camera eventually leaves the oldest shapes below the view.
         bodies.removeAll {
             it.minY > visibleBottom(it.layer) + 80f * dp ||
-                    it.maxY < visibleTop(it.layer) - height / zoom * 0.7f
+                it.maxY < visibleTop(it.layer) - height / zoom * 0.7f
         }
     }
 }

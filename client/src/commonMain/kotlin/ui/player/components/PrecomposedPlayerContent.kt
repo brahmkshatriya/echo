@@ -23,17 +23,19 @@ private const val CompactPlayerSlot = "compact-player"
 
 /** Prepare the hidden player in small composition slices after the first frame. */
 @Composable
-internal fun PrecomposedPlayerContent(
+fun PrecomposedPlayerContent(
     compactContent: @Composable () -> Unit,
     expandedContent: @Composable () -> Unit,
 ) {
     val sheet = LocalPlayerSheet.current
-    val expansionRequested by remember(sheet) {
-        derivedStateOf {
-            sheet == null || sheet.sheetState.targetValue == SheetValue.Expanded ||
-                sheet.progressState.value > 0f
+    val expansionRequested by
+        remember(sheet) {
+            derivedStateOf {
+                sheet == null ||
+                    sheet.sheetState.targetValue == SheetValue.Expanded ||
+                    sheet.progressState.value > 0f
+            }
         }
-    }
     val layoutState = remember { SubcomposeLayoutState() }
     var prepared by remember { mutableStateOf(expansionRequested) }
     val currentExpandedContent = rememberUpdatedState(expandedContent)
@@ -42,11 +44,9 @@ internal fun PrecomposedPlayerContent(
     }
 
     SubcomposeLayout(layoutState, Modifier.fillMaxSize()) { constraints ->
-        val children = if (prepared) {
-            subcompose(ExpandedPlayerSlot, retainedExpandedContent)
-        } else {
-            subcompose(CompactPlayerSlot, compactContent)
-        }
+        val children =
+            if (prepared) subcompose(ExpandedPlayerSlot, retainedExpandedContent)
+            else subcompose(CompactPlayerSlot, compactContent)
         val placeables = children.map { it.measure(constraints) }
         layout(constraints.maxWidth, constraints.maxHeight) {
             placeables.forEach { it.placeRelative(0, 0) }
@@ -60,16 +60,15 @@ internal fun PrecomposedPlayerContent(
             prepared = true
             return@LaunchedEffect
         }
-        withFrameNanos { }
-        val pending = layoutState.createPausedPrecomposition(
-            ExpandedPlayerSlot, retainedExpandedContent,
-        )
+        withFrameNanos {}
+        val pending =
+            layoutState.createPausedPrecomposition(ExpandedPlayerSlot, retainedExpandedContent)
         var applied = false
         try {
             // Changing composition locals can repeatedly invalidate paused work.
             // Bound this warm-up so it cannot keep an otherwise idle screen awake.
             repeat(120) {
-                withFrameNanos { }
+                withFrameNanos {}
                 val started = TimeSource.Monotonic.markNow()
                 if (pending.resume { started.elapsedNow() >= 4.milliseconds }) {
                     pending.apply()

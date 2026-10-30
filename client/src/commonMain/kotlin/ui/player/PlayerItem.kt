@@ -24,17 +24,19 @@ import androidx.compose.ui.unit.dp
 import dev.brahmkshatriya.echo.app.playback.PlayerSession
 import dev.brahmkshatriya.echo.app.ui.components.ScrollbarState
 import dev.brahmkshatriya.echo.app.ui.components.scrollbarStateValue
+import kotlin.math.roundToInt
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlin.math.roundToInt
 
-/** Neutral item shell. Song items supply a theme and background color;
- * video items can leave both colors unset. */
+/**
+ * Neutral item shell. Song items supply a theme and background color; video items can leave both
+ * colors unset.
+ */
 @Composable
-internal fun PlayerItemHost(
+fun PlayerItemHost(
     backgroundColor: Color? = null,
     outlineColor: Color? = null,
     content: @Composable () -> Unit,
@@ -42,17 +44,18 @@ internal fun PlayerItemHost(
     Box(Modifier.playerBackground(backgroundColor, outlineColor)) { content() }
 }
 
-
 const val collapsedHorizontalPadding = 8
-internal val playerBottomBarHeight = 64.dp
-internal val playerBottomBarControlSize = 48.dp
-internal const val PlayerBottomBarContentType = "player-bottom-bar"
-internal const val PlayerScrollbarThumbSizePercent = 0.16f
+val playerBottomBarHeight = 64.dp
+val playerBottomBarControlSize = 48.dp
+const val PlayerBottomBarContentType = "player-bottom-bar"
+const val PlayerScrollbarThumbSizePercent = 0.16f
 
-/** Page-local buttons stay in place during skips: select the target instantly,
- * then animate the new page's visibility instead of sliding its click targets. */
+/**
+ * Page-local buttons stay in place during skips: select the target instantly, then animate the new
+ * page's visibility instead of sliding its click targets.
+ */
 @Stable
-internal class PlayerSkipNavigator(
+class PlayerSkipNavigator(
     private val pagerState: PagerState,
     private val controls: PlayerSession,
     private val scope: CoroutineScope,
@@ -63,13 +66,20 @@ internal class PlayerSkipNavigator(
     private val entryAnimation = Animatable(1f)
     var enteringEntryId by mutableStateOf<Int?>(null)
         private set
-    val entryProgress: Float get() = entryAnimation.value
 
-    val isNavigating: Boolean get() = pendingEntryId != null
+    val entryProgress: Float
+        get() = entryAnimation.value
+
+    val isNavigating: Boolean
+        get() = pendingEntryId != null
+
     private fun originEntryId(): Int = pendingEntryId ?: controls.currentEntryId
-    val canGoNext: Boolean get() = controls.nextEntryId(originEntryId()) != null
+
+    val canGoNext: Boolean
+        get() = controls.nextEntryId(originEntryId()) != null
 
     fun next() = navigate(controls.nextEntryId(originEntryId()))
+
     fun previous() {
         val target = controls.previousTarget(originEntryId(), allowRestart = !isNavigating)
         if (target == controls.currentEntryId && !isNavigating) controls.previous()
@@ -84,27 +94,26 @@ internal class PlayerSkipNavigator(
         pendingEntryId = entryId
         enteringEntryId = if (willChangePage) entryId else null
         navigationJob?.cancel()
-        navigationJob = scope.launch(start = CoroutineStart.UNDISPATCHED) {
-            try {
-                if (willChangePage) {
-                    entryAnimation.snapTo(0f)
-                }
-                controls.selectEntry(entryId)
-                if (willChangePage) {
-                    snapshotFlow { pagerState.settledPage }.first { it == destination }
-                    entryAnimation.animateTo(
-                        1f,
-                        animationSpec = tween(220, easing = FastOutSlowInEasing),
-                    )
-                }
-            } finally {
-                if (requestId == id) {
-                    pendingEntryId = null
-                    enteringEntryId = null
-                    navigationJob = null
+        navigationJob =
+            scope.launch(start = CoroutineStart.UNDISPATCHED) {
+                try {
+                    if (willChangePage) entryAnimation.snapTo(0f)
+                    controls.selectEntry(entryId)
+                    if (willChangePage) {
+                        snapshotFlow { pagerState.settledPage }.first { it == destination }
+                        entryAnimation.animateTo(
+                            1f,
+                            animationSpec = tween(220, easing = FastOutSlowInEasing),
+                        )
+                    }
+                } finally {
+                    if (requestId == id) {
+                        pendingEntryId = null
+                        enteringEntryId = null
+                        navigationJob = null
+                    }
                 }
             }
-        }
     }
 
     /** Selecting from the queue takes priority over any skip in progress. */
@@ -120,9 +129,11 @@ internal class PlayerSkipNavigator(
     }
 }
 
-/** Only fades and blurs pixels, never translates the page's pointer targets.
- * Manual horizontal swipes still use the normal pager slide transition. */
-internal fun Modifier.animatedSkipEntrance(
+/**
+ * Only fades and blurs pixels, never translates the page's pointer targets. Manual horizontal
+ * swipes still use the normal pager slide transition.
+ */
+fun Modifier.animatedSkipEntrance(
     navigator: PlayerSkipNavigator?,
     entryId: Int,
     effectProgress: () -> Float = { 1f },
@@ -141,7 +152,7 @@ internal fun Modifier.animatedSkipEntrance(
 }
 
 @Stable
-internal class PlayerScrollbarItemSizes {
+class PlayerScrollbarItemSizes {
     private var sizes = IntArray(16)
     private var knownCount = 0
     private var knownTotal = 0L
@@ -166,17 +177,13 @@ internal class PlayerScrollbarItemSizes {
     fun itemSize(index: Int, fallbackSize: Int): Int =
         sizes.getOrNull(index)?.takeIf { it > 0 } ?: fallbackSize
 
-    fun fallbackSize(viewportSize: Int): Int = if (knownCount > 0) {
-        (knownTotal.toDouble() / knownCount).roundToInt().coerceAtLeast(1)
-    } else {
-        viewportSize.coerceAtLeast(1)
-    }
+    fun fallbackSize(viewportSize: Int): Int =
+        if (knownCount > 0) (knownTotal.toDouble() / knownCount).roundToInt().coerceAtLeast(1)
+        else viewportSize.coerceAtLeast(1)
 
     fun estimatedContentHeight(totalItems: Int, fallbackSize: Int): Int {
         var total = 0L
-        for (index in 0 until totalItems) {
-            total += itemSize(index, fallbackSize).toLong()
-        }
+        for (index in 0 until totalItems) total += itemSize(index, fallbackSize).toLong()
         return total.coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
     }
 
@@ -186,19 +193,14 @@ internal class PlayerScrollbarItemSizes {
         fallbackSize: Int,
     ): Int {
         var beforeFirstItem = 0L
-        for (index in 0 until firstVisibleIndex) {
-            beforeFirstItem += itemSize(index, fallbackSize).toLong()
-        }
+        for (index in 0 until firstVisibleIndex) beforeFirstItem +=
+            itemSize(index, fallbackSize).toLong()
         val firstItemSize = itemSize(firstVisibleIndex, fallbackSize)
         val offset = firstVisibleItemScrollOffset.coerceIn(0, firstItemSize)
         return (beforeFirstItem + offset).coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
     }
 
-    fun itemAtOffset(
-        targetScrollOffset: Int,
-        totalItems: Int,
-        fallbackSize: Int,
-    ): Long {
+    fun itemAtOffset(targetScrollOffset: Int, totalItems: Int, fallbackSize: Int): Long {
         var remainingOffset = targetScrollOffset
         var targetIndex = 0
         while (targetIndex < totalItems - 1) {
@@ -207,64 +209,70 @@ internal class PlayerScrollbarItemSizes {
             remainingOffset -= itemSize
             targetIndex++
         }
-        return (targetIndex.toLong() shl 32) or
-                (remainingOffset.toLong() and 0xffffffffL)
+        return (targetIndex.toLong() shl 32) or (remainingOffset.toLong() and 0xffffffffL)
     }
 }
 
 @Composable
-internal fun rememberPlayerScrollbarState(
+fun rememberPlayerScrollbarState(
     listState: LazyListState,
     itemSizes: PlayerScrollbarItemSizes,
 ): ScrollbarState {
     val state = remember { ScrollbarState() }
     LaunchedEffect(listState) {
         snapshotFlow {
-            val layoutInfo = listState.layoutInfo
-            var visibleItemsSignature = 1
-            layoutInfo.visibleItemsInfo.forEach { item ->
-                visibleItemsSignature = 31 * visibleItemsSignature + item.index
-                visibleItemsSignature = 31 * visibleItemsSignature + item.size
-            }
-            PlayerScrollbarSnapshot(
-                firstVisibleIndex = listState.firstVisibleItemIndex,
-                firstVisibleItemScrollOffset = listState.firstVisibleItemScrollOffset,
-                canScrollBackward = listState.canScrollBackward,
-                totalItems = layoutInfo.totalItemsCount,
-                viewportSize = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset,
-                visibleItemsSignature = visibleItemsSignature,
-            )
-        }.collect { snapshot ->
-            if (snapshot.totalItems <= 0) return@collect
-            listState.layoutInfo.visibleItemsInfo.forEach { item ->
-                itemSizes.update(item.index, item.size)
-            }
-
-            val viewportSize = snapshot.viewportSize.coerceAtLeast(1)
-            val fallbackSize = itemSizes.fallbackSize(viewportSize)
-            val totalHeight = itemSizes.estimatedContentHeight(
-                totalItems = snapshot.totalItems,
-                fallbackSize = fallbackSize,
-            )
-            val maxScrollOffset = (totalHeight - viewportSize).coerceAtLeast(1)
-            val scrollOffset = itemSizes.estimatedScrollOffset(
-                firstVisibleIndex = snapshot.firstVisibleIndex,
-                firstVisibleItemScrollOffset = snapshot.firstVisibleItemScrollOffset,
-                fallbackSize = fallbackSize,
-            )
-            val maxThumbTravel = 1f - PlayerScrollbarThumbSizePercent
-            val thumbMovedPercent = when {
-                !snapshot.canScrollBackward -> 0f
-                else -> (scrollOffset.toFloat() / maxScrollOffset * maxThumbTravel)
-                    .coerceIn(0f, maxThumbTravel)
-            }
-            state.onScroll(
-                scrollbarStateValue(
-                    thumbSizePercent = PlayerScrollbarThumbSizePercent,
-                    thumbMovedPercent = thumbMovedPercent,
+                val layoutInfo = listState.layoutInfo
+                var visibleItemsSignature = 1
+                layoutInfo.visibleItemsInfo.forEach { item ->
+                    visibleItemsSignature = 31 * visibleItemsSignature + item.index
+                    visibleItemsSignature = 31 * visibleItemsSignature + item.size
+                }
+                PlayerScrollbarSnapshot(
+                    firstVisibleIndex = listState.firstVisibleItemIndex,
+                    firstVisibleItemScrollOffset = listState.firstVisibleItemScrollOffset,
+                    canScrollBackward = listState.canScrollBackward,
+                    totalItems = layoutInfo.totalItemsCount,
+                    viewportSize = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset,
+                    visibleItemsSignature = visibleItemsSignature,
                 )
-            )
-        }
+            }
+            .collect { snapshot ->
+                if (snapshot.totalItems <= 0) return@collect
+                listState.layoutInfo.visibleItemsInfo.forEach { item ->
+                    itemSizes.update(item.index, item.size)
+                }
+
+                val viewportSize = snapshot.viewportSize.coerceAtLeast(1)
+                val fallbackSize = itemSizes.fallbackSize(viewportSize)
+                val totalHeight =
+                    itemSizes.estimatedContentHeight(
+                        totalItems = snapshot.totalItems,
+                        fallbackSize = fallbackSize,
+                    )
+                val maxScrollOffset = (totalHeight - viewportSize).coerceAtLeast(1)
+                val scrollOffset =
+                    itemSizes.estimatedScrollOffset(
+                        firstVisibleIndex = snapshot.firstVisibleIndex,
+                        firstVisibleItemScrollOffset = snapshot.firstVisibleItemScrollOffset,
+                        fallbackSize = fallbackSize,
+                    )
+                val maxThumbTravel = 1f - PlayerScrollbarThumbSizePercent
+                val thumbMovedPercent =
+                    when {
+                        !snapshot.canScrollBackward -> 0f
+                        else ->
+                            (scrollOffset.toFloat() / maxScrollOffset * maxThumbTravel).coerceIn(
+                                0f,
+                                maxThumbTravel,
+                            )
+                    }
+                state.onScroll(
+                    scrollbarStateValue(
+                        thumbSizePercent = PlayerScrollbarThumbSizePercent,
+                        thumbMovedPercent = thumbMovedPercent,
+                    )
+                )
+            }
     }
     return state
 }
@@ -279,7 +287,7 @@ private data class PlayerScrollbarSnapshot(
 )
 
 @Composable
-internal fun rememberPlayerScrollbarThumbMover(
+fun rememberPlayerScrollbarThumbMover(
     listState: LazyListState,
     itemSizes: PlayerScrollbarItemSizes,
 ): (Float) -> Unit {
@@ -290,25 +298,23 @@ internal fun rememberPlayerScrollbarThumbMover(
         val totalItems = layoutInfo.totalItemsCount
         if (totalItems <= 0) return@LaunchedEffect
 
-        val viewportSize = (layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset)
-            .coerceAtLeast(1)
+        val viewportSize =
+            (layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset).coerceAtLeast(1)
         val fallbackSize = itemSizes.fallbackSize(viewportSize)
         val totalHeight = itemSizes.estimatedContentHeight(totalItems, fallbackSize)
         val maxScrollOffset = (totalHeight - viewportSize).coerceAtLeast(0)
         val maxThumbTravel = 1f - PlayerScrollbarThumbSizePercent
-        val targetScrollOffset = (maxScrollOffset *
-                (thumbMovedPercent / maxThumbTravel).coerceIn(0f, 1f))
-            .roundToInt()
-        val target = itemSizes.itemAtOffset(
-            targetScrollOffset = targetScrollOffset,
-            totalItems = totalItems,
-            fallbackSize = fallbackSize,
-        )
+        val targetScrollOffset =
+            (maxScrollOffset * (thumbMovedPercent / maxThumbTravel).coerceIn(0f, 1f)).roundToInt()
+        val target =
+            itemSizes.itemAtOffset(
+                targetScrollOffset = targetScrollOffset,
+                totalItems = totalItems,
+                fallbackSize = fallbackSize,
+            )
         val targetIndex = (target ushr 32).toInt()
         val remainingOffset = target.toInt()
         listState.requestScrollToItem(targetIndex, remainingOffset)
     }
-    return remember {
-        { newPercentage -> thumbMovedPercent = newPercentage }
-    }
+    return remember { { newPercentage -> thumbMovedPercent = newPercentage } }
 }

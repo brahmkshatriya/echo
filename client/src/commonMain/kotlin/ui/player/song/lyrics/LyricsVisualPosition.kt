@@ -16,7 +16,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import dev.brahmkshatriya.echo.app.playback.PlayerTimelineState
 import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerSheet
 
-internal val LocalLyricsBloomStrength = staticCompositionLocalOf<State<Float>?> { null }
+val LocalLyricsBloomStrength = staticCompositionLocalOf<State<Float>?> { null }
 
 /**
  * Keep per-frame clock dependencies out of composition. snapshotFlow publishes
@@ -25,7 +25,7 @@ internal val LocalLyricsBloomStrength = staticCompositionLocalOf<State<Float>?> 
  * conditional invalidations on every clock tick, even when its value is equal.
  */
 @Composable
-internal fun <T> rememberLyricsStructure(
+fun <T> rememberLyricsStructure(
     vararg keys: Any?,
     calculation: () -> T,
 ): State<T> {
@@ -41,7 +41,7 @@ internal fun <T> rememberLyricsStructure(
 
 /** Hidden lyric views hold a frame, then resume from the live playback timeline. */
 @Composable
-internal fun rememberLyricsVisualPosition(
+fun rememberLyricsVisualPosition(
     timelineState: PlayerTimelineState,
     active: Boolean,
 ): State<Long> {
@@ -62,7 +62,7 @@ internal fun rememberLyricsVisualPosition(
 
 /** Reserve transition frames for moving the player; restore the decorative halo at rest. */
 @Composable
-internal fun rememberLyricsBloomStrength(): State<Float> {
+fun rememberLyricsBloomStrength(): State<Float> {
     LocalLyricsBloomStrength.current?.let { return it }
     val sheet = LocalPlayerSheet.current
     val settledExpanded by remember(sheet) {

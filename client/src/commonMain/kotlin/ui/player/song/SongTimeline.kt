@@ -28,11 +28,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
-import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,18 +40,19 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import dev.brahmkshatriya.echo.app.playback.LocalPlayerTimelineState
-import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerControls
+import dev.brahmkshatriya.echo.app.playback.PlayerSession
 import dev.brahmkshatriya.echo.app.ui.player.artwork.PlayerArtwork
 import dev.brahmkshatriya.echo.app.ui.player.components.CompactPlayPauseButton
 import dev.brahmkshatriya.echo.app.ui.player.components.Controller
 import dev.brahmkshatriya.echo.app.ui.player.components.LikeToggle
 import dev.brahmkshatriya.echo.app.ui.player.components.MoreButton
+import dev.brahmkshatriya.echo.app.ui.player.components.PlayerAudioSettings
 import dev.brahmkshatriya.echo.app.ui.player.components.PlayerSlider
-import dev.brahmkshatriya.echo.app.ui.player.components.formatTime
+import dev.brahmkshatriya.echo.app.ui.player.components.rememberTimelineLabels
 
 @Composable
-internal fun ExpandedTimeline(
+fun ExpandedTimeline(
+    session: PlayerSession,
     i: Int,
     geometry: ExpandedTimelineGeometry,
     rowsCollapsed: Boolean,
@@ -63,28 +61,12 @@ internal fun ExpandedTimeline(
     rowsCollapseProgress: () -> Float = { 0f },
     onArtworkClick: () -> Unit = {},
 ) {
-    val timelineState = LocalPlayerTimelineState.current ?: return
-    val song = LocalPlayerControls.current.mediaFor(i)
-    val maxRange = timelineState.durationMs
+    val navigator = dev.brahmkshatriya.echo.app.ui.player.LocalPlayerSkipNavigator.current
+    val timelineState = session.timelineFor(i)
+    val song = session.mediaFor(i) ?: return
+    val quality = session.qualityFor(i) ?: return
     var showRemainingTime by remember { mutableStateOf(false) }
-    fun labelSeconds(): Pair<Int, Int> {
-        val positionMs = timelineState.positionMs
-        return (positionMs / 1_000).toInt().coerceAtLeast(0) to
-                ((if (showRemainingTime) maxRange - positionMs else maxRange) / 1_000)
-                    .toInt().coerceAtLeast(0)
-    }
-    fun labels(seconds: Pair<Int, Int>): Pair<String, String> =
-        formatTime(seconds.first * 1_000f) to
-                (if (showRemainingTime) "-" else "") + formatTime(seconds.second * 1_000f)
-
-    val timeLabels by produceState(
-        initialValue = Snapshot.withoutReadObservation { labels(labelSeconds()) },
-        timelineState, showRemainingTime,
-    ) {
-        // Publish text only when a displayed second changes. Observing a
-        // derived string in composition still revisits this group every tick.
-        snapshotFlow { labelSeconds() }.collect { value = labels(it) }
-    }
+    val timeLabels by rememberTimelineLabels(timelineState, showRemainingTime)
     val (currentTimeLabel, endLabel) = timeLabels
     val mergedStyle = LocalTextStyle.current.merge(typography.labelLarge)
     val compactPlayPauseVisible = lyricsVisible && rowsCollapsed
@@ -109,7 +91,7 @@ internal fun ExpandedTimeline(
                             shrinkHorizontally(coverWidthSpec, shrinkTowards = Alignment.Start),
                 ) {
                     PlayerArtwork(
-                        contentDescription = "${song?.album ?: "Album"} artwork",
+                        contentDescription = "${song.album} artwork",
                         modifier = Modifier
                             .padding(start = 16.dp, end = 8.dp)
                             .size(48.dp)
@@ -127,23 +109,28 @@ internal fun ExpandedTimeline(
                 }
                 Column(Modifier.weight(1f)) {
                     Text(
-                        song?.title ?: "Unknown track",
+                        song.title,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
-                        song?.artist ?: "Unknown artist",
+                        song.artist,
                         color = colorScheme.onPrimaryContainer.copy(0.66f),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
                 Spacer(Modifier.width(4.dp))
-                LikeToggle(i)
+                LikeToggle(session.isFavourite(i)) { session.setFavourite(i, it) }
                 AnimatedVisibility(compactPlayPauseVisible) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Spacer(Modifier.width(4.dp))
-                        CompactPlayPauseButton()
+                        CompactPlayPauseButton(
+                            isPlaying = session.isPlaying,
+                            isLoading = session.isLoading,
+                            timelineState = timelineState,
+                            onClick = session::togglePlayPause,
+                        )
                     }
                 }
                 Spacer(Modifier.width(4.dp))
@@ -175,23 +162,35 @@ internal fun ExpandedTimeline(
                                     .padding(8.dp, 4.dp),
                             )
                         }
-                        Text(
-                            text = song?.uri?.substringAfterLast('.')?.uppercase() ?: "Audio",
-                            style = mergedStyle,
+                        PlayerAudioSettings(
+                            entryId = i,
+                            media = song,
+                            quality = quality,
+                            outputs = session.audioOutputs,
+                            onQualitySelected = { session.selectQuality(i, it) },
+                            onOutputSelected = session::selectAudioOutput,
                             modifier = Modifier
                                 .align(Alignment.Center)
-                                .padding(top = 8.dp)
-                                .clip(RoundedCornerShape(100))
-                                .background(colorScheme.onPrimaryContainer.copy(0.1f))
-                                .clickable {}
-                                .padding(12.dp, 4.dp),
+                                .padding(top = 4.dp),
                         )
                     }
                     PlayerSlider(
                         modifier = Modifier.height(72.dp),
                         timelineState = timelineState,
+                        isPlaying = session.isPlaying,
+                        onSeekPreview = { session.previewSeek(i, it) },
+                        onSeekCommit = { session.commitSeek(i) },
+                        onSeekCancel = { session.cancelScrub(i) },
                     )
-                    Controller()
+                    Controller(
+                        isPlaying = session.isPlaying,
+                        isLoading = session.isLoading,
+                        previousEnabled = true,
+                        nextEnabled = navigator?.canGoNext == true,
+                        onPrevious = { if (navigator != null) navigator.previous() else session.previous() },
+                        onPlayPause = session::togglePlayPause,
+                        onNext = { navigator?.next() },
+                    )
                 },
             ) { measurables, chromeConstraints ->
                 val chromeLoose = chromeConstraints.copy(minHeight = 0)

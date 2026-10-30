@@ -5,11 +5,7 @@ import dev.brahmkshatriya.echo.app.ui.player.song.LyricsWaitingDotsPostRollMs
 import dev.brahmkshatriya.echo.app.ui.player.song.LyricsWaitingDotsPreRollMs
 import dev.brahmkshatriya.echo.app.ui.player.song.LyricsWaitingGapMs
 
-internal data class LyricsWaitingGap(
-    val afterLineIndex: Int,
-    val startMs: Long,
-    val endMs: Long,
-) {
+data class LyricsWaitingGap(val afterLineIndex: Int, val startMs: Long, val endMs: Long) {
     fun contains(positionMs: Long): Boolean = positionMs in (startMs + 1)..<endMs
 
     fun isVisibleInFullLyrics(positionMs: Long): Boolean {
@@ -39,12 +35,12 @@ private fun lowerBound(values: LongArray, value: Long): Int {
     return low
 }
 
-internal sealed interface FullLyricsLineTiming {
+sealed interface FullLyricsLineTiming {
     val line: TimedLyricsLine
     val text: String
 }
 
-internal class WordLineTiming(override val line: WordsLyric) : FullLyricsLineTiming {
+class WordLineTiming(override val line: WordsLyric) : FullLyricsLineTiming {
     override val text = buildString {
         line.tokens.forEach { token ->
             append(token.text)
@@ -75,8 +71,7 @@ internal class WordLineTiming(override val line: WordsLyric) : FullLyricsLineTim
         if (positionMs < token.startMs || positionMs > token.endMs) return null
 
         val startPosition = tokenOffsets[tokenIndex]
-        val endPositionExclusive = (startPosition + token.text.length)
-            .coerceAtMost(text.length)
+        val endPositionExclusive = (startPosition + token.text.length).coerceAtMost(text.length)
         if (endPositionExclusive <= startPosition) return null
 
         fun smoothRamp(value: Float): Float {
@@ -95,12 +90,11 @@ internal class WordLineTiming(override val line: WordsLyric) : FullLyricsLineTim
         if (line.tokens.isEmpty()) return 0f
         val tokenIndex = tokenIndexAt(positionMs)
         val token = line.tokens.getOrNull(tokenIndex) ?: return 0f
-        val tokenProgress = if (token.endMs > token.startMs) {
-            ((positionMs - token.startMs).toFloat() /
-                    (token.endMs - token.startMs).toFloat()).coerceIn(0f, 1f)
-        } else {
-            1f
-        }
+        val tokenProgress =
+            if (token.endMs > token.startMs)
+                ((positionMs - token.startMs).toFloat() / (token.endMs - token.startMs).toFloat())
+                    .coerceIn(0f, 1f)
+            else 1f
         val start = tokenOffsets[tokenIndex].toFloat()
         val length = tokenLengths[tokenIndex].toFloat()
         return (start + length * tokenProgress).coerceIn(0f, text.length.toFloat())
@@ -114,7 +108,8 @@ private data class PeakTimelineSegment(
     val endPosition: Float,
 )
 
-private class LyricsPeakTimeline private constructor(
+private class LyricsPeakTimeline
+private constructor(
     private val segments: List<PeakTimelineSegment>,
     private val segmentStarts: LongArray,
     private val averageCharacterDurationMs: Float,
@@ -129,11 +124,14 @@ private class LyricsPeakTimeline private constructor(
                 val token: TimedToken,
             )
 
-            val runs = lines.flatMap { lineTiming ->
-                lineTiming.line.tokens.mapIndexed { tokenIndex, token ->
-                    TokenRun(lineTiming, tokenIndex, token)
-                }
-            }.sortedBy { it.token.startMs }
+            val runs =
+                lines
+                    .flatMap { lineTiming ->
+                        lineTiming.line.tokens.mapIndexed { tokenIndex, token ->
+                            TokenRun(lineTiming, tokenIndex, token)
+                        }
+                    }
+                    .sortedBy { it.token.startMs }
 
             var totalTimedDurationMs = 0L
             var totalCharacters = 0
@@ -144,11 +142,10 @@ private class LyricsPeakTimeline private constructor(
                     totalCharacters += characterCount
                 }
             }
-            val averageCharacterDurationMs = if (totalCharacters > 0 && totalTimedDurationMs > 0L) {
-                totalTimedDurationMs.toFloat() / totalCharacters.toFloat()
-            } else {
-                120f
-            }
+            val averageCharacterDurationMs =
+                if (totalCharacters > 0 && totalTimedDurationMs > 0L)
+                    totalTimedDurationMs.toFloat() / totalCharacters.toFloat()
+                else 120f
 
             val segments = mutableListOf<PeakTimelineSegment>()
             var cursorMs = 0L
@@ -159,14 +156,16 @@ private class LyricsPeakTimeline private constructor(
                 if (characterCount <= 0) return@forEach
 
                 if (token.startMs > cursorMs) {
-                    val gapEndPosition = cursorPosition +
+                    val gapEndPosition =
+                        cursorPosition +
                             (token.startMs - cursorMs).toFloat() / averageCharacterDurationMs
-                    segments += PeakTimelineSegment(
-                        startMs = cursorMs,
-                        endMs = token.startMs,
-                        startPosition = cursorPosition,
-                        endPosition = gapEndPosition,
-                    )
+                    segments +=
+                        PeakTimelineSegment(
+                            startMs = cursorMs,
+                            endMs = token.startMs,
+                            startPosition = cursorPosition,
+                            endPosition = gapEndPosition,
+                        )
                     cursorPosition = gapEndPosition
                     cursorMs = token.startMs
                 }
@@ -174,22 +173,21 @@ private class LyricsPeakTimeline private constructor(
                 val tokenOffset = run.lineTiming.tokenOffsets[run.tokenIndex]
                 repeat(characterCount) { characterIndex ->
                     val textIndex = tokenOffset + characterIndex
-                    if (textIndex in run.lineTiming.globalGlyphPositions.indices) {
+                    if (textIndex in run.lineTiming.globalGlyphPositions.indices)
                         run.lineTiming.globalGlyphPositions[textIndex] =
                             cursorPosition + characterIndex
-                    }
                 }
 
                 val tokenEndPosition = cursorPosition + characterCount
                 val effectiveStartMs = maxOf(cursorMs, token.startMs)
-                if (token.endMs > effectiveStartMs) {
-                    segments += PeakTimelineSegment(
-                        startMs = effectiveStartMs,
-                        endMs = token.endMs,
-                        startPosition = cursorPosition,
-                        endPosition = tokenEndPosition,
-                    )
-                }
+                if (token.endMs > effectiveStartMs)
+                    segments +=
+                        PeakTimelineSegment(
+                            startMs = effectiveStartMs,
+                            endMs = token.endMs,
+                            startPosition = cursorPosition,
+                            endPosition = tokenEndPosition,
+                        )
                 cursorPosition = tokenEndPosition
                 cursorMs = maxOf(cursorMs, token.endMs)
             }
@@ -210,24 +208,23 @@ private class LyricsPeakTimeline private constructor(
         val segment = segments.getOrNull(segmentIndex)
         if (segment != null && timeMs <= segment.endMs) {
             val durationMs = (segment.endMs - segment.startMs).coerceAtLeast(1L)
-            val progress = ((timeMs - segment.startMs).toFloat() / durationMs.toFloat())
-                .coerceIn(0f, 1f)
-            return segment.startPosition +
-                    (segment.endPosition - segment.startPosition) * progress
+            val progress =
+                ((timeMs - segment.startMs).toFloat() / durationMs.toFloat()).coerceIn(0f, 1f)
+            return segment.startPosition + (segment.endPosition - segment.startPosition) * progress
         }
 
         val tailEndMs = songDurationMs.coerceAtLeast(lastTimedEndMs)
         val tailTimeMs = timeMs.coerceIn(lastTimedEndMs, tailEndMs)
-        return lastPosition +
-                (tailTimeMs - lastTimedEndMs).toFloat() / averageCharacterDurationMs
+        return lastPosition + (tailTimeMs - lastTimedEndMs).toFloat() / averageCharacterDurationMs
     }
 }
 
-internal class LineTiming(override val line: LineLyric) : FullLyricsLineTiming {
+class LineTiming(override val line: LineLyric) : FullLyricsLineTiming {
     override val text: String = line.text
 }
 
-internal class LyricsTimingIndex private constructor(
+class LyricsTimingIndex
+private constructor(
     val lines: List<FullLyricsLineTiming>,
     private val peakTimeline: LyricsPeakTimeline? = null,
 ) {
@@ -249,11 +246,7 @@ internal class LyricsTimingIndex private constructor(
     fun waitingGapBeforeFirst(): LyricsWaitingGap? {
         val firstLine = lines.firstOrNull()?.line ?: return null
         if (firstLine.startMs < LyricsWaitingGapMs) return null
-        return LyricsWaitingGap(
-            afterLineIndex = -1,
-            startMs = 0L,
-            endMs = firstLine.startMs,
-        )
+        return LyricsWaitingGap(afterLineIndex = -1, startMs = 0L, endMs = firstLine.startMs)
     }
 
     fun waitingGapAfter(lineIndex: Int): LyricsWaitingGap? {

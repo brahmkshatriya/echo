@@ -7,7 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 
 @Stable
-internal class PlayerTimelineState(
+class PlayerTimelineState(
     durationMs: Float,
     private val timeSource: kotlin.time.TimeSource = kotlin.time.TimeSource.Monotonic,
 ) {
@@ -37,21 +37,21 @@ internal class PlayerTimelineState(
     val isAwaitingSeek: Boolean
         get() = isSeeking || deferredSeekMs != null || pendingSeek != null
 
-    internal fun previewSeek(position: Float) {
+    fun previewSeek(position: Float) {
         isSeeking = true
         positionMs = clamp(position)
     }
 
-    internal fun finishScrub() { isSeeking = false }
+    fun finishScrub() { isSeeking = false }
 
-    internal fun cancelScrub() {
+    fun cancelScrub() {
         if (!isSeeking) return
         isSeeking = false
         displayClock.reset()
         positionMs = clamp(reportedPositionMs)
     }
 
-    internal fun markComplete() {
+    fun markComplete() {
         if (durationMs > 0f) positionMs = durationMs
     }
 
@@ -110,12 +110,12 @@ internal class PlayerTimelineState(
     private fun clamp(value: Float): Float = value.coerceIn(0f,
         if (durationMs > 0f) durationMs else Float.MAX_VALUE)
 
-    internal fun beginSelection() {
+    fun beginSelection() {
         firstSample = true
         displayClock.reset()
     }
 
-    internal fun updateBackend(state: dev.brahmkshatriya.kmplayer.KMPlayerState) {
+    fun updateBackend(state: dev.brahmkshatriya.kmplayer.KMPlayerState) {
         state.duration?.inWholeMilliseconds?.takeIf { it > 0L }?.let { durationMs = it.toFloat() }
         bufferedMs = state.bufferedPosition?.inWholeMilliseconds?.toFloat()
         playbackSpeed = state.speed
@@ -126,7 +126,7 @@ internal class PlayerTimelineState(
     }
 
     /** Only interpolates display values. Native samples and seeks are owned by the session. */
-    internal fun renderFrame(frameTimeNanos: Long) {
+    fun renderFrame(frameTimeNanos: Long) {
         if (isAwaitingSeek) return
         applyPlayerPosition(displayClock.positionAt(
             reportedPositionMs.toLong(), frameTimeNanos, backendPlaying, playbackSpeed,

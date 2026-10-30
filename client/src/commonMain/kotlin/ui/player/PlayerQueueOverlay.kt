@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.unit.dp
 import androidx.navigationevent.NavigationEventInfo
+import dev.brahmkshatriya.echo.app.playback.PlayerSession
 import dev.brahmkshatriya.echo.app.ui.components.clover6Sided
 import dev.brahmkshatriya.echo.app.ui.player.components.*
 import echo.client.generated.resources.Res
@@ -20,7 +21,8 @@ private object QueueOverlayPageInfo : NavigationEventInfo()
 private object QueuePlayerInfo : NavigationEventInfo()
 
 @Composable
-internal fun SharedPlayerQueueOverlay(
+fun SharedPlayerQueueOverlay(
+    session: PlayerSession,
     transition: PlayerPillTransition,
     viewport: Size,
     currentEntryId: Int,
@@ -49,6 +51,7 @@ internal fun SharedPlayerQueueOverlay(
         },
         pageContent = { interactive ->
             QueuePage(
+                controls = session,
                 currentEntryId = currentEntryId,
                 interactive = interactive,
                 onBack = transition::close,

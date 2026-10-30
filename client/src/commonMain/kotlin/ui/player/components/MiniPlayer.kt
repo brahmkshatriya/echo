@@ -33,8 +33,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import dev.brahmkshatriya.echo.app.platform.hasTouchInput
+import dev.brahmkshatriya.echo.app.playback.PlayerSession
 import dev.brahmkshatriya.echo.app.ui.components.ResponsiveRow
-import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerControls
 import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerPadding
 import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerSheet
 import dev.brahmkshatriya.echo.app.ui.player.artwork.PlayerArtwork
@@ -45,17 +45,19 @@ import echo.client.generated.resources.ic_keyboard_arrow_down
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
-internal fun StickyMiniPlayer(
+fun StickyMiniPlayer(
+    session: PlayerSession,
     index: Int,
 ) {
     val playerSheet = LocalPlayerSheet.current
 
     CollapsedPlayerContent(
+        session,
         index,
         modifier = Modifier.fillMaxWidth(),
         leadingContent = {
             PlayerArtwork(
-                contentDescription = "${LocalPlayerControls.current.mediaFor(index)?.album ?: "Album"} cover art",
+                contentDescription = "${session.mediaFor(index)?.album ?: "Album"} cover art",
                 modifier = Modifier
                     .padding(start = 4.dp)
                     .size(48.dp)
@@ -83,12 +85,14 @@ internal fun StickyMiniPlayer(
 
 @Composable
 fun CollapsedPlayer(
+    session: PlayerSession,
     i: Int,
     showCover: Boolean = false,
 ) {
     val playerSheet = LocalPlayerSheet.current
     val playerPadding = LocalPlayerPadding.current
     CollapsedPlayerContent(
+        session,
         i,
         modifier = Modifier
             .fillMaxWidth()
@@ -113,7 +117,7 @@ fun CollapsedPlayer(
                     exit = fadeOut(tween(250)),
                 ) {
                     PlayerArtwork(
-                        contentDescription = "${LocalPlayerControls.current.mediaFor(i)?.album ?: "Album"} artwork",
+                        contentDescription = "${session.mediaFor(i)?.album ?: "Album"} artwork",
                         modifier = Modifier
                             .fillMaxSize()
                             .clip(RoundedCornerShape(4.dp))
@@ -144,12 +148,15 @@ fun CollapsedPlayer(
 
 @Composable
 private fun CollapsedPlayerContent(
+    session: PlayerSession,
     i: Int,
     modifier: Modifier = Modifier,
     leadingContent: @Composable () -> Unit,
     trailingContent: @Composable () -> Unit,
 ) {
-    val song = LocalPlayerControls.current.mediaFor(i)
+    val navigator = dev.brahmkshatriya.echo.app.ui.player.LocalPlayerSkipNavigator.current
+    val timelineState = session.mediaFor(i)?.let { session.timelineFor(i) }
+    val song = session.mediaFor(i)
     ResponsiveRow(
         modifier = modifier,
         spacing = 4.dp,
@@ -185,15 +192,31 @@ private fun CollapsedPlayerContent(
         )
 
         item(priority = 60, key = "favourite") {
-            LikeToggle(i)
+            LikeToggle(session.isFavourite(i)) { session.setFavourite(i, it) }
         }
 
         item(priority = 10, key = "timeline-volume", weight = 1f) {
-            TimelineWithVolume(Modifier.fillMaxWidth())
+            timelineState?.let { timeline ->
+                TimelineWithVolume(
+                    timelineState = timeline,
+                    isPlaying = session.isPlaying,
+                    volume = session.volume,
+                    lastAudibleVolume = session.lastAudibleVolume,
+                    onVolumeChange = session::setVolume,
+                    onSeekPreview = { session.previewSeek(i, it) },
+                    onSeekCommit = { session.commitSeek(i) },
+                    onSeekCancel = { session.cancelScrub(i) },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
         }
 
         item(priority = 49, key = "previous") {
-            PreviousButton(Modifier.height(44.dp).width(36.dp))
+            PreviousButton(
+                enabled = timelineState != null,
+                onClick = { if (navigator != null) navigator.previous() else session.previous() },
+                modifier = Modifier.height(44.dp).width(36.dp),
+            )
         }
 
         item(
@@ -201,7 +224,12 @@ private fun CollapsedPlayerContent(
             key = "play-pause-compact",
             whenItemHidden = "timeline-volume",
         ) {
-            CompactPlayPauseButton()
+            CompactPlayPauseButton(
+                isPlaying = session.isPlaying,
+                isLoading = session.isLoading,
+                timelineState = timelineState,
+                onClick = session::togglePlayPause,
+            )
         }
 
         item(
@@ -209,15 +237,19 @@ private fun CollapsedPlayerContent(
             key = "play-pause",
             whenItemVisible = "timeline-volume",
         ) {
-            PlayPauseButton(Modifier.size(44.dp))
+            PlayPauseButton(session.isPlaying, session.isLoading, session::togglePlayPause, Modifier.size(44.dp))
         }
 
         item(priority = 50, key = "next") {
-            NextButton(Modifier.height(44.dp).width(36.dp))
+            NextButton(
+                enabled = timelineState != null && navigator?.canGoNext == true,
+                onClick = { navigator?.next() },
+                modifier = Modifier.height(44.dp).width(36.dp),
+            )
         }
 
         item(priority = 30, key = "repeat") {
-            RepeatButton(Modifier.size(44.dp))
+            RepeatButton(session.repeatMode, { session.repeatMode = session.repeatMode.next() }, Modifier.size(44.dp))
         }
 
         item(priority = 100, key = "trailing") {

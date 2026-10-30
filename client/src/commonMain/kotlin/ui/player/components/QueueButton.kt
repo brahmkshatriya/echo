@@ -13,7 +13,7 @@ import echo.client.generated.resources.ic_playlist_play
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
-internal fun QueueButton(onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
+fun QueueButton(onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
     val interaction = remember { MutableInteractionSource() }
     FilledTonalIconButton(
         onClick = onClick,

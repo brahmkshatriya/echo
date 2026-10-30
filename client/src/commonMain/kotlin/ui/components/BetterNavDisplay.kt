@@ -30,22 +30,25 @@ val LocalMainBackStack = compositionLocalOf<NavBackStack<NavKey>?> { null }
 const val TIME_MS = 300
 const val SCALE = 0.98f
 const val TWEEN_RATIO = 0.35f
-val tweenIn = tween<Float>(TIME_MS) {
-    if (it < TWEEN_RATIO) 0f else (it - TWEEN_RATIO) / (1f - TWEEN_RATIO)
-}
+val tweenIn =
+    tween<Float>(TIME_MS) { if (it < TWEEN_RATIO) 0f else (it - TWEEN_RATIO) / (1f - TWEEN_RATIO) }
 
-val tweenOut = tween<Float>(TIME_MS) {
-    if (it < TWEEN_RATIO) it / TWEEN_RATIO else 1f
-}
+val tweenOut = tween<Float>(TIME_MS) { if (it < TWEEN_RATIO) it / TWEEN_RATIO else 1f }
 
 val springCubicBezierEasing = CubicBezierEasing(0.6f, 0f, 0.6f, 1.8f)
 val transitionSpec = run {
-    val enter = fadeIn(tweenIn) + scaleIn(tween(TIME_MS) {
-        springCubicBezierEasing.transform(tweenIn.easing.transform(it))
-    }, SCALE)
-    val exit = fadeOut(tweenOut) + scaleOut(tween(TIME_MS) {
-        springCubicBezierEasing.transform(tweenOut.easing.transform(it))
-    }, SCALE)
+    val enter =
+        fadeIn(tweenIn) +
+            scaleIn(
+                tween(TIME_MS) { springCubicBezierEasing.transform(tweenIn.easing.transform(it)) },
+                SCALE,
+            )
+    val exit =
+        fadeOut(tweenOut) +
+            scaleOut(
+                tween(TIME_MS) { springCubicBezierEasing.transform(tweenOut.easing.transform(it)) },
+                SCALE,
+            )
     enter togetherWith exit
 }
 
@@ -57,21 +60,24 @@ fun BetterNavDisplay(
     entryProviderBuilder: EntryProviderScope<NavKey>.() -> Unit,
 ) {
     require(backStack.isNotEmpty()) { "NavDisplay entries cannot be empty" }
-    val entries = rememberDecoratedNavEntries(
-        backStack = backStack,
-        entryDecorators = listOf(rememberSaveableStateHolderNavEntryDecorator()),
-        entryProvider = entryProvider(builder = entryProviderBuilder),
-    )
-    val sceneState = rememberSceneState(entries, listOf(SinglePaneSceneStrategy())) {
-        backStack.removeLastOrNull()
-    }
+    val entries =
+        rememberDecoratedNavEntries(
+            backStack = backStack,
+            entryDecorators = listOf(rememberSaveableStateHolderNavEntryDecorator()),
+            entryProvider = entryProvider(builder = entryProviderBuilder),
+        )
+    val sceneState =
+        rememberSceneState(entries, listOf(SinglePaneSceneStrategy())) {
+            backStack.removeLastOrNull()
+        }
     val scene = sceneState.currentScene
-    val navigationEventState = rememberNavigationEventState(
-        SceneInfo(scene),
-        sceneState.previousScenes.map { SceneInfo(it) }
-    )
+    val navigationEventState =
+        rememberNavigationEventState(
+            SceneInfo(scene),
+            sceneState.previousScenes.map { SceneInfo(it) },
+        )
 
-    if (LocalNavigationEventDispatcherOwner.current != null) {
+    if (LocalNavigationEventDispatcherOwner.current != null)
         BackEnabledGate(isBackEnabled) { enabled ->
             NavigationBackHandler(
                 state = navigationEventState,
@@ -83,7 +89,6 @@ fun BetterNavDisplay(
                 },
             )
         }
-    }
     CompositionLocalProvider(LocalMainBackStack provides backStack) {
         NavDisplay(
             sceneState,
@@ -91,14 +96,12 @@ fun BetterNavDisplay(
             modifier,
             transitionSpec = { transitionSpec },
             popTransitionSpec = { transitionSpec },
-            predictivePopTransitionSpec = { transitionSpec }
+            predictivePopTransitionSpec = { transitionSpec },
         )
     }
 }
+
 @Composable
-private fun BackEnabledGate(
-    isBackEnabled: State<Boolean>,
-    content: @Composable (Boolean) -> Unit,
-) {
+private fun BackEnabledGate(isBackEnabled: State<Boolean>, content: @Composable (Boolean) -> Unit) {
     content(isBackEnabled.value)
 }

@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
@@ -58,10 +57,10 @@ import androidx.compose.ui.unit.isSpecified
 import dev.brahmkshatriya.echo.app.platform.VariableText
 import echo.client.generated.resources.GoogleSansFlex
 import echo.client.generated.resources.Res
+import org.jetbrains.compose.resources.Font
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.roundToInt
-import org.jetbrains.compose.resources.Font
 
 private val TopAppBarHorizontalPadding = 4.dp
 private val TopAppBarTitleInset = 12.dp
@@ -95,11 +94,10 @@ private fun ellipsizedTitlePrefix(text: String, visibleEnd: Int): String {
     var safeEnd = visibleEnd.coerceIn(0, text.length)
     if (
         safeEnd in 1 until text.length &&
-        text[safeEnd].isLowSurrogate() &&
-        text[safeEnd - 1].isHighSurrogate()
-    ) {
+            text[safeEnd].isLowSurrogate() &&
+            text[safeEnd - 1].isHighSurrogate()
+    )
         safeEnd--
-    }
     return text.substring(0, safeEnd).trimEnd().trimEnd('…') + "…"
 }
 
@@ -111,13 +109,17 @@ private fun resolveCollapsedTitle(
 ): Pair<Int, String> {
     if (text.isEmpty() || maxWidth <= 0) return 0 to ""
 
-    val fullWidth = textMeasurer.measure(
-        text = text,
-        style = style,
-        softWrap = false,
-        maxLines = 1,
-        constraints = Constraints(maxWidth = Constraints.Infinity),
-    ).size.width
+    val fullWidth =
+        textMeasurer
+            .measure(
+                text = text,
+                style = style,
+                softWrap = false,
+                maxLines = 1,
+                constraints = Constraints(maxWidth = Constraints.Infinity),
+            )
+            .size
+            .width
     if (fullWidth <= maxWidth) return text.length to text
 
     var low = 0
@@ -125,18 +127,18 @@ private fun resolveCollapsedTitle(
     while (low < high) {
         val mid = (low + high + 1) / 2
         val candidate = ellipsizedTitlePrefix(text, mid)
-        val candidateWidth = textMeasurer.measure(
-            text = candidate,
-            style = style,
-            softWrap = false,
-            maxLines = 1,
-            constraints = Constraints(maxWidth = Constraints.Infinity),
-        ).size.width
-        if (candidateWidth <= maxWidth) {
-            low = mid
-        } else {
-            high = mid - 1
-        }
+        val candidateWidth =
+            textMeasurer
+                .measure(
+                    text = candidate,
+                    style = style,
+                    softWrap = false,
+                    maxLines = 1,
+                    constraints = Constraints(maxWidth = Constraints.Infinity),
+                )
+                .size
+                .width
+        if (candidateWidth <= maxWidth) low = mid else high = mid - 1
     }
     return low to ellipsizedTitlePrefix(text, low)
 }
@@ -155,17 +157,13 @@ fun ScaledTopAppBar(
     scrollBehavior: TopAppBarScrollBehavior? = null,
 ) {
     val resolvedCollapsedHeight =
-        if (!collapsedHeight.isSpecified || !collapsedHeight.isFinite) {
+        if (!collapsedHeight.isSpecified || !collapsedHeight.isFinite)
             TopAppBarDefaults.MediumAppBarCollapsedHeight
-        } else {
-            collapsedHeight
-        }
+        else collapsedHeight
     val resolvedExpandedHeight =
-        if (!expandedHeight.isSpecified || !expandedHeight.isFinite) {
+        if (!expandedHeight.isSpecified || !expandedHeight.isFinite)
             TopAppBarDefaults.MediumAppBarExpandedHeight
-        } else {
-            expandedHeight
-        }
+        else expandedHeight
     require(resolvedExpandedHeight >= resolvedCollapsedHeight) {
         "The expandedHeight is expected to be greater or equal to the collapsedHeight"
     }
@@ -174,10 +172,8 @@ fun ScaledTopAppBar(
     val collapsedTitleStyle = typography.titleMedium
     val expandedSubtitleStyle = typography.bodyMedium
     val collapsedSubtitleStyle = typography.bodySmall
-    val collapsedTitleWeight = collapsedTitleStyle.fontWeight?.weight
-        ?: FontWeight.Medium.weight
-    val collapsedTitleScale =
-        collapsedTitleStyle.fontSize.value / expandedTitleStyle.fontSize.value
+    val collapsedTitleWeight = collapsedTitleStyle.fontWeight?.weight ?: FontWeight.Medium.weight
+    val collapsedTitleScale = collapsedTitleStyle.fontSize.value / expandedTitleStyle.fontSize.value
     val collapsedSubtitleScale =
         collapsedSubtitleStyle.fontSize.value / expandedSubtitleStyle.fontSize.value
     val collapsedTitleFontWeight = FontWeight(collapsedTitleWeight)
@@ -187,65 +183,61 @@ fun ScaledTopAppBar(
             FontVariation.Setting("wdth", ExpandedTitleWidthAxis),
         )
     }
-    val collapsedVariationSettings = remember(collapsedTitleWeight) {
-        FontVariation.Settings(
-            FontVariation.Setting("wght", collapsedTitleWeight.toFloat()),
-            FontVariation.Setting("wdth", CollapsedTitleWidthAxis),
+    val collapsedVariationSettings =
+        remember(collapsedTitleWeight) {
+            FontVariation.Settings(
+                FontVariation.Setting("wght", collapsedTitleWeight.toFloat()),
+                FontVariation.Setting("wdth", CollapsedTitleWidthAxis),
+            )
+        }
+    val expandedMeasurementFont =
+        Font(
+            Res.font.GoogleSansFlex,
+            weight = FontWeight.ExtraBold,
+            variationSettings = expandedVariationSettings,
         )
-    }
-    val expandedMeasurementFont = Font(
-        Res.font.GoogleSansFlex,
-        weight = FontWeight.ExtraBold,
-        variationSettings = expandedVariationSettings,
-    )
-    val collapsedMeasurementFont = Font(
-        Res.font.GoogleSansFlex,
-        weight = collapsedTitleFontWeight,
-        variationSettings = collapsedVariationSettings,
-    )
-    val expandedMeasurementFontFamily = remember(expandedMeasurementFont) {
-        FontFamily(expandedMeasurementFont)
-    }
-    val collapsedMeasurementFontFamily = remember(collapsedMeasurementFont) {
-        FontFamily(collapsedMeasurementFont)
-    }
+    val collapsedMeasurementFont =
+        Font(
+            Res.font.GoogleSansFlex,
+            weight = collapsedTitleFontWeight,
+            variationSettings = collapsedVariationSettings,
+        )
+    val expandedMeasurementFontFamily =
+        remember(expandedMeasurementFont) { FontFamily(expandedMeasurementFont) }
+    val collapsedMeasurementFontFamily =
+        remember(collapsedMeasurementFont) { FontFamily(collapsedMeasurementFont) }
     val textMeasurer = rememberTextMeasurer()
-    val expandedTitleMeasureStyle = remember(expandedMeasurementFontFamily, expandedTitleStyle) {
-        expandedTitleStyle.copy(
-            fontFamily = expandedMeasurementFontFamily,
-            fontWeight = FontWeight.ExtraBold,
-        )
-    }
-    val collapsedTitleMeasureStyle = remember(
-        collapsedMeasurementFontFamily,
-        collapsedTitleStyle,
-        collapsedTitleFontWeight,
-    ) {
-        collapsedTitleStyle.copy(
-            fontFamily = collapsedMeasurementFontFamily,
-            fontWeight = collapsedTitleFontWeight,
-        )
-    }
-    val titleLayout = remember(title, expandedTitleMeasureStyle, textMeasurer) {
-        textMeasurer.measure(
-            text = title,
-            style = expandedTitleMeasureStyle,
-            maxLines = 1,
-            softWrap = false,
-            constraints = Constraints(maxWidth = Constraints.Infinity),
-        )
-    }
+    val expandedTitleMeasureStyle =
+        remember(expandedMeasurementFontFamily, expandedTitleStyle) {
+            expandedTitleStyle.copy(
+                fontFamily = expandedMeasurementFontFamily,
+                fontWeight = FontWeight.ExtraBold,
+            )
+        }
+    val collapsedTitleMeasureStyle =
+        remember(collapsedMeasurementFontFamily, collapsedTitleStyle, collapsedTitleFontWeight) {
+            collapsedTitleStyle.copy(
+                fontFamily = collapsedMeasurementFontFamily,
+                fontWeight = collapsedTitleFontWeight,
+            )
+        }
+    val titleLayout =
+        remember(title, expandedTitleMeasureStyle, textMeasurer) {
+            textMeasurer.measure(
+                text = title,
+                style = expandedTitleMeasureStyle,
+                maxLines = 1,
+                softWrap = false,
+                constraints = Constraints(maxWidth = Constraints.Infinity),
+            )
+        }
     val density = LocalDensity.current
     val layoutDirection = LocalLayoutDirection.current
-    val titleBaseline = remember(titleLayout) {
-        floatArrayOf(titleLayout.getLineBaseline(0))
-    }
+    val titleBaseline = remember(titleLayout) { floatArrayOf(titleLayout.getLineBaseline(0)) }
     val titleX = remember(title) { floatArrayOf(0f) }
     val titleLines = remember(title) { ScaledTitleLines(listOf(title)) }
     val collapsedTitleCache = remember(title) { CollapsedTitleCache() }
-    val collapseFraction = {
-        (scrollBehavior?.state?.collapsedFraction ?: 0f).coerceIn(0f, 1f)
-    }
+    val collapseFraction = { (scrollBehavior?.state?.collapsedFraction ?: 0f).coerceIn(0f, 1f) }
     val insetPadding = windowInsets.asPaddingValues()
 
     BoxWithConstraints(modifier = modifier) {
@@ -256,65 +248,57 @@ fun ScaledTopAppBar(
         val mediumTitleBottomPaddingPx = with(density) { MediumTitleBottomPadding.roundToPx() }
         val collapsedHeightPx = with(density) { resolvedCollapsedHeight.roundToPx() }
         val minimumExpandedHeightPx = with(density) { resolvedExpandedHeight.roundToPx() }
-        val titleLineHeightPx = with(density) {
-            if (expandedTitleStyle.lineHeight.isSp) {
-                expandedTitleStyle.lineHeight.toPx()
-            } else {
-                titleLayout.size.height.toFloat()
+        val titleLineHeightPx =
+            with(density) {
+                if (expandedTitleStyle.lineHeight.isSp) expandedTitleStyle.lineHeight.toPx()
+                else titleLayout.size.height.toFloat()
             }
-        }
-        val startInsetPx = with(density) {
-            insetPadding.calculateStartPadding(layoutDirection).roundToPx()
-        }
-        val endInsetPx = with(density) {
-            insetPadding.calculateEndPadding(layoutDirection).roundToPx()
-        }
-        val expandedInnerWidth =
-            (containerWidthPx - startInsetPx - endInsetPx).coerceAtLeast(0)
+        val startInsetPx =
+            with(density) { insetPadding.calculateStartPadding(layoutDirection).roundToPx() }
+        val endInsetPx =
+            with(density) { insetPadding.calculateEndPadding(layoutDirection).roundToPx() }
+        val expandedInnerWidth = (containerWidthPx - startInsetPx - endInsetPx).coerceAtLeast(0)
         val expandedMaxTitleWidth =
-            (expandedInnerWidth -
-                    titleInsetPx -
-                    horizontalPaddingPx -
-                    2 * horizontalPaddingPx)
+            (expandedInnerWidth - titleInsetPx - horizontalPaddingPx - 2 * horizontalPaddingPx)
                 .coerceAtLeast(0)
-        val expandedTitleMeasure = textMeasurer.measure(
-            text = title,
-            style = expandedTitleMeasureStyle,
-            softWrap = true,
-            maxLines = Int.MAX_VALUE,
-            constraints = Constraints(maxWidth = expandedMaxTitleWidth),
-        )
-        val expandedSubtitleMeasure = subtitle?.let {
+        val expandedTitleMeasure =
             textMeasurer.measure(
-                text = it,
-                style = expandedSubtitleStyle,
-                softWrap = false,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
+                text = title,
+                style = expandedTitleMeasureStyle,
+                softWrap = true,
+                maxLines = Int.MAX_VALUE,
                 constraints = Constraints(maxWidth = expandedMaxTitleWidth),
             )
-        }
+        val expandedSubtitleMeasure =
+            subtitle?.let {
+                textMeasurer.measure(
+                    text = it,
+                    style = expandedSubtitleStyle,
+                    softWrap = false,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    constraints = Constraints(maxWidth = expandedMaxTitleWidth),
+                )
+            }
         val expandedRenderedTitleHeight =
             (titleLineHeightPx * expandedTitleMeasure.lineCount).roundToInt()
         val expandedLastBaseline =
-            if (expandedSubtitleMeasure != null) {
+            if (expandedSubtitleMeasure != null)
                 expandedRenderedTitleHeight +
                     expandedSubtitleMeasure.getLineBaseline(0).roundToInt()
-            } else {
+            else
                 ((titleBaseline.firstOrNull() ?: 0f) +
                         (expandedTitleMeasure.lineCount - 1) * titleLineHeightPx)
                     .roundToInt()
-            }
         val expandedGroupHeight =
             expandedRenderedTitleHeight + (expandedSubtitleMeasure?.size?.height ?: 0)
-        val expandedBottomPadding = max(
-            0,
-            mediumTitleBottomPaddingPx - (expandedGroupHeight - expandedLastBaseline),
-        )
-        val effectiveExpandedHeightPx = max(
-            minimumExpandedHeightPx,
-            collapsedHeightPx + expandedGroupHeight + expandedBottomPadding,
-        )
+        val expandedBottomPadding =
+            max(0, mediumTitleBottomPaddingPx - (expandedGroupHeight - expandedLastBaseline))
+        val effectiveExpandedHeightPx =
+            max(
+                minimumExpandedHeightPx,
+                collapsedHeightPx + expandedGroupHeight + expandedBottomPadding,
+            )
         val collapseRangePx = (effectiveExpandedHeightPx - collapsedHeightPx).toFloat()
 
         SideEffect {
@@ -326,12 +310,10 @@ fun ScaledTopAppBar(
         }
 
         val dragState = rememberDraggableState { delta ->
-            scrollBehavior?.state?.let { state ->
-                state.heightOffset += delta
-            }
+            scrollBehavior?.state?.let { state -> state.heightOffset += delta }
         }
         val dragModifier =
-            if (scrollBehavior != null && !scrollBehavior.isPinned) {
+            if (scrollBehavior != null && !scrollBehavior.isPinned)
                 Modifier.draggable(
                     orientation = Orientation.Vertical,
                     state = dragState,
@@ -344,9 +326,7 @@ fun ScaledTopAppBar(
                         )
                     },
                 )
-            } else {
-                Modifier
-            }
+            else Modifier
 
         val containerColor = {
             lerp(
@@ -357,256 +337,254 @@ fun ScaledTopAppBar(
         }
 
         Layout(
-            modifier = Modifier
-                .fillMaxWidth()
-                .then(dragModifier)
-                .drawBehind { drawRect(containerColor()) }
-                .semantics { isTraversalGroup = true }
-                .pointerInput(Unit) {}
-                .clipToBounds(),
-        content = {
-            Box(
-                modifier = Modifier
-                    .layoutId("navigationIcon")
-                    .padding(start = TopAppBarHorizontalPadding),
-            ) {
-                CompositionLocalProvider(
-                    LocalContentColor provides colors.navigationIconContentColor,
+            modifier =
+                Modifier.fillMaxWidth()
+                    .then(dragModifier)
+                    .drawBehind { drawRect(containerColor()) }
+                    .semantics { isTraversalGroup = true }
+                    .pointerInput(Unit) {}
+                    .clipToBounds(),
+            content = {
+                Box(
+                    modifier =
+                        Modifier.layoutId("navigationIcon")
+                            .padding(start = TopAppBarHorizontalPadding)
                 ) {
-                    navigationIcon?.invoke()
-                }
-            }
-
-            VariableText(
-                modifier = Modifier.layoutId("title"),
-                text = title,
-                peakPosition = { null },
-                glyphXPositions = titleX,
-                glyphBaselines = titleBaseline,
-                color = colors.titleContentColor,
-                fontSize = expandedTitleStyle.fontSize,
-                uniformWeight = {
-                    val progress = collapseFraction()
-                    800f + (collapsedTitleWeight - 800f) * progress
-                },
-                uniformWidth = {
-                    ExpandedTitleWidthAxis +
-                        (CollapsedTitleWidthAxis - ExpandedTitleWidthAxis) * collapseFraction()
-                },
-                fontScale = { 1f + (collapsedTitleScale - 1f) * collapseFraction() },
-                uniformLines = { titleLines.value },
-                lineHeight = expandedTitleStyle.lineHeight,
-            )
-
-            subtitle?.let {
-                Text(
-                    text = it,
-                    modifier = Modifier.layoutId("subtitle"),
-                    maxLines = 1,
-                    style = expandedSubtitleStyle,
-                    color = colors.subtitleContentColor,
-                )
-            }
-
-            Box(
-                modifier = Modifier
-                    .layoutId("actionIcons")
-                    .padding(end = TopAppBarHorizontalPadding),
-            ) {
-                CompositionLocalProvider(
-                    LocalContentColor provides colors.actionIconContentColor,
-                ) {
-                    Row(
-                        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.End,
-                        verticalAlignment = Alignment.CenterVertically,
+                    CompositionLocalProvider(
+                        LocalContentColor provides colors.navigationIconContentColor
                     ) {
-                        actions?.invoke(this)
+                        navigationIcon?.invoke()
                     }
                 }
-            }
-        },
+
+                VariableText(
+                    modifier = Modifier.layoutId("title"),
+                    text = title,
+                    peakPosition = { null },
+                    glyphXPositions = titleX,
+                    glyphBaselines = titleBaseline,
+                    color = colors.titleContentColor,
+                    fontSize = expandedTitleStyle.fontSize,
+                    uniformWeight = {
+                        val progress = collapseFraction()
+                        800f + (collapsedTitleWeight - 800f) * progress
+                    },
+                    uniformWidth = {
+                        ExpandedTitleWidthAxis +
+                            (CollapsedTitleWidthAxis - ExpandedTitleWidthAxis) * collapseFraction()
+                    },
+                    fontScale = { 1f + (collapsedTitleScale - 1f) * collapseFraction() },
+                    uniformLines = { titleLines.value },
+                    lineHeight = expandedTitleStyle.lineHeight,
+                )
+
+                subtitle?.let {
+                    Text(
+                        text = it,
+                        modifier = Modifier.layoutId("subtitle"),
+                        maxLines = 1,
+                        style = expandedSubtitleStyle,
+                        color = colors.subtitleContentColor,
+                    )
+                }
+
+                Box(
+                    modifier =
+                        Modifier.layoutId("actionIcons").padding(end = TopAppBarHorizontalPadding)
+                ) {
+                    CompositionLocalProvider(
+                        LocalContentColor provides colors.actionIconContentColor
+                    ) {
+                        Row(
+                            horizontalArrangement =
+                                androidx.compose.foundation.layout.Arrangement.End,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            actions?.invoke(this)
+                        }
+                    }
+                }
+            },
         ) { measurables, constraints ->
-        val startInsetPx = insetPadding.calculateStartPadding(layoutDirection).roundToPx()
-        val endInsetPx = insetPadding.calculateEndPadding(layoutDirection).roundToPx()
-        val topInsetPx = insetPadding.calculateTopPadding().roundToPx()
-        val bottomInsetPx = insetPadding.calculateBottomPadding().roundToPx()
-        val layoutWidth =
-            if (constraints.hasBoundedWidth) constraints.maxWidth else constraints.minWidth
-        val innerWidth = (layoutWidth - startInsetPx - endInsetPx).coerceAtLeast(0)
+            val startInsetPx = insetPadding.calculateStartPadding(layoutDirection).roundToPx()
+            val endInsetPx = insetPadding.calculateEndPadding(layoutDirection).roundToPx()
+            val topInsetPx = insetPadding.calculateTopPadding().roundToPx()
+            val bottomInsetPx = insetPadding.calculateBottomPadding().roundToPx()
+            val layoutWidth =
+                if (constraints.hasBoundedWidth) constraints.maxWidth else constraints.minWidth
+            val innerWidth = (layoutWidth - startInsetPx - endInsetPx).coerceAtLeast(0)
 
-        val collapsedRowConstraints = Constraints(
-            minWidth = 0,
-            maxWidth = innerWidth,
-            minHeight = 0,
-            maxHeight = collapsedHeightPx,
-        )
-        val navigationPlaceable = measurables
-            .first { it.layoutId == "navigationIcon" }
-            .measure(collapsedRowConstraints)
-        val actionIconsPlaceable = measurables
-            .first { it.layoutId == "actionIcons" }
-            .measure(collapsedRowConstraints)
-
-        // These are the same start/end calculations used by Material3's TopAppBarLayout.
-        // navigationPlaceable/actionIconsPlaceable already include the 4.dp edge padding above.
-        val collapsedTitleStartSpace = max(titleInsetPx, navigationPlaceable.width)
-        val collapsedMaxTitleWidth =
-            (innerWidth -
-                    collapsedTitleStartSpace -
-                    actionIconsPlaceable.width -
-                    2 * horizontalPaddingPx)
-                .coerceAtLeast(0)
-        val measureProgress = collapseFraction()
-        val maxTitleWidth =
-            (expandedMaxTitleWidth +
-                    (collapsedMaxTitleWidth - expandedMaxTitleWidth) * measureProgress)
-                .roundToInt()
-
-        val expandedTitleX = startInsetPx + titleInsetPx + horizontalPaddingPx
-        val collapsedTitleX =
-            startInsetPx + collapsedTitleStartSpace + horizontalPaddingPx
-
-        if (collapsedTitleCache.width != collapsedMaxTitleWidth) {
-            val (visibleEnd, collapsedText) = resolveCollapsedTitle(
-                text = title,
-                maxWidth = collapsedMaxTitleWidth,
-                style = collapsedTitleMeasureStyle,
-                textMeasurer = textMeasurer,
-            )
-            collapsedTitleCache.width = collapsedMaxTitleWidth
-            collapsedTitleCache.visibleEnd = visibleEnd
-            collapsedTitleCache.text = collapsedText
-        }
-        val collapsedVisibleEnd = collapsedTitleCache.visibleEnd
-        val isExpanded = measureProgress <= 0.0001f
-        val isCollapsed = measureProgress >= 0.999f
-        val visibleTitleEnd =
-            (title.length + (collapsedVisibleEnd - title.length) * measureProgress)
-                .roundToInt()
-                .coerceIn(collapsedVisibleEnd, title.length)
-        val visibleTitle = when {
-            isExpanded -> title
-            isCollapsed -> collapsedTitleCache.text
-            else -> ellipsizedTitlePrefix(title, visibleTitleEnd)
-        }
-        val currentTitleScale = 1f + (collapsedTitleScale - 1f) * measureProgress
-        val currentTitleWidthAxis =
-            ExpandedTitleWidthAxis +
-                (CollapsedTitleWidthAxis - ExpandedTitleWidthAxis) * measureProgress
-        val measurementToRenderedWidthScale =
-            (currentTitleScale * currentTitleWidthAxis / ExpandedTitleWidthAxis)
-                .coerceAtLeast(0.001f)
-        val currentLogicalTitleWidth =
-            (maxTitleWidth / measurementToRenderedWidthScale)
-                .roundToInt()
-                .coerceAtLeast(0)
-        val currentTitleLines = when {
-            isExpanded -> resolvedTitleLines(title, expandedTitleMeasure)
-            isCollapsed -> listOf(collapsedTitleCache.text)
-            else -> {
-                val currentTitleMeasure = textMeasurer.measure(
-                    text = visibleTitle,
-                    style = expandedTitleMeasureStyle,
-                    softWrap = true,
-                    maxLines = Int.MAX_VALUE,
-                    constraints = Constraints(maxWidth = currentLogicalTitleWidth),
-                )
-                resolvedTitleLines(visibleTitle, currentTitleMeasure)
-            }
-        }
-        titleLines.value = currentTitleLines
-        val currentTitleHeight =
-            (titleLineHeightPx * currentTitleLines.size * currentTitleScale)
-                .roundToInt()
-                .coerceAtLeast(1)
-
-        val titlePlaceable = measurables
-            .first { it.layoutId == "title" }
-            .measure(
+            val collapsedRowConstraints =
                 Constraints(
-                    minWidth = maxTitleWidth,
-                    maxWidth = maxTitleWidth,
-                    minHeight = currentTitleHeight,
-                    maxHeight = currentTitleHeight,
+                    minWidth = 0,
+                    maxWidth = innerWidth,
+                    minHeight = 0,
+                    maxHeight = collapsedHeightPx,
                 )
-            )
-        val subtitleConstraints =
-            Constraints(
-                minWidth = 0,
-                maxWidth = maxTitleWidth,
-                minHeight = 0,
-                maxHeight = Constraints.Infinity,
-            )
-        val subtitlePlaceable = measurables
-            .firstOrNull { it.layoutId == "subtitle" }
-            ?.measure(subtitleConstraints)
+            val navigationPlaceable =
+                measurables
+                    .first { it.layoutId == "navigationIcon" }
+                    .measure(collapsedRowConstraints)
+            val actionIconsPlaceable =
+                measurables.first { it.layoutId == "actionIcons" }.measure(collapsedRowConstraints)
 
-        val expandedTitleY =
-            topInsetPx +
-                bottomInsetPx +
-                effectiveExpandedHeightPx -
-                expandedGroupHeight -
-                expandedBottomPadding
+            // These are the same start/end calculations used by Material3's TopAppBarLayout.
+            // navigationPlaceable/actionIconsPlaceable already include the 4.dp edge padding above.
+            val collapsedTitleStartSpace = max(titleInsetPx, navigationPlaceable.width)
+            val collapsedMaxTitleWidth =
+                (innerWidth -
+                        collapsedTitleStartSpace -
+                        actionIconsPlaceable.width -
+                        2 * horizontalPaddingPx)
+                    .coerceAtLeast(0)
+            val measureProgress = collapseFraction()
+            val maxTitleWidth =
+                (expandedMaxTitleWidth +
+                        (collapsedMaxTitleWidth - expandedMaxTitleWidth) * measureProgress)
+                    .roundToInt()
 
-        val heightOffsetPx = scrollBehavior?.state?.heightOffset ?: 0f
-        val currentContentHeight =
-            (effectiveExpandedHeightPx + heightOffsetPx.roundToInt())
-                .coerceAtLeast(collapsedHeightPx)
-        val desiredHeight = topInsetPx + bottomInsetPx + currentContentHeight
-        val layoutHeight = desiredHeight.coerceIn(constraints.minHeight, constraints.maxHeight)
+            val expandedTitleX = startInsetPx + titleInsetPx + horizontalPaddingPx
+            val collapsedTitleX = startInsetPx + collapsedTitleStartSpace + horizontalPaddingPx
 
-        layout(layoutWidth, layoutHeight) {
-            val progress = collapseFraction()
-            val subtitleScale = 1f + (collapsedSubtitleScale - 1f) * progress
-
-            val titlePositionX =
-                (expandedTitleX + (collapsedTitleX - expandedTitleX) * progress).roundToInt()
-
-            val collapsedTitleHeight = titleLineHeightPx * collapsedTitleScale
-            val visualSubtitleHeight = (subtitlePlaceable?.height ?: 0) * subtitleScale
-            val collapsedVisualHeight = collapsedTitleHeight + visualSubtitleHeight
-            val collapsedVisualTop =
-                topInsetPx + (collapsedHeightPx - collapsedVisualHeight) / 2f
-            val collapsedTitleY = collapsedVisualTop
-
-            val titlePositionY =
-                (expandedTitleY + (collapsedTitleY - expandedTitleY) * progress).roundToInt()
-            val subtitlePositionY = titlePositionY + currentTitleHeight
-
-            navigationPlaceable.placeRelative(
-                x = startInsetPx,
-                y = topInsetPx + (collapsedHeightPx - navigationPlaceable.height) / 2,
-            )
-
-            titlePlaceable.placeRelative(titlePositionX, titlePositionY)
-            subtitlePlaceable?.placeRelativeWithLayer(
-                x = titlePositionX,
-                y = subtitlePositionY,
-            ) {
-                scaleX = subtitleScale
-                scaleY = subtitleScale
-                transformOrigin = TransformOrigin(0f, 0f)
+            if (collapsedTitleCache.width != collapsedMaxTitleWidth) {
+                val (visibleEnd, collapsedText) =
+                    resolveCollapsedTitle(
+                        text = title,
+                        maxWidth = collapsedMaxTitleWidth,
+                        style = collapsedTitleMeasureStyle,
+                        textMeasurer = textMeasurer,
+                    )
+                collapsedTitleCache.width = collapsedMaxTitleWidth
+                collapsedTitleCache.visibleEnd = visibleEnd
+                collapsedTitleCache.text = collapsedText
             }
+            val collapsedVisibleEnd = collapsedTitleCache.visibleEnd
+            val isExpanded = measureProgress <= 0.0001f
+            val isCollapsed = measureProgress >= 0.999f
+            val visibleTitleEnd =
+                (title.length + (collapsedVisibleEnd - title.length) * measureProgress)
+                    .roundToInt()
+                    .coerceIn(collapsedVisibleEnd, title.length)
+            val visibleTitle =
+                when {
+                    isExpanded -> title
+                    isCollapsed -> collapsedTitleCache.text
+                    else -> ellipsizedTitlePrefix(title, visibleTitleEnd)
+                }
+            val currentTitleScale = 1f + (collapsedTitleScale - 1f) * measureProgress
+            val currentTitleWidthAxis =
+                ExpandedTitleWidthAxis +
+                    (CollapsedTitleWidthAxis - ExpandedTitleWidthAxis) * measureProgress
+            val measurementToRenderedWidthScale =
+                (currentTitleScale * currentTitleWidthAxis / ExpandedTitleWidthAxis).coerceAtLeast(
+                    0.001f
+                )
+            val currentLogicalTitleWidth =
+                (maxTitleWidth / measurementToRenderedWidthScale).roundToInt().coerceAtLeast(0)
+            val currentTitleLines =
+                when {
+                    isExpanded -> resolvedTitleLines(title, expandedTitleMeasure)
+                    isCollapsed -> listOf(collapsedTitleCache.text)
+                    else -> {
+                        val currentTitleMeasure =
+                            textMeasurer.measure(
+                                text = visibleTitle,
+                                style = expandedTitleMeasureStyle,
+                                softWrap = true,
+                                maxLines = Int.MAX_VALUE,
+                                constraints = Constraints(maxWidth = currentLogicalTitleWidth),
+                            )
+                        resolvedTitleLines(visibleTitle, currentTitleMeasure)
+                    }
+                }
+            titleLines.value = currentTitleLines
+            val currentTitleHeight =
+                (titleLineHeightPx * currentTitleLines.size * currentTitleScale)
+                    .roundToInt()
+                    .coerceAtLeast(1)
 
-            actionIconsPlaceable.placeRelative(
-                x = layoutWidth - endInsetPx - actionIconsPlaceable.width,
-                y = topInsetPx + (collapsedHeightPx - actionIconsPlaceable.height) / 2,
-            )
+            val titlePlaceable =
+                measurables
+                    .first { it.layoutId == "title" }
+                    .measure(
+                        Constraints(
+                            minWidth = maxTitleWidth,
+                            maxWidth = maxTitleWidth,
+                            minHeight = currentTitleHeight,
+                            maxHeight = currentTitleHeight,
+                        )
+                    )
+            val subtitleConstraints =
+                Constraints(
+                    minWidth = 0,
+                    maxWidth = maxTitleWidth,
+                    minHeight = 0,
+                    maxHeight = Constraints.Infinity,
+                )
+            val subtitlePlaceable =
+                measurables.firstOrNull { it.layoutId == "subtitle" }?.measure(subtitleConstraints)
+
+            val expandedTitleY =
+                topInsetPx + bottomInsetPx + effectiveExpandedHeightPx -
+                    expandedGroupHeight -
+                    expandedBottomPadding
+
+            val heightOffsetPx = scrollBehavior?.state?.heightOffset ?: 0f
+            val currentContentHeight =
+                (effectiveExpandedHeightPx + heightOffsetPx.roundToInt()).coerceAtLeast(
+                    collapsedHeightPx
+                )
+            val desiredHeight = topInsetPx + bottomInsetPx + currentContentHeight
+            val layoutHeight = desiredHeight.coerceIn(constraints.minHeight, constraints.maxHeight)
+
+            layout(layoutWidth, layoutHeight) {
+                val progress = collapseFraction()
+                val subtitleScale = 1f + (collapsedSubtitleScale - 1f) * progress
+
+                val titlePositionX =
+                    (expandedTitleX + (collapsedTitleX - expandedTitleX) * progress).roundToInt()
+
+                val collapsedTitleHeight = titleLineHeightPx * collapsedTitleScale
+                val visualSubtitleHeight = (subtitlePlaceable?.height ?: 0) * subtitleScale
+                val collapsedVisualHeight = collapsedTitleHeight + visualSubtitleHeight
+                val collapsedVisualTop =
+                    topInsetPx + (collapsedHeightPx - collapsedVisualHeight) / 2f
+
+                val titlePositionY =
+                    (expandedTitleY + (collapsedVisualTop - expandedTitleY) * progress).roundToInt()
+                val subtitlePositionY = titlePositionY + currentTitleHeight
+
+                navigationPlaceable.placeRelative(
+                    x = startInsetPx,
+                    y = topInsetPx + (collapsedHeightPx - navigationPlaceable.height) / 2,
+                )
+
+                titlePlaceable.placeRelative(titlePositionX, titlePositionY)
+                subtitlePlaceable?.placeRelativeWithLayer(
+                    x = titlePositionX,
+                    y = subtitlePositionY,
+                ) {
+                    scaleX = subtitleScale
+                    scaleY = subtitleScale
+                    transformOrigin = TransformOrigin(0f, 0f)
+                }
+
+                actionIconsPlaceable.placeRelative(
+                    x = layoutWidth - endInsetPx - actionIconsPlaceable.width,
+                    y = topInsetPx + (collapsedHeightPx - actionIconsPlaceable.height) / 2,
+                )
+            }
         }
     }
 }
-}
 
-@OptIn(ExperimentalMaterial3Api::class)
 private suspend fun settleScaledTopAppBar(
     state: TopAppBarState,
     velocity: Float,
     flingAnimationSpec: DecayAnimationSpec<Float>?,
     snapAnimationSpec: AnimationSpec<Float>?,
 ): Velocity {
-    if (state.collapsedFraction < 0.01f || state.collapsedFraction == 1f) {
-        return Velocity.Zero
-    }
+    if (state.collapsedFraction < 0.01f || state.collapsedFraction == 1f) return Velocity.Zero
 
     var remainingVelocity = velocity
     if (flingAnimationSpec != null && abs(velocity) > 1f) {
@@ -624,18 +602,17 @@ private suspend fun settleScaledTopAppBar(
         }
     }
 
-    if (snapAnimationSpec != null &&
-        state.heightOffset < 0f &&
-        state.heightOffset > state.heightOffsetLimit
-    ) {
+    if (
+        snapAnimationSpec != null &&
+            state.heightOffset < 0f &&
+            state.heightOffset > state.heightOffsetLimit
+    )
         AnimationState(initialValue = state.heightOffset).animateTo(
-            targetValue =
-                if (state.collapsedFraction < 0.5f) 0f else state.heightOffsetLimit,
+            targetValue = if (state.collapsedFraction < 0.5f) 0f else state.heightOffsetLimit,
             animationSpec = snapAnimationSpec,
         ) {
             state.heightOffset = value
         }
-    }
 
     return Velocity(0f, remainingVelocity)
 }

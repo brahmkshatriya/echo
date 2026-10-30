@@ -36,4 +36,4 @@ private val clover6SidedPolygon: RoundedPolygon by lazy {
     ).normalized()
 }
 
-internal fun clover6Sided(): RoundedPolygon = clover6SidedPolygon
+fun clover6Sided(): RoundedPolygon = clover6SidedPolygon

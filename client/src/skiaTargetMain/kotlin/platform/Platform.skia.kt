@@ -10,7 +10,7 @@ import org.jetbrains.skia.EncodedImageFormat
 import org.jetbrains.skia.Image
 import kotlin.math.roundToInt
 
-internal actual fun ImageBitmap.toByteArray(quality: Int, maxSize: Int): ByteArray {
+actual fun ImageBitmap.toByteArray(quality: Int, maxSize: Int): ByteArray {
     require(quality in -1..100) { "Image quality must be -1 or between 0 and 100" }
     require(maxSize > 0) { "Image size must be positive" }
     val format = if (quality == -1) EncodedImageFormat.PNG else EncodedImageFormat.JPEG

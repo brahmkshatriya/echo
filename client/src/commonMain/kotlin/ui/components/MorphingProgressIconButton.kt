@@ -38,7 +38,7 @@ import kotlin.math.cos
 
 /** A progress-ring icon button whose outline morphs only while pressed. */
 @Composable
-internal fun MorphingProgressIconButton(
+fun MorphingProgressIconButton(
     progress: () -> Float,
     onClick: () -> Unit,
     enabled: Boolean,

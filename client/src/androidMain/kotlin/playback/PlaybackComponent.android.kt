@@ -11,6 +11,8 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import com.skydoves.landscapist.core.Landscapist
 import com.skydoves.landscapist.core.builder
+import dev.brahmkshatriya.kaudiooutput.AudioOutputs
+import dev.brahmkshatriya.kaudiooutput.android
 
 /** Implemented by the Android Application, which outlives Activities and services. */
 interface PlaybackComponentOwner {
@@ -40,5 +42,5 @@ fun createPlaybackComponent(
                         PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
                 }
         }, imageLoader)
-    })
+    }, createAudioOutputs = { AudioOutputs.android(applicationContext, it) })
 }

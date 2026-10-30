@@ -24,14 +24,13 @@ val WindowInsets.Companion.forDisplayPadding: PaddingValues
 fun Modifier.paddingMask(
     padding: PaddingValues = WindowInsets.forDisplayPadding,
     backgroundColor: Color = Color.Unspecified,
-    progress: () -> Float = { 1f }
+    progress: () -> Float = { 1f },
 ): Modifier {
     // An opaque, uniform backdrop can reproduce the fade with SrcOver.
     // Only transparent/unknown backdrops require a full offscreen mask.
     val masked = backgroundColor == Color.Unspecified
-    val layer = if (masked) graphicsLayer {
-        compositingStrategy = CompositingStrategy.Offscreen
-    } else this
+    val layer =
+        if (masked) graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen } else this
     return layer.drawWithCache {
         val top = padding.calculateTopPadding().toPx().coerceIn(0f, size.height)
         val bottom = padding.calculateBottomPadding().toPx().coerceIn(0f, size.height)
@@ -51,34 +50,46 @@ fun Modifier.paddingMask(
         val edgeColor = if (masked) Color.Black else backgroundColor
         val transparentEdge = edgeColor.copy(alpha = 0f)
         val blendMode = if (masked) BlendMode.DstOut else BlendMode.SrcOver
-        val topMask = if (top > 0f) Brush.verticalGradient(
-            0f to edgeColor,
-            fadeStartFraction to edgeColor,
-            1f to transparentEdge,
-            startY = 0f,
-            endY = top,
-        ) else null
-        val bottomMask = if (bottom > 0f) Brush.verticalGradient(
-            0f to transparentEdge,
-            (1f - fadeStartFraction) to edgeColor,
-            1f to edgeColor,
-            startY = size.height - bottom,
-            endY = size.height,
-        ) else null
-        val leftMask = if (left > 0f) Brush.horizontalGradient(
-            0f to edgeColor,
-            fadeStartFraction to edgeColor,
-            1f to transparentEdge,
-            startX = 0f,
-            endX = left,
-        ) else null
-        val rightMask = if (right > 0f) Brush.horizontalGradient(
-            0f to transparentEdge,
-            (1f - fadeStartFraction) to edgeColor,
-            1f to edgeColor,
-            startX = size.width - right,
-            endX = size.width,
-        ) else null
+        val topMask =
+            if (top > 0f)
+                Brush.verticalGradient(
+                    0f to edgeColor,
+                    fadeStartFraction to edgeColor,
+                    1f to transparentEdge,
+                    startY = 0f,
+                    endY = top,
+                )
+            else null
+        val bottomMask =
+            if (bottom > 0f)
+                Brush.verticalGradient(
+                    0f to transparentEdge,
+                    (1f - fadeStartFraction) to edgeColor,
+                    1f to edgeColor,
+                    startY = size.height - bottom,
+                    endY = size.height,
+                )
+            else null
+        val leftMask =
+            if (left > 0f)
+                Brush.horizontalGradient(
+                    0f to edgeColor,
+                    fadeStartFraction to edgeColor,
+                    1f to transparentEdge,
+                    startX = 0f,
+                    endX = left,
+                )
+            else null
+        val rightMask =
+            if (right > 0f)
+                Brush.horizontalGradient(
+                    0f to transparentEdge,
+                    (1f - fadeStartFraction) to edgeColor,
+                    1f to edgeColor,
+                    startX = size.width - right,
+                    endX = size.width,
+                )
+            else null
 
         onDrawWithContent {
             drawContent()
@@ -86,15 +97,14 @@ fun Modifier.paddingMask(
             val maskProgress = progress().coerceIn(0f, 1f)
             if (maskProgress <= 0f) return@onDrawWithContent
 
-            if (topMask != null) {
+            if (topMask != null)
                 drawRect(
                     brush = topMask,
                     size = topSize,
                     alpha = maskProgress,
                     blendMode = blendMode,
                 )
-            }
-            if (bottomMask != null) {
+            if (bottomMask != null)
                 drawRect(
                     brush = bottomMask,
                     topLeft = bottomOffset,
@@ -102,16 +112,14 @@ fun Modifier.paddingMask(
                     alpha = maskProgress,
                     blendMode = blendMode,
                 )
-            }
-            if (leftMask != null) {
+            if (leftMask != null)
                 drawRect(
                     brush = leftMask,
                     size = leftSize,
                     alpha = maskProgress,
                     blendMode = blendMode,
                 )
-            }
-            if (rightMask != null) {
+            if (rightMask != null)
                 drawRect(
                     brush = rightMask,
                     topLeft = rightOffset,
@@ -119,7 +127,6 @@ fun Modifier.paddingMask(
                     alpha = maskProgress,
                     blendMode = blendMode,
                 )
-            }
         }
     }
 }

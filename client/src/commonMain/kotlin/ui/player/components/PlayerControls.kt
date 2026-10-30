@@ -35,11 +35,12 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.material3.onPointerScrollY
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.FloatState
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,15 +53,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import dev.brahmkshatriya.echo.app.platform.hasTouchInput
-import dev.brahmkshatriya.echo.app.playback.LocalPlayerEntryId
-import dev.brahmkshatriya.echo.app.playback.LocalPlayerTimelineState
 import dev.brahmkshatriya.echo.app.playback.PlayerTimelineState
 import dev.brahmkshatriya.echo.app.playback.RepeatMode
 import dev.brahmkshatriya.echo.app.ui.components.MorphingProgressIconButton
 import dev.brahmkshatriya.echo.app.ui.components.SquigglySlider
 import dev.brahmkshatriya.echo.app.ui.components.SwitchingIcon
-import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerControls
-import dev.brahmkshatriya.echo.app.ui.player.LocalPlayerSkipNavigator
 import dev.brahmkshatriya.echo.app.ui.player.artwork.LocalPlayerFavouriteAccent
 import dev.brahmkshatriya.echo.app.ui.player.artwork.favouriteButtonPalette
 import echo.client.generated.resources.Res
@@ -83,150 +80,144 @@ import echo.client.generated.resources.ic_volume_up
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
-fun defaultIconButtonColors() = IconButtonDefaults.iconButtonColors(
-    contentColor = colorScheme.onPrimaryContainer,
-    containerColor = colorScheme.onPrimaryContainer.copy(0.1f),
-    disabledContainerColor = colorScheme.onPrimaryContainer.copy(0.05f),
-    disabledContentColor = colorScheme.onPrimaryContainer.copy(0.5f)
-)
-
-@Composable
-internal fun favouriteButtonColors() = colorScheme.primaryContainer
-    .favouriteButtonPalette(
-        dark = colorScheme.background.luminance() < 0.20f,
-        artworkAccent = LocalPlayerFavouriteAccent.current,
+fun defaultIconButtonColors() =
+    IconButtonDefaults.iconButtonColors(
+        contentColor = colorScheme.onPrimaryContainer,
+        containerColor = colorScheme.onPrimaryContainer.copy(0.1f),
+        disabledContainerColor = colorScheme.onPrimaryContainer.copy(0.05f),
+        disabledContentColor = colorScheme.onPrimaryContainer.copy(0.5f),
     )
-    .let { (checked, onChecked) ->
-        IconButtonDefaults.filledTonalIconToggleButtonColors(
-            colorScheme.onPrimaryContainer.copy(0.1f),
-            colorScheme.onPrimaryContainer,
-            checkedContainerColor = checked,
-            checkedContentColor = onChecked,
-        )
-    }
 
 @Composable
-internal fun RepeatButton(modifier: Modifier = Modifier) {
-    val controls = LocalPlayerControls.current
-    val mode = controls.repeatMode
+fun favouriteButtonColors() =
+    colorScheme.primaryContainer
+        .favouriteButtonPalette(
+            dark = colorScheme.background.luminance() < 0.20f,
+            artworkAccent = LocalPlayerFavouriteAccent.current,
+        )
+        .let { (checked, onChecked) ->
+            IconButtonDefaults.filledTonalIconToggleButtonColors(
+                colorScheme.onPrimaryContainer.copy(0.1f),
+                colorScheme.onPrimaryContainer,
+                checkedContainerColor = checked,
+                checkedContentColor = onChecked,
+            )
+        }
+
+@Composable
+fun RepeatButton(mode: RepeatMode, onClick: () -> Unit, modifier: Modifier = Modifier) {
     IconButton(
-        onClick = {
-            controls.repeatMode = when (mode) {
-                RepeatMode.Off -> RepeatMode.All
-                RepeatMode.All -> RepeatMode.One
-                RepeatMode.One -> RepeatMode.Off
-            }
-        },
+        onClick = onClick,
         modifier = modifier,
         shapes = IconButtonDefaults.shapes(),
-        colors = defaultIconButtonColors()
+        colors = defaultIconButtonColors(),
     ) {
         SwitchingIcon(
-            icon = when (mode) {
-                RepeatMode.Off -> Res.drawable.ic_repeat
-                RepeatMode.All -> Res.drawable.ic_repeat_on
-                RepeatMode.One -> Res.drawable.ic_repeat_one_on
-            },
-            contentDescription = when (mode) {
-                RepeatMode.Off -> "Repeat off; enable repeat all"
-                RepeatMode.All -> "Repeat all; enable repeat one"
-                RepeatMode.One -> "Repeat one; disable repeat"
-            },
+            icon =
+                when (mode) {
+                    RepeatMode.Off -> Res.drawable.ic_repeat
+                    RepeatMode.All -> Res.drawable.ic_repeat_on
+                    RepeatMode.One -> Res.drawable.ic_repeat_one_on
+                },
+            contentDescription =
+                when (mode) {
+                    RepeatMode.Off -> "Repeat off; enable repeat all"
+                    RepeatMode.All -> "Repeat all; enable repeat one"
+                    RepeatMode.One -> "Repeat one; disable repeat"
+                },
         )
     }
 }
 
 @Composable
-internal fun PreviousButton(
+fun PreviousButton(
+    enabled: Boolean,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
     large: Boolean = false,
     interactionSource: MutableInteractionSource? = null,
     shapes: IconButtonShapes? = null,
 ) {
-    val timelineState = LocalPlayerTimelineState.current
-    val navigator = LocalPlayerSkipNavigator.current
-    val playback = LocalPlayerControls.current
     IconButton(
-        onClick = {
-            if (navigator != null) navigator.previous() else playback.previous()
-        },
-        enabled = timelineState != null,
+        onClick = onClick,
+        enabled = enabled,
         modifier = modifier,
-        colors = IconButtonDefaults.iconButtonColors(
-            contentColor = colorScheme.onTertiary,
-            containerColor = colorScheme.tertiary,
-            disabledContainerColor = colorScheme.tertiary.copy(0.33f),
-            disabledContentColor = colorScheme.onTertiary.copy(0.5f)
-        ),
+        colors =
+            IconButtonDefaults.iconButtonColors(
+                contentColor = colorScheme.onTertiary,
+                containerColor = colorScheme.tertiary,
+                disabledContainerColor = colorScheme.tertiary.copy(0.33f),
+                disabledContentColor = colorScheme.onTertiary.copy(0.5f),
+            ),
         shapes = shapes ?: IconButtonDefaults.shapes(),
         interactionSource = interactionSource,
     ) {
         SwitchingIcon(
-            icon = if (large) Res.drawable.ic_skip_previous_32
-            else Res.drawable.ic_skip_previous,
-            contentDescription = "Previous item"
+            icon = if (large) Res.drawable.ic_skip_previous_32 else Res.drawable.ic_skip_previous,
+            contentDescription = "Previous item",
         )
     }
 }
 
 @Composable
-internal fun PlayPauseButton(
+fun PlayPauseButton(
+    isPlaying: Boolean,
+    isLoading: Boolean,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
     large: Boolean = false,
     interactionSource: MutableInteractionSource? = null,
     shapes: IconButtonShapes? = null,
 ) {
-    val controls = LocalPlayerControls.current
-    val isPlaying = controls.isPlaying
-    val isLoading = controls.isLoading
     FilledIconButton(
-        onClick = { controls.togglePlayPause() },
+        onClick = onClick,
         modifier = modifier,
         shapes = shapes ?: IconButtonDefaults.shapes(),
         interactionSource = interactionSource,
-        colors = IconButtonDefaults.filledIconButtonColors(
-            colorScheme.primary,
-            colorScheme.onPrimary
-        )
+        colors =
+            IconButtonDefaults.filledIconButtonColors(colorScheme.primary, colorScheme.onPrimary),
     ) {
         Box(contentAlignment = Alignment.Center) {
-            if (isLoading) {
+            if (isLoading)
                 CircularProgressIndicator(
                     modifier = Modifier.size(if (large) 48.dp else 34.dp),
                     color = colorScheme.onPrimary,
                     strokeWidth = 2.dp,
                 )
-            }
             SwitchingIcon(
-                icon = when {
-                    isPlaying && large -> Res.drawable.ic_pause_32
-                    isPlaying -> Res.drawable.ic_pause
-                    large -> Res.drawable.ic_play_arrow_32
-                    else -> Res.drawable.ic_play_arrow
-                },
-                contentDescription = when {
-                    isLoading -> "Song loading"
-                    isPlaying -> "Pause"
-                    else -> "Play"
-                },
+                icon =
+                    when {
+                        isPlaying && large -> Res.drawable.ic_pause_32
+                        isPlaying -> Res.drawable.ic_pause
+                        large -> Res.drawable.ic_play_arrow_32
+                        else -> Res.drawable.ic_play_arrow
+                    },
+                contentDescription =
+                    when {
+                        isLoading -> "Song loading"
+                        isPlaying -> "Pause"
+                        else -> "Play"
+                    },
             )
         }
     }
 }
 
 @Composable
-internal fun CompactPlayPauseButton(modifier: Modifier = Modifier) {
-    val controls = LocalPlayerControls.current
-    val isPlaying = controls.isPlaying
-    val isLoading = controls.isLoading
-    val timelineState = LocalPlayerTimelineState.current
+fun CompactPlayPauseButton(
+    isPlaying: Boolean,
+    isLoading: Boolean,
+    timelineState: PlayerTimelineState?,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     MorphingProgressIconButton(
         progress = {
             if (timelineState == null || timelineState.durationMs <= 0f) 0f
             else (timelineState.positionMs / timelineState.durationMs).coerceIn(0f, 1f)
         },
         indeterminate = isLoading,
-        onClick = { controls.togglePlayPause() },
+        onClick = onClick,
         enabled = true,
         backgroundColor = colorScheme.onPrimaryContainer.copy(alpha = 0.1f),
         progressColor = colorScheme.primary,
@@ -235,162 +226,177 @@ internal fun CompactPlayPauseButton(modifier: Modifier = Modifier) {
     ) {
         SwitchingIcon(
             icon = if (isPlaying) Res.drawable.ic_pause else Res.drawable.ic_play_arrow,
-            contentDescription = when {
-                isLoading -> "Song loading"
-                isPlaying -> "Pause"
-                else -> "Play"
-            },
+            contentDescription =
+                when {
+                    isLoading -> "Song loading"
+                    isPlaying -> "Pause"
+                    else -> "Play"
+                },
             tint = colorScheme.onPrimary,
         )
     }
 }
 
 @Composable
-internal fun NextButton(
+fun NextButton(
+    enabled: Boolean,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
     large: Boolean = false,
     interactionSource: MutableInteractionSource? = null,
     shapes: IconButtonShapes? = null,
 ) {
-    val timelineState = LocalPlayerTimelineState.current
-    val navigator = LocalPlayerSkipNavigator.current
-    val canGoNext = navigator?.canGoNext == true
     FilledTonalIconButton(
-        onClick = {
-            if (!canGoNext) return@FilledTonalIconButton
-            navigator.next()
-        },
-        enabled = timelineState != null && canGoNext,
+        onClick = onClick,
+        enabled = enabled,
         modifier = modifier,
         shapes = shapes ?: IconButtonDefaults.shapes(),
         interactionSource = interactionSource,
-        colors = IconButtonDefaults.iconButtonColors(
-            contentColor = colorScheme.onTertiary,
-            containerColor = colorScheme.tertiary,
-            disabledContainerColor = colorScheme.tertiary.copy(0.33f),
-            disabledContentColor = colorScheme.onTertiary.copy(0.5f)
-        )
+        colors =
+            IconButtonDefaults.iconButtonColors(
+                contentColor = colorScheme.onTertiary,
+                containerColor = colorScheme.tertiary,
+                disabledContainerColor = colorScheme.tertiary.copy(0.33f),
+                disabledContentColor = colorScheme.onTertiary.copy(0.5f),
+            ),
     ) {
         SwitchingIcon(
             icon = if (large) Res.drawable.ic_skip_next_32 else Res.drawable.ic_skip_next,
-            contentDescription = "Next item"
+            contentDescription = "Next item",
         )
     }
 }
 
 @Composable
-fun Controller() = BoxWithConstraints(Modifier.fillMaxWidth()) {
-    val expandedShapes = IconButtonDefaults.shapes(
-        shape = RoundedCornerShape(50),
-        pressedShape = RoundedCornerShape(16.dp),
-    )
-    val previousSource = remember { MutableInteractionSource() }
-    val playSource = remember { MutableInteractionSource() }
-    val nextSource = remember { MutableInteractionSource() }
-    val previousPressed by previousSource.collectIsPressedAsState()
-    val playPressed by playSource.collectIsPressedAsState()
-    val nextPressed by nextSource.collectIsPressedAsState()
-    val pressedButton = when {
-        previousPressed -> 0
-        playPressed -> 1
-        nextPressed -> 2
-        else -> -1
+fun Controller(
+    isPlaying: Boolean,
+    isLoading: Boolean,
+    previousEnabled: Boolean,
+    nextEnabled: Boolean,
+    onPrevious: () -> Unit,
+    onPlayPause: () -> Unit,
+    onNext: () -> Unit,
+) =
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        val expandedShapes =
+            IconButtonDefaults.shapes(
+                shape = RoundedCornerShape(50),
+                pressedShape = RoundedCornerShape(16.dp),
+            )
+        val previousSource = remember { MutableInteractionSource() }
+        val playSource = remember { MutableInteractionSource() }
+        val nextSource = remember { MutableInteractionSource() }
+        val previousPressed by previousSource.collectIsPressedAsState()
+        val playPressed by playSource.collectIsPressedAsState()
+        val nextPressed by nextSource.collectIsPressedAsState()
+        val pressedButton =
+            when {
+                previousPressed -> 0
+                playPressed -> 1
+                nextPressed -> 2
+                else -> -1
+            }
+        val playWidth = (maxWidth - 32.dp - 56.dp * 2 - 8.dp * 2).coerceIn(64.dp, 256.dp)
+        val previousWidth by
+            animateDpAsState(
+                targetValue =
+                    when (pressedButton) {
+                        0 -> 64.dp
+                        1 -> 48.dp
+                        else -> 56.dp
+                    },
+                animationSpec = motionScheme.fastSpatialSpec(),
+                label = "Previous button width",
+            )
+        val centerWidth by
+            animateDpAsState(
+                targetValue =
+                    when (pressedButton) {
+                        0,
+                        2 -> playWidth - 8.dp
+                        1 -> playWidth + 16.dp
+                        else -> playWidth
+                    },
+                animationSpec = motionScheme.fastSpatialSpec(),
+                label = "Play button width",
+            )
+        val nextWidth by
+            animateDpAsState(
+                targetValue =
+                    when (pressedButton) {
+                        2 -> 64.dp
+                        1 -> 48.dp
+                        else -> 56.dp
+                    },
+                animationSpec = motionScheme.fastSpatialSpec(),
+                label = "Next button width",
+            )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            modifier =
+                Modifier.align(Alignment.Center)
+                    .padding(horizontal = 16.dp)
+                    .padding(top = 16.dp, bottom = 8.dp),
+        ) {
+            PreviousButton(
+                enabled = previousEnabled,
+                onClick = onPrevious,
+                modifier = Modifier.width(previousWidth).height(64.dp),
+                large = true,
+                interactionSource = previousSource,
+                shapes = expandedShapes,
+            )
+            PlayPauseButton(
+                isPlaying = isPlaying,
+                isLoading = isLoading,
+                onClick = onPlayPause,
+                modifier = Modifier.width(centerWidth).height(64.dp),
+                large = true,
+                interactionSource = playSource,
+                shapes = expandedShapes,
+            )
+            NextButton(
+                enabled = nextEnabled,
+                onClick = onNext,
+                modifier = Modifier.width(nextWidth).height(64.dp),
+                large = true,
+                interactionSource = nextSource,
+                shapes = expandedShapes,
+            )
+        }
     }
-    val playWidth = (maxWidth - 32.dp - 56.dp * 2 - 8.dp * 2)
-        .coerceIn(64.dp, 256.dp)
-    val previousWidth by animateDpAsState(
-        targetValue = when (pressedButton) {
-            0 -> 64.dp
-            1 -> 48.dp
-            else -> 56.dp
-        },
-        animationSpec = motionScheme.fastSpatialSpec(),
-        label = "Previous button width",
-    )
-    val centerWidth by animateDpAsState(
-        targetValue = when (pressedButton) {
-            0, 2 -> playWidth - 8.dp
-            1 -> playWidth + 16.dp
-            else -> playWidth
-        },
-        animationSpec = motionScheme.fastSpatialSpec(),
-        label = "Play button width",
-    )
-    val nextWidth by animateDpAsState(
-        targetValue = when (pressedButton) {
-            2 -> 64.dp
-            1 -> 48.dp
-            else -> 56.dp
-        },
-        animationSpec = motionScheme.fastSpatialSpec(),
-        label = "Next button width",
-    )
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.align(Alignment.Center)
-            .padding(horizontal = 16.dp).padding(top = 16.dp, bottom = 8.dp)
-    ) {
-        PreviousButton(
-            modifier = Modifier.width(previousWidth).height(64.dp),
-            large = true,
-            interactionSource = previousSource,
-            shapes = expandedShapes,
-        )
-        PlayPauseButton(
-            modifier = Modifier.width(centerWidth).height(64.dp),
-            large = true,
-            interactionSource = playSource,
-            shapes = expandedShapes,
-        )
-        NextButton(
-            modifier = Modifier.width(nextWidth).height(64.dp),
-            large = true,
-            interactionSource = nextSource,
-            shapes = expandedShapes,
-        )
-    }
-}
 
 @Composable
 fun MoreButton() {
     IconButton(
-        onClick = { },
+        onClick = {},
         modifier = Modifier.height(44.dp).width(32.dp),
         shapes = IconButtonDefaults.shapes(),
-        colors = defaultIconButtonColors()
+        colors = defaultIconButtonColors(),
     ) {
-        Icon(
-            painterResource(Res.drawable.ic_more_vert),
-            contentDescription = "Close Player"
-        )
+        Icon(painterResource(Res.drawable.ic_more_vert), contentDescription = "Close Player")
     }
 }
 
 @Composable
-fun LikeToggle(entryId: Int) {
-    val controls = LocalPlayerControls.current
-    val favourite = controls.isFavourite(entryId)
+fun LikeToggle(favourite: Boolean, onCheckedChange: (Boolean) -> Unit) {
     val interactionSource = remember { MutableInteractionSource() }
     FilledTonalIconToggleButton(
         checked = favourite,
-        onCheckedChange = { controls.setFavourite(entryId, it) },
+        onCheckedChange = onCheckedChange,
         modifier = Modifier.size(44.dp),
-        shapes = IconButtonDefaults.toggleableShapes(
-            checkedShape = RoundedCornerShape(100)
-        ),
+        shapes = IconButtonDefaults.toggleableShapes(checkedShape = RoundedCornerShape(100)),
         interactionSource = interactionSource,
         colors = favouriteButtonColors(),
     ) {
         SwitchingIcon(
-            icon = if (favourite) Res.drawable.ic_favorite_filled
-            else Res.drawable.ic_favorite,
+            icon = if (favourite) Res.drawable.ic_favorite_filled else Res.drawable.ic_favorite,
             contentDescription = if (favourite) "Unfavourite" else "Favourite",
-            modifier = Modifier.padding(top = 2.dp)
+            modifier = Modifier.padding(top = 2.dp),
         )
     }
 }
-
 
 fun formatTime(ms: Float): String {
     val totalSeconds = (ms / 1000).toInt().coerceAtLeast(0)
@@ -400,109 +406,115 @@ fun formatTime(ms: Float): String {
 }
 
 @Composable
-fun TimelineWithVolume(modifier: Modifier = Modifier) {
+fun TimelineWithVolume(
+    timelineState: PlayerTimelineState,
+    isPlaying: Boolean,
+    volume: FloatState,
+    lastAudibleVolume: FloatState,
+    onVolumeChange: (Float) -> Unit,
+    onSeekPreview: (Float) -> Unit,
+    onSeekCommit: () -> Unit,
+    onSeekCancel: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Row(
         modifier = modifier.widthIn(256.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Timeline(Modifier.weight(1f))
-        VolumeAdjuster()
+        Timeline(
+            timelineState,
+            isPlaying,
+            onSeekPreview,
+            onSeekCommit,
+            onSeekCancel,
+            Modifier.weight(1f),
+        )
+        VolumeAdjuster(volume, lastAudibleVolume, onVolumeChange)
     }
 }
 
 @Composable
-fun Timeline(modifier: Modifier = Modifier) {
+fun Timeline(
+    timelineState: PlayerTimelineState,
+    isPlaying: Boolean,
+    onSeekPreview: (Float) -> Unit,
+    onSeekCommit: () -> Unit,
+    onSeekCancel: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val mergedStyle = LocalTextStyle.current.merge(typography.labelLarge)
 
-    val timelineState = LocalPlayerTimelineState.current ?: return
-    val maxRange = timelineState.durationMs
     var showRemainingTime by remember { mutableStateOf(false) }
-    val currentTimeLabel by remember {
-        derivedStateOf { formatTime(timelineState.positionMs) }
-    }
-
-    val endLabel by remember(showRemainingTime) {
-        derivedStateOf {
-            if (showRemainingTime) {
-                "-${formatTime(maxRange - timelineState.positionMs)}"
-            } else {
-                formatTime(maxRange)
-            }
-        }
-    }
-    Row(
-        modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
+    val timeLabels = rememberTimelineLabels(timelineState, showRemainingTime)
+    val (currentTimeLabel, endLabel) = timeLabels.value
+    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         Text(
             text = currentTimeLabel,
             style = mergedStyle,
             modifier = Modifier.widthIn(min = 40.dp).padding(8.dp, 4.dp),
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
         )
 
         PlayerSlider(
-            modifier = Modifier
-                .weight(1f)
-                .height(32.dp),
+            modifier = Modifier.weight(1f).height(32.dp),
             timelineState = timelineState,
+            isPlaying = isPlaying,
+            onSeekPreview = onSeekPreview,
+            onSeekCommit = onSeekCommit,
+            onSeekCancel = onSeekCancel,
         )
 
         val endInteraction = remember { MutableInteractionSource() }
         Text(
             text = endLabel,
             style = mergedStyle,
-            modifier = Modifier
-                .widthIn(min = 40.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .clickable(interactionSource = endInteraction) {
-                    showRemainingTime = !showRemainingTime
-                }
-                .padding(8.dp, 4.dp),
-            textAlign = TextAlign.Center
+            modifier =
+                Modifier.widthIn(min = 40.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .clickable(interactionSource = endInteraction) {
+                        showRemainingTime = !showRemainingTime
+                    }
+                    .padding(8.dp, 4.dp),
+            textAlign = TextAlign.Center,
         )
     }
 }
 
 @Composable
-internal fun PlayerSlider(
+fun PlayerSlider(
     modifier: Modifier = Modifier,
     timelineState: PlayerTimelineState,
+    isPlaying: Boolean,
+    onSeekPreview: (Float) -> Unit,
+    onSeekCommit: () -> Unit,
+    onSeekCancel: () -> Unit,
 ) {
     val rangeMS = remember(timelineState.durationMs) { 0f..timelineState.durationMs }
-    val segmentGaps = remember(timelineState.durationMs) {
-        listOf(0.22f, 0.48f, 0.72f, 0.88f).map { fraction ->
-            timelineState.durationMs * fraction
+    val segmentGaps =
+        remember(timelineState.durationMs) {
+            listOf(0.22f, 0.48f, 0.72f, 0.88f).map { fraction ->
+                timelineState.durationMs * fraction
+            }
         }
-    }
-    val controls = LocalPlayerControls.current
-    val interactionSource = remember { MutableInteractionSource() }
+    val interactionSource = remember(timelineState) { MutableInteractionSource() }
     val isDragged by interactionSource.collectIsDraggedAsState()
-    val entryId = LocalPlayerEntryId.current
-    LaunchedEffect(isDragged) {
-        if (!isDragged) controls.cancelScrub(entryId)
-    }
-    androidx.compose.runtime.DisposableEffect(controls, entryId) {
-        onDispose { controls.cancelScrub(entryId) }
-    }
+    val currentOnSeekCancel by rememberUpdatedState(onSeekCancel)
+    LaunchedEffect(timelineState, isDragged) { if (!isDragged) currentOnSeekCancel() }
+    androidx.compose.runtime.DisposableEffect(timelineState) { onDispose { onSeekCancel() } }
 
     SquigglySlider(
         enabled = timelineState.durationMs > 0f,
         valueRange = rangeMS,
         value = { timelineState.positionMs },
         bufferedValue = { timelineState.bufferedMs },
-        onValueChange = { newValue ->
-            controls.previewSeek(entryId, newValue)
-        },
-        onValueChangeFinished = {
-            controls.commitSeek(entryId)
-        },
+        onValueChange = onSeekPreview,
+        onValueChangeFinished = onSeekCommit,
         modifier = modifier.pointerHoverIcon(PointerIcon.Hand),
         interactionSource = interactionSource,
         segmentGaps = segmentGaps,
         segmentGapWidth = 3.dp,
-        squiggleAmplitude = if (controls.isPlaying) 0.66f else 0f,
+        squiggleAmplitude = if (isPlaying) 0.66f else 0f,
         squiggleWavelength = 40.dp,
         waveSpeed = 40.dp,
         trackHeight = 16.dp,
@@ -519,42 +531,47 @@ internal fun PlayerSlider(
 }
 
 @Composable
-fun VolumeAdjuster() {
+fun VolumeAdjuster(
+    position: FloatState,
+    lastAudiblePosition: FloatState,
+    onVolumeChange: (Float) -> Unit,
+) {
     val interactionSource = remember { MutableInteractionSource() }
-    val playback = LocalPlayerControls.current
     val isHovered = interactionSource.collectIsHoveredAsState()
     val hasTouch = hasTouchInput.value
-    val position = playback.volume
-    val lastAudiblePosition = playback.lastAudibleVolume
     var isSliderPinned by remember { mutableStateOf(false) }
     val sliderInteraction = remember { MutableInteractionSource() }
     val isSliderDragged = sliderInteraction.collectIsDraggedAsState()
 
-    fun setVolume(value: Float) = playback.setVolume(value)
-    fun toggleMute() = playback.setVolume(
-        if (position.floatValue > 0f) 0f else lastAudiblePosition.floatValue.coerceAtLeast(0.01f),
-    )
+    fun setVolume(value: Float) = onVolumeChange(value)
+    fun toggleMute() =
+        onVolumeChange(
+            if (position.floatValue > 0f) 0f
+            else lastAudiblePosition.floatValue.coerceAtLeast(0.01f)
+        )
 
     Row(
-        modifier = Modifier
-            .height(40.dp)
-            .clip(RoundedCornerShape(100))
-            .hoverable(interactionSource)
-            .onPointerScrollY { delta ->
-                val newVolume = position.floatValue - delta * 0.0015f
-                setVolume(newVolume)
-            }
-            .background(colorScheme.primary.copy(0.25f)),
+        modifier =
+            Modifier.height(40.dp)
+                .clip(RoundedCornerShape(100))
+                .hoverable(interactionSource)
+                .onPointerScrollY { delta ->
+                    val newVolume = position.floatValue - delta * 0.0015f
+                    setVolume(newVolume)
+                }
+                .background(colorScheme.primary.copy(0.25f)),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        AnimatedVisibility(isHovered.value || isSliderDragged.value || (hasTouch && isSliderPinned)) {
+        AnimatedVisibility(
+            isHovered.value || isSliderDragged.value || (hasTouch && isSliderPinned)
+        ) {
             SquigglySlider(
                 value = { position.floatValue },
-                modifier = Modifier
-                    .width(96.dp)
-                    .height(40.dp)
-                    .padding(start = 12.dp, end = 4.dp)
-                    .pointerHoverIcon(PointerIcon.Hand),
+                modifier =
+                    Modifier.width(96.dp)
+                        .height(40.dp)
+                        .padding(start = 12.dp, end = 4.dp)
+                        .pointerHoverIcon(PointerIcon.Hand),
                 interactionSource = sliderInteraction,
                 onValueChange = ::setVolume,
                 squiggleAmplitude = 0f,
@@ -566,20 +583,19 @@ fun VolumeAdjuster() {
             )
         }
         IconButton(
-            onClick = {
-                if (hasTouch) isSliderPinned = !isSliderPinned
-                else toggleMute()
-            },
+            onClick = { if (hasTouch) isSliderPinned = !isSliderPinned else toggleMute() },
             modifier = Modifier.size(40.dp),
         ) {
             SwitchingIcon(
-                icon = if (position.floatValue == 0f) Res.drawable.ic_volume_off
-                else Res.drawable.ic_volume_up,
-                contentDescription = if (hasTouch) {
-                    if (isSliderPinned) "Unpin volume slider" else "Pin volume slider"
-                } else {
-                    if (position.floatValue == 0f) "Unmute" else "Mute"
-                },
+                icon =
+                    if (position.floatValue == 0f) Res.drawable.ic_volume_off
+                    else Res.drawable.ic_volume_up,
+                contentDescription =
+                    if (hasTouch) {
+                        if (isSliderPinned) "Unpin volume slider" else "Pin volume slider"
+                    } else {
+                        if (position.floatValue == 0f) "Unmute" else "Mute"
+                    },
                 modifier = Modifier.size(24.dp),
             )
         }

@@ -1,7 +1,7 @@
 package dev.brahmkshatriya.echo.app.playback
 
 /** Real, openly licensed example music from the supplied catalog. */
-internal data class ExampleSong(
+data class ExampleSong(
     val id: Int,
     val title: String,
     val artist: String,
@@ -13,7 +13,7 @@ internal data class ExampleSong(
     val sourceUrl: String,
 )
 
-internal val exampleSongs = listOf(
+val exampleSongs = listOf(
     ExampleSong(
         id = 0,
         title = "Rap God",
@@ -476,7 +476,7 @@ internal val exampleSongs = listOf(
 
 /** Songs in the supplied catalog are ordered in contiguous artist groups. */
 /** Demo fixtures are injected into the shared session, never resolved by player views. */
-internal fun demoQueueSeeds(): List<QueueSeed> =
+fun demoQueueSeeds(): List<QueueSeed> =
     exampleSongs.groupBy { it.artist }.map { (artist, songs) ->
         QueueSeed(
             id = "demo:$artist",
