@@ -96,7 +96,10 @@ jobs:
           Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
           EOF
             sudo apt-get update
+            # Keep GLib's generators and Python on the host architecture. QEMU satisfies
+            # target GLib's interpreter dependency without replacing the host Python.
             sudo apt-get install --yes build-essential cmake ninja-build pkg-config patchelf \
+              python3:amd64 libglib2.0-dev-bin:amd64 qemu-user:amd64 \
               gcc-aarch64-linux-gnu g++-aarch64-linux-gnu binutils-aarch64-linux-gnu \
               libdbus-1-dev:arm64 libfontconfig1-dev:arm64 libfreetype6-dev:arm64 \
               libglib2.0-dev:arm64 libgstreamer1.0-dev:arm64 \
