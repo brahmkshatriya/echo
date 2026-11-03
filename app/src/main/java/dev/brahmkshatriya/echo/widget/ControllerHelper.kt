@@ -13,6 +13,7 @@ object ControllerHelper {
     var listener: WidgetPlayerListener? = null
 
     val map = mutableMapOf<String, () -> Unit>()
+    private val pendingActions = mutableListOf<() -> Unit>()
     fun register(app: App, key: String, updateCallback: () -> Unit) {
         map[key] = updateCallback
         if (callback != null) return
@@ -25,6 +26,7 @@ object ControllerHelper {
             listener = playerListener
             it.addListener(playerListener)
             playerListener.controller = it
+            runPendingActions()
             updateWidgets()
         }
     }
@@ -37,6 +39,18 @@ object ControllerHelper {
         listener?.removed()
         listener = null
         image = null
+        pendingActions.clear()
+    }
+
+    // Widgets can be clicked before the media controller is connected,
+    // queue the action and run it as soon as the controller is available
+    fun whenReady(action: () -> Unit) {
+        if (controller != null) action() else pendingActions.add(action)
+    }
+
+    private fun runPendingActions() {
+        pendingActions.toList().forEach { it() }
+        pendingActions.clear()
     }
 
     fun updateWidgets() {

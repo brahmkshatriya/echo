@@ -10,16 +10,15 @@ import android.graphics.Bitmap
 import android.os.Bundle
 import android.widget.RemoteViews
 import androidx.core.os.bundleOf
-import androidx.media3.common.Player
 import androidx.media3.session.MediaController
+import androidx.media3.session.SessionCommand
+import com.google.common.util.concurrent.MoreExecutors
 import dev.brahmkshatriya.echo.R
 import dev.brahmkshatriya.echo.di.App
 import dev.brahmkshatriya.echo.extensions.MediaState
+import dev.brahmkshatriya.echo.playback.MediaItemUtils.isLiked
 import dev.brahmkshatriya.echo.playback.MediaItemUtils.state
 import dev.brahmkshatriya.echo.playback.PlayerCommands.likeCommand
-import dev.brahmkshatriya.echo.playback.PlayerCommands.repeatCommand
-import dev.brahmkshatriya.echo.playback.PlayerCommands.repeatOffCommand
-import dev.brahmkshatriya.echo.playback.PlayerCommands.repeatOneCommand
 import dev.brahmkshatriya.echo.playback.PlayerCommands.resumeCommand
 import dev.brahmkshatriya.echo.playback.PlayerCommands.unlikeCommand
 import dev.brahmkshatriya.echo.playback.PlayerService.Companion.getPendingIntent
@@ -55,9 +54,20 @@ abstract class BaseWidget : AppWidgetProvider(), KoinComponent {
         ControllerHelper.register(app, key) {
             updateWidgets(app.context)
         }
+        val action = intent?.action
+            ?: return super.onReceive(context, intent)
+        when (action) {
+            ACTION_PLAY_PAUSE, ACTION_PREVIOUS, ACTION_NEXT, ACTION_LIKE, ACTION_UNLIKE,
+            ACTION_RESUME -> ControllerHelper.whenReady { onAction(action) }
+
+            else -> super.onReceive(context, intent)
+        }
+    }
+
+    private fun onAction(action: String) {
         val controller = ControllerHelper.controller ?: return
-        println("Controller is $controller")
-        when (intent?.action) {
+        println("Widget action $action, controller is $controller")
+        when (action) {
             ACTION_PLAY_PAUSE -> controller.run {
                 prepare()
                 playWhenReady = !playWhenReady
@@ -65,19 +75,21 @@ abstract class BaseWidget : AppWidgetProvider(), KoinComponent {
 
             ACTION_PREVIOUS -> controller.seekToPrevious()
             ACTION_NEXT -> controller.seekToNext()
-            ACTION_LIKE -> controller.sendCustomCommand(likeCommand, Bundle.EMPTY)
-            ACTION_UNLIKE -> controller.sendCustomCommand(unlikeCommand, Bundle.EMPTY)
-            ACTION_REPEAT -> controller.sendCustomCommand(repeatCommand, Bundle.EMPTY)
-            ACTION_REPEAT_OFF -> controller.sendCustomCommand(repeatOffCommand, Bundle.EMPTY)
-            ACTION_REPEAT_ONE -> controller.sendCustomCommand(repeatOneCommand, Bundle.EMPTY)
+            ACTION_LIKE -> controller.sendLikeCommand(likeCommand)
+            ACTION_UNLIKE -> controller.sendLikeCommand(unlikeCommand)
             ACTION_RESUME -> controller.run {
                 sendCustomCommand(resumeCommand, bundleOf("cleared" to false))
                 playWhenReady = true
             }
-
-            else -> super.onReceive(context, intent)
         }
     }
+
+    private fun MediaController.sendLikeCommand(command: SessionCommand) = runCatching {
+        sendCustomCommand(command, Bundle.EMPTY).addListener({
+            // The like is stored in the media metadata, refresh to show the new icon
+            updateWidgets(app.context)
+        }, MoreExecutors.directExecutor())
+    }.onFailure { it.printStackTrace() }
 
 
     override fun onAppWidgetOptionsChanged(
@@ -120,9 +132,6 @@ abstract class BaseWidget : AppWidgetProvider(), KoinComponent {
         const val ACTION_NEXT = "dev.brahmkshatriya.echo.widget.NEXT"
         const val ACTION_LIKE = "dev.brahmkshatriya.echo.widget.LIKE"
         const val ACTION_UNLIKE = "dev.brahmkshatriya.echo.widget.UNLIKE"
-        const val ACTION_REPEAT = "dev.brahmkshatriya.echo.widget.REPEAT"
-        const val ACTION_REPEAT_OFF = "dev.brahmkshatriya.echo.widget.REPEAT_OFF"
-        const val ACTION_REPEAT_ONE = "dev.brahmkshatriya.echo.widget.REPEAT_ONE"
         const val ACTION_RESUME = "dev.brahmkshatriya.echo.widget.RESUME"
 
         fun Context.createIntent(clazz: Class<*>, action: String) = PendingIntent.getBroadcast(
@@ -158,13 +167,10 @@ abstract class BaseWidget : AppWidgetProvider(), KoinComponent {
 
             views.setOnClickPendingIntent(android.R.id.background, getPendingIntent(context))
 
-            val isPlaying = if (current != null) controller.playWhenReady else false
+            val isPlaying = current != null && controller?.playWhenReady == true
             views.setOnClickPendingIntent(
                 R.id.playPauseButton, context.createIntent(
-                    clazz,
-                    if (current != null) {
-                        if (isPlaying) ACTION_PLAY_PAUSE else ACTION_PLAY_PAUSE
-                    } else ACTION_RESUME
+                    clazz, if (current != null) ACTION_PLAY_PAUSE else ACTION_RESUME
                 )
             )
             views.setFloat(R.id.playPauseButton, "setAlpha", if (item != null) 1f else 0.5f)
@@ -191,7 +197,8 @@ abstract class BaseWidget : AppWidgetProvider(), KoinComponent {
                 if ((controller?.currentMediaItemIndex ?: -1) >= 0) 1f else 0.5f
             )
 
-            val isLiked = (item as? MediaState.Loaded)?.isLiked ?: false
+            // Read the rating from the media metadata, as the player updates it on like / unlike
+            val isLiked = current?.isLiked ?: (item as? MediaState.Loaded)?.isLiked ?: false
             views.setOnClickPendingIntent(
                 R.id.likeButton,
                 context.createIntent(clazz, if (isLiked) ACTION_UNLIKE else ACTION_LIKE)
@@ -200,25 +207,10 @@ abstract class BaseWidget : AppWidgetProvider(), KoinComponent {
                 R.id.likeButton,
                 if (isLiked) R.drawable.ic_favorite_filled_20dp else R.drawable.ic_favorite_20dp
             )
-
-            val repeatMode = controller?.repeatMode ?: 0
-            views.setOnClickPendingIntent(
-                R.id.repeatButton, context.createIntent(
-                    clazz,
-                    when (repeatMode) {
-                        Player.REPEAT_MODE_OFF -> ACTION_REPEAT
-                        Player.REPEAT_MODE_ALL -> ACTION_REPEAT_ONE
-                        else -> ACTION_REPEAT_OFF
-                    }
-                )
-            )
-
-            views.setImageViewResource(
-                R.id.repeatButton, when (repeatMode) {
-                    Player.REPEAT_MODE_OFF -> R.drawable.ic_repeat_20dp
-                    Player.REPEAT_MODE_ONE -> R.drawable.ic_repeat_one_20dp
-                    else -> R.drawable.ic_repeat_on_20dp
-                }
+            views.setFloat(R.id.likeButton, "setAlpha", if (item != null) 1f else 0.5f)
+            views.setContentDescription(
+                R.id.likeButton,
+                context.getString(if (isLiked) R.string.unlike else R.string.like)
             )
         }
     }

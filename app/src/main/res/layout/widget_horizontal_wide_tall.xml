@@ -91,24 +91,9 @@
             android:clipToPadding="false"
             android:gravity="center">
 
-
-            <ImageView
-                android:id="@+id/repeatButton"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_margin="4dp"
-                android:background="@drawable/rounded_rectangle_cover_profile"
-                android:backgroundTint="@color/material_dynamic_primary50"
-                android:contentDescription="@string/repeat"
-                android:padding="12dp"
-                android:src="@drawable/ic_repeat_20dp"
-                android:tint="@color/material_dynamic_primary90"
-                tools:ignore="UseAppTint" />
-
             <FrameLayout
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="16dp">
+                android:layout_height="wrap_content">
 
                 <LinearLayout
                     android:layout_width="wrap_content"
